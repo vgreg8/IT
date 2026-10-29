@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Курсы для менеджеров: ОС · Интернет · Офисный софт · ИИ — 18 лекций</title>
+    <style>
+        :root {
+            --c-bg:#f8fafc;--c-surface:#fff;--c-border:#e2e8f0;--c-border-strong:#cbd5e0;
+            --c-text:#0f172a;--c-text-2:#334155;--c-text-3:#64748b;--c-text-muted:#94a3b8;
+            --c-primary:#2563eb;--c-primary-soft:#eff6ff;
+            /* Курсы */
+            --c-os:#7c3aed;--c-os-soft:#f5f3ff;--c-os-strong:#6d28d9;
+            --c-net:#2563eb;--c-net-soft:#eff6ff;--c-net-strong:#1d4ed8;
+            --c-office:#059669;--c-office-soft:#ecfdf5;--c-office-strong:#047857;
+            --c-ai:#d97706;--c-ai-soft:#fffbeb;--c-ai-strong:#b45309;
+            --r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:20px;--r-pill:999px;
+            --sh-md:0 4px 12px rgba(15,23,42,.08),0 2px 4px rgba(15,23,42,.04);
+            --sh-lg:0 12px 28px rgba(15,23,42,.12),0 4px 8px rgba(15,23,42,.06);
+            --sh-focus:0 0 0 3px rgba(37,99,235,.35);
+            --f-sans:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            --f-mono:'JetBrains Mono',Consolas,monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+        body{font-family:var(--f-sans);background:var(--c-bg);color:var(--c-text);line-height:1.5;padding-bottom:40px}
+        :focus-visible{outline:none;box-shadow:var(--sh-focus);border-radius:var(--r-sm)}
+        a{color:inherit}
+
+        /* HERO */
+        .hero{
+            background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#334155 100%);
+            color:#fff;padding:56px 24px 48px;text-align:center;position:relative;overflow:hidden;
+        }
+        .hero::before{
+            content:'';position:absolute;top:-50%;left:-10%;right:-10%;height:200%;
+            background:radial-gradient(circle at 30% 30%,rgba(167,139,250,.18),transparent 50%),
+                       radial-gradient(circle at 70% 70%,rgba(59,130,246,.15),transparent 50%);
+            pointer-events:none;
+        }
+        .hero-inner{position:relative;max-width:1100px;margin:0 auto}
+        .hero h1{
+            font-size:42px;font-weight:800;line-height:1.15;letter-spacing:-0.03em;margin-bottom:14px;
+        }
+        .hero h1 .grad{
+            background:linear-gradient(90deg,#a78bfa,#60a5fa,#34d399,#fbbf24);
+            -webkit-background-clip:text;background-clip:text;color:transparent;
+        }
+        .hero p{font-size:16px;color:#cbd5e1;max-width:760px;margin:0 auto 24px;line-height:1.6}
+        .hero-stats{display:inline-flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+        .hero-stat{
+            background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+            border-radius:var(--r-pill);padding:8px 16px;font-size:12.5px;font-weight:700;
+            color:#e2e8f0;display:inline-flex;align-items:center;gap:6px;backdrop-filter:blur(8px);
+        }
+        .hero-stat .hs-val{color:#fff;font-size:14px;font-weight:900}
+
+        /* STICKY-ПАНЕЛЬ */
+        .course-nav{
+            position:sticky;top:0;z-index:100;
+            background:rgba(248,250,252,.94);backdrop-filter:blur(12px);
+            border-bottom:1px solid var(--c-border);padding:12px 24px;
+            display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center;
+        }
+        .search-box{position:relative;flex:0 1 280px;min-width:200px}
+        .search-box input{
+            width:100%;padding:9px 14px 9px 34px;border:1px solid var(--c-border);
+            border-radius:var(--r-pill);font-size:12.5px;font-family:inherit;
+            background:var(--c-surface);color:var(--c-text);transition:all .2s;
+        }
+        .search-box input:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+        .search-box::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.6}
+
+        .course-nav button{
+            text-decoration:none;font-size:12.5px;font-weight:700;
+            padding:8px 14px;border-radius:var(--r-pill);
+            background:var(--c-surface);border:1px solid var(--c-border);
+            color:var(--c-text-2);transition:all .18s ease;white-space:nowrap;
+            display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-family:inherit;
+        }
+        .course-nav button .nav-range{
+            font-size:10px;font-weight:800;padding:1px 7px;border-radius:var(--r-pill);
+            background:var(--c-bg);border:1px solid var(--c-border);color:var(--c-text-3);
+            font-family:var(--f-mono);letter-spacing:.02em;
+        }
+        .course-nav button:hover{transform:translateY(-1px);box-shadow:var(--sh-md)}
+        .course-nav button.active{background:var(--c-primary);border-color:var(--c-primary);color:#fff}
+        .course-nav button.active .nav-range{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3);color:#fff}
+
+        /* СЕКЦИИ */
+        .container{max-width:1200px;margin:0 auto;padding:0 24px}
+        .course-section{padding:48px 0 16px;scroll-margin-top:80px}
+        .course-section + .course-section{border-top:1px solid var(--c-border)}
+        .course-section.hidden{display:none}
+
+        .course-header{display:flex;align-items:flex-start;gap:18px;margin-bottom:26px}
+        .course-emblem{
+            flex:0 0 auto;width:60px;height:60px;border-radius:var(--r-lg);
+            display:flex;align-items:center;justify-content:center;
+            font-size:26px;color:#fff;box-shadow:var(--sh-md);
+        }
+        .course-meta-block{flex:1;min-width:0}
+        .course-eyebrow{
+            font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;
+            margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+        }
+        .course-range-badge{
+            font-size:10px;font-weight:800;padding:2px 9px;border-radius:var(--r-pill);
+            font-family:var(--f-mono);letter-spacing:0.03em;text-transform:none;
+        }
+        .course-title{font-size:24px;font-weight:800;color:var(--c-text);letter-spacing:-0.02em;line-height:1.25;margin-bottom:6px}
+        .course-desc{font-size:13.5px;color:var(--c-text-3);line-height:1.55;max-width:820px}
+        .course-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+        .course-badge{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:var(--r-pill);border:1px solid;letter-spacing:0.02em}
+
+        /* Цветовые модификаторы */
+        .mod-os .course-emblem{background:linear-gradient(135deg,#a78bfa,#6d28d9)}
+        .mod-os .course-eyebrow{color:var(--c-os)}
+        .mod-os .course-range-badge,.mod-os .course-badge{background:var(--c-os-soft);border-color:#ddd6fe;color:var(--c-os-strong)}
+        .mod-os .lecture-card{border-top:3px solid var(--c-os)}
+        .mod-os .lecture-card .lc-num{background:var(--c-os-soft);color:var(--c-os-strong)}
+        .mod-os .lc-cta{color:var(--c-os-strong)}
+
+        .mod-net .course-emblem{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
+        .mod-net .course-eyebrow{color:var(--c-net)}
+        .mod-net .course-range-badge,.mod-net .course-badge{background:var(--c-net-soft);border-color:#bfdbfe;color:var(--c-net-strong)}
+        .mod-net .lecture-card{border-top:3px solid var(--c-net)}
+        .mod-net .lecture-card .lc-num{background:var(--c-net-soft);color:var(--c-net-strong)}
+        .mod-net .lc-cta{color:var(--c-net-strong)}
+
+        .mod-office .course-emblem{background:linear-gradient(135deg,#34d399,#047857)}
+        .mod-office .course-eyebrow{color:var(--c-office)}
+        .mod-office .course-range-badge,.mod-office .course-badge{background:var(--c-office-soft);border-color:#a7f3d0;color:var(--c-office-strong)}
+        .mod-office .lecture-card{border-top:3px solid var(--c-office)}
+        .mod-office .lecture-card .lc-num{background:var(--c-office-soft);color:var(--c-office-strong)}
+        .mod-office .lc-cta{color:var(--c-office-strong)}
+
+        .mod-ai .course-emblem{background:linear-gradient(135deg,#fbbf24,#b45309)}
+        .mod-ai .course-eyebrow{color:var(--c-ai)}
+        .mod-ai .course-range-badge,.mod-ai .course-badge{background:var(--c-ai-soft);border-color:#fde68a;color:var(--c-ai-strong)}
+        .mod-ai .lecture-card{border-top:3px solid var(--c-ai)}
+        .mod-ai .lecture-card .lc-num{background:var(--c-ai-soft);color:var(--c-ai-strong)}
+        .mod-ai .lc-cta{color:var(--c-ai-strong)}
+
+        /* КАРТОЧКИ */
+        .lectures-grid{
+            display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;
+        }
+        .lecture-card{
+            background:var(--c-surface);border:1px solid var(--c-border);
+            border-radius:var(--r-lg);padding:20px 18px 16px;
+            text-decoration:none;color:inherit;position:relative;
+            display:flex;flex-direction:column;gap:9px;
+            transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+        }
+        .lecture-card:hover{transform:translateY(-4px);box-shadow:var(--sh-lg);border-color:var(--c-border-strong)}
+        .lecture-card.hidden{display:none}
+        .lc-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+        .lc-num{
+            flex:0 0 auto;width:38px;height:38px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-size:15px;font-weight:900;font-family:var(--f-mono);
+        }
+        .lc-eyebrow{
+            font-size:10.5px;font-weight:800;text-transform:uppercase;
+            letter-spacing:0.08em;color:var(--c-text-3);line-height:1.3;
+        }
+        .lc-eyebrow .lc-eyebrow-course{display:block;font-size:9.5px;font-weight:700;letter-spacing:0.06em;color:var(--c-text-muted);margin-top:2px}
+        .lc-title{font-size:15.5px;font-weight:800;color:var(--c-text);letter-spacing:-0.01em;line-height:1.3}
+        .lc-desc{font-size:12px;color:var(--c-text-3);line-height:1.5;flex-grow:1}
+        .lc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+        .lc-tag{
+            font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:var(--r-pill);
+            background:var(--c-bg);border:1px solid var(--c-border);color:var(--c-text-3);
+            text-transform:uppercase;letter-spacing:0.03em;
+        }
+        .lc-footer{
+            display:flex;justify-content:space-between;align-items:center;
+            margin-top:8px;padding-top:10px;border-top:1px dashed var(--c-border);
+        }
+        .lc-duration{font-size:10.5px;color:var(--c-text-3);font-weight:700;font-family:var(--f-mono)}
+        .lc-cta{font-size:11.5px;font-weight:800;display:inline-flex;align-items:center;gap:4px}
+        .lc-arrow{display:inline-block;transition:transform .2s}
+        .lecture-card:hover .lc-arrow{transform:translateX(3px)}
+
+        /* НЕТ РЕЗУЛЬТАТОВ */
+        .no-results{text-align:center;padding:60px 20px;color:var(--c-text-3);font-size:15px;display:none}
+        .no-results.show{display:block}
+        .no-results .nr-icon{font-size:48px;margin-bottom:16px;opacity:.4}
+
+        /* ФУТЕР */
+        footer{
+            margin-top:40px;padding:32px 24px;text-align:center;
+            border-top:1px solid var(--c-border);color:var(--c-text-3);font-size:12.5px;line-height:1.6;
+        }
+        footer strong{color:var(--c-text)}
+        footer .foot-stats{display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:14px;font-size:11.5px;color:var(--c-text-3)}
+        footer .foot-stats span{display:inline-flex;align-items:center;gap:6px;background:var(--c-surface);border:1px solid var(--c-border);padding:6px 12px;border-radius:var(--r-pill)}
+        footer .foot-stats b{color:var(--c-text);font-weight:800;font-family:var(--f-mono)}
+
+        /* АДАПТИВ */
+        @media (max-width:720px){
+            .hero{padding:40px 20px 32px}
+            .hero h1{font-size:30px}
+            .hero p{font-size:14.5px}
+            .course-header{flex-direction:column;gap:12px}
+            .course-emblem{width:52px;height:52px;font-size:22px}
+            .course-title{font-size:21px}
+            .course-section{padding:36px 0 12px}
+            .lectures-grid{grid-template-columns:1fr}
+            .search-box{flex-basis:100%}
+        }
+        @media (prefers-reduced-motion:reduce){
+            *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HERO -->
+    <header class="hero">
+        <div class="hero-inner">
+            <h1>Курсы для <span class="grad">экономистов-менеджеров</span></h1>
+            <p>Четыре курса. Восемнадцать лекций со сквозной нумерацией. От операционных систем и истории интернета — до офисного софта и искусственного интеллекта. Всё, что нужно будущему руководителю, чтобы понимать цифровую среду и принимать обоснованные решения.</p>
+            <div class="hero-stats">
+                <span class="hero-stat">📚 <span class="hs-val">4</span> курса</span>
+                <span class="hero-stat">🎬 <span class="hs-val">18</span> лекций</span>
+                <span class="hero-stat">⏱️ <span class="hs-val">~2 ч</span> контента</span>
+                <span class="hero-stat">🎓 <span class="hs-val">1 курс</span> направления «Менеджмент»</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- STICKY-ПАНЕЛЬ -->
+    <nav class="course-nav" aria-label="Фильтры по курсам и поиск">
+        <div class="search-box">
+            <input type="text" id="search" placeholder="Поиск лекции по названию, теме или номеру…" autocomplete="off">
+        </div>
+        <button class="active" data-filter="all">📚 Все <span class="nav-range">1–18</span></button>
+        <button data-filter="os">⚙️ ОС <span class="nav-range">1–5</span></button>
+        <button data-filter="net">🌐 Интернет <span class="nav-range">6–8</span></button>
+        <button data-filter="office">📄 Офисный софт <span class="nav-range">9–13</span></button>
+        <button data-filter="ai">🤖 ИИ <span class="nav-range">14–18</span></button>
+    </nav>
+
+    <div class="container">
+
+        <!-- ============================================================
+             КУРС 1: ОПЕРАЦИОННЫЕ СИСТЕМЫ (1–5)
+             ============================================================ -->
+        <section class="course-section mod-os" id="course-os" data-block="os">
+            <div class="course-header">
+                <div class="course-emblem" aria-hidden="true">⚙️</div>
+                <div class="course-meta-block">
+                    <div class="course-eyebrow">
+                        Курс 1 · 5 лекций · 75 мин
+                        <span class="course-range-badge">Лекции 1–5</span>
+                    </div>
+                    <h2 class="course-title">Операционные системы</h2>
+                    <p class="course-desc">От перфокарт и мэйнфреймов до облачных экосистем. История, классификация, стратегический анализ платформ, инструментарий менеджера и внутренняя механика ОС.</p>
+                    <div class="course-badges">
+                        <span class="course-badge">История</span>
+                        <span class="course-badge">Классификация</span>
+                        <span class="course-badge">TCO</span>
+                        <span class="course-badge">Процессы и память</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lectures-grid">
+                <a href="Лекция 1.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">1</div>
+                        <div class="lc-eyebrow">Лекция 1 из 18<span class="lc-eyebrow-course">ОС · Часть 1</span></div>
+                    </div>
+                    <div class="lc-title">История и эволюция ОС</div>
+                    <div class="lc-desc">Пять поколений ЭВМ, четыре ключевые фигуры, три прорыва: UNIX, GUI, мобильная революция.</div>
+                    <div class="lc-tags"><span class="lc-tag">UNIX</span><span class="lc-tag">GUI</span><span class="lc-tag">WYSIWYG</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 15 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="Лекция 2.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">2</div>
+                        <div class="lc-eyebrow">Лекция 2 из 18<span class="lc-eyebrow-course">ОС · Часть 2</span></div>
+                    </div>
+                    <div class="lc-title">Классификация ОС</div>
+                    <div class="lc-desc">Четыре типа по назначению, три класса по масштабу, сравнение desktop vs mobile.</div>
+                    <div class="lc-tags"><span class="lc-tag">Desktop</span><span class="lc-tag">Mobile</span><span class="lc-tag">Server</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 15 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="Лекция 3.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">3</div>
+                        <div class="lc-eyebrow">Лекция 3 из 18<span class="lc-eyebrow-course">ОС · Часть 3</span></div>
+                    </div>
+                    <div class="lc-title">Стратегический анализ: Windows, macOS, Linux</div>
+                    <div class="lc-desc">Три платформы, пять бизнес-критериев, экономика TCO и три философии.</div>
+                    <div class="lc-tags"><span class="lc-tag">Windows</span><span class="lc-tag">macOS</span><span class="lc-tag">Linux</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 15 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+				
+               <a href="Лекция 4.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">4</div>
+                        <div class="lc-eyebrow">Лекция 4 из 18 · финал<span class="lc-eyebrow-course">ОС · Часть 4</span></div>
+                    </div>
+                    <div class="lc-title">Процессы, память, файловая система</div>
+                    <div class="lc-desc">PID и PCB, планировщик, deadlocks, виртуальная память, FAT32/NTFS/ext4, практикум TCO.</div>
+                    <div class="lc-tags"><span class="lc-tag">Процессы</span><span class="lc-tag">Файлы</span><span class="lc-tag">Практикум</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 15 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+				
+                <a href="Лекция 5.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">5</div>
+                        <div class="lc-eyebrow">Лекция 5 из 18<span class="lc-eyebrow-course">ОС · Часть 5</span></div>
+                    </div>
+                    <div class="lc-title">Инструментарий менеджера</div>
+                    <div class="lc-desc">Active Directory, лицензионная чистота, разграничение прав доступа и MDM.</div>
+                    <div class="lc-tags"><span class="lc-tag">AD</span><span class="lc-tag">Лицензии</span><span class="lc-tag">MDM</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 15 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                
+            </div>
+        </section>
+
+        <!-- ============================================================
+             КУРС 2: ИНТЕРНЕТ (6–8)
+             ============================================================ -->
+        <section class="course-section mod-net" id="course-net" data-block="net">
+            <div class="course-header">
+                <div class="course-emblem" aria-hidden="true">🌐</div>
+                <div class="course-meta-block">
+                    <div class="course-eyebrow">
+                        Курс 2 · 3 лекции · 40 мин
+                        <span class="course-range-badge">Лекции 6–8</span>
+                    </div>
+                    <h2 class="course-title">Как устроен интернет</h2>
+                    <p class="course-desc">От холодной войны и идей Пола Бэрона — до TCP/IP, браузеров и HTTPS. Как данные находят путь от одного компьютера к другому и превращаются в страницу на экране.</p>
+                    <div class="course-badges">
+                        <span class="course-badge">История</span>
+                        <span class="course-badge">Адресация и протоколы</span>
+                        <span class="course-badge">Браузер и веб</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lectures-grid">
+                <a href="internet/Лекция 6.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">6</div>
+                        <div class="lc-eyebrow">Лекция 6 из 18<span class="lc-eyebrow-course">Интернет · Блок 1</span></div>
+                    </div>
+                    <div class="lc-title">Исторический: как и почему возник интернет</div>
+                    <div class="lc-desc">Холодная война, идея пакетов Пола Бэрона, ARPANET, первое сообщение «LO», NSFNET и коммерциализация.</div>
+                    <div class="lc-tags"><span class="lc-tag">ARPANET</span><span class="lc-tag">Killer App</span><span class="lc-tag">Tier 1/2/3</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 15 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="internet/Лекция 7.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">7</div>
+                        <div class="lc-eyebrow">Лекция 7 из 18<span class="lc-eyebrow-course">Интернет · Блок 2</span></div>
+                    </div>
+                    <div class="lc-title">Технический: от адреса до бита</div>
+                    <div class="lc-desc">MAC- и IP-адресация, DNS, DHCP, ARP, порты, TCP и UDP, ICMP, Ethernet, физический уровень.</div>
+                    <div class="lc-tags"><span class="lc-tag">TCP/IP</span><span class="lc-tag">DNS</span><span class="lc-tag">OSI</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 50 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="internet/Лекция 8.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">8</div>
+                        <div class="lc-eyebrow">Лекция 8 из 18<span class="lc-eyebrow-course">Интернет · Блок 3</span></div>
+                    </div>
+                    <div class="lc-title">Прикладной: как работает браузер и веб</div>
+                    <div class="lc-desc">HTML и CSS, URL, HTTP и HTTPS, TLS и сертификаты, cookies, CORS и WebSocket.</div>
+                    <div class="lc-tags"><span class="lc-tag">HTML</span><span class="lc-tag">HTTPS</span><span class="lc-tag">WebSocket</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 50 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             КУРС 3: ОФИСНЫЙ СОФТ (9–13)
+             ============================================================ -->
+        <section class="course-section mod-office" id="course-office" data-block="office">
+            <div class="course-header">
+                <div class="course-emblem" aria-hidden="true">📄</div>
+                <div class="course-meta-block">
+                    <div class="course-eyebrow">
+                        Курс 3 · 5 лекций · 100 мин
+                        <span class="course-range-badge">Лекции 9–13</span>
+                    </div>
+                    <h2 class="course-title">Офисный софт</h2>
+                    <p class="course-desc">От амбарных книг и VisiCalc до ChatGPT, Word, Excel и PowerPoint. Как автоматизировать рутину, считать TCO и выбирать офисный пакет для компании.</p>
+                    <div class="course-badges">
+                        <span class="course-badge">История</span>
+                        <span class="course-badge">Альтернативы</span>
+                        <span class="course-badge">Word</span>
+                        <span class="course-badge">Excel</span>
+                        <span class="course-badge">PowerPoint</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lectures-grid">
+                <a href="Лекция 9.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">9</div>
+                        <div class="lc-eyebrow">Лекция 9 из 18<span class="lc-eyebrow-course">Офисный софт · Часть 1</span></div>
+                    </div>
+                    <div class="lc-title">История: как софт убил бумажную рутину</div>
+                    <div class="lc-desc">Четыре эпохи от амбарных книг до Microsoft Office, Killer App и WYSIWYG.</div>
+                    <div class="lc-tags"><span class="lc-tag">VisiCalc</span><span class="lc-tag">Lotus</span><span class="lc-tag">Excel</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 20 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="Лекция 10.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">10</div>
+                        <div class="lc-eyebrow">Лекция 10 из 18<span class="lc-eyebrow-course">Офисный софт · Часть 2</span></div>
+                    </div>
+                    <div class="lc-title">Альтернативы MS Office</div>
+                    <div class="lc-desc">MS 365, Google Документы, Open Source и Реестр ПО Минцифры: плюсы, минусы, TCO.</div>
+                    <div class="lc-tags"><span class="lc-tag">MS 365</span><span class="lc-tag">Google</span><span class="lc-tag">Реестр ПО</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 15 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="Лекция 11.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">11</div>
+                        <div class="lc-eyebrow">Лекция 11 из 18<span class="lc-eyebrow-course">Офисный софт · Часть 3</span></div>
+                    </div>
+                    <div class="lc-title">Word как инструмент деловых коммуникаций</div>
+                    <div class="lc-desc">Стили и шаблоны, рецензирование, инспектор документов, слияние писем.</div>
+                    <div class="lc-tags"><span class="lc-tag">Стили</span><span class="lc-tag">Рецензирование</span><span class="lc-tag">Mail Merge</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 25 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="Лекция 12.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">12</div>
+                        <div class="lc-eyebrow">Лекция 12 из 18<span class="lc-eyebrow-course">Офисный софт · Часть 4</span></div>
+                    </div>
+                    <div class="lc-title">Excel как базис финансового моделирования</div>
+                    <div class="lc-desc">Сводные таблицы, ВПР/XLOOKUP, подбор параметра, OLE-связка Word и Excel.</div>
+                    <div class="lc-tags"><span class="lc-tag">Pivot</span><span class="lc-tag">XLOOKUP</span><span class="lc-tag">Goal Seek</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 30 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="Лекция 13.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">13</div>
+                        <div class="lc-eyebrow">Лекция 13 из 18 · финал<span class="lc-eyebrow-course">Офисный софт · Часть 5</span></div>
+                    </div>
+                    <div class="lc-title">PowerPoint и практикум</div>
+                    <div class="lc-desc">Сторителлинг, 10/20/30, совместная работа, практикум TCO офисного пакета и чек-лист закупки.</div>
+                    <div class="lc-tags"><span class="lc-tag">PowerPoint</span><span class="lc-tag">TCO</span><span class="lc-tag">Практикум</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 15 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             КУРС 4: ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ (14–18)
+             ============================================================ -->
+        <section class="course-section mod-ai" id="course-ai" data-block="ai">
+            <div class="course-header">
+                <div class="course-emblem" aria-hidden="true">🤖</div>
+                <div class="course-meta-block">
+                    <div class="course-eyebrow">
+                        Курс 4 · 5 лекций · 115 мин
+                        <span class="course-range-badge">Лекции 14–18</span>
+                    </div>
+                    <h2 class="course-title">Искусственный интеллект</h2>
+                    <p class="course-desc">От Тьюринга и первых нейросетей до ChatGPT и экономики ИИ-проектов. Как считать TCO, оценивать риски, соблюдать этику и строить стратегию внедрения.</p>
+                    <div class="course-badges">
+                        <span class="course-badge">История</span>
+                        <span class="course-badge">ML и LLM</span>
+                        <span class="course-badge">ИИ в бизнесе</span>
+                        <span class="course-badge">TCO и ROI</span>
+                        <span class="course-badge">Риски и этика</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lectures-grid">
+                <a href="Лекция 14.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">14</div>
+                        <div class="lc-eyebrow">Лекция 14 из 18<span class="lc-eyebrow-course">ИИ · Часть 1</span></div>
+                    </div>
+                    <div class="lc-title">История и эволюция ИИ</div>
+                    <div class="lc-desc">Три эпохи, четыре ключевые фигуры, три прорыва: Deep Blue, AlexNet, ChatGPT.</div>
+                    <div class="lc-tags"><span class="lc-tag">Тьюринг</span><span class="lc-tag">Deep Blue</span><span class="lc-tag">ChatGPT</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 20 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="Лекция 15.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">15</div>
+                        <div class="lc-eyebrow">Лекция 15 из 18<span class="lc-eyebrow-course">ИИ · Часть 2</span></div>
+                    </div>
+                    <div class="lc-title">Как работает ИИ</div>
+                    <div class="lc-desc">Три типа ИИ, три вида машинного обучения, нейросети, LLM и галлюцинации.</div>
+                    <div class="lc-tags"><span class="lc-tag">ML</span><span class="lc-tag">LLM</span><span class="lc-tag">Трансформер</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 20 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="Лекция 16.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">16</div>
+                        <div class="lc-eyebrow">Лекция 16 из 18<span class="lc-eyebrow-course">ИИ · Часть 3</span></div>
+                    </div>
+                    <div class="lc-title">ИИ в бизнесе</div>
+                    <div class="lc-desc">Пять зон применения, пять отраслей, три класса инструментов — от ChatGPT до ML-платформ.</div>
+                    <div class="lc-tags"><span class="lc-tag">5 зон</span><span class="lc-tag">5 отраслей</span><span class="lc-tag">Инструменты</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 25 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="Лекция 17.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">17</div>
+                        <div class="lc-eyebrow">Лекция 17 из 18<span class="lc-eyebrow-course">ИИ · Часть 4</span></div>
+                    </div>
+                    <div class="lc-title">Экономика ИИ</div>
+                    <div class="lc-desc">Пять компонентов TCO, три формулы ROI, кейс чат-бота, чек-лист оценки проекта.</div>
+                    <div class="lc-tags"><span class="lc-tag">TCO</span><span class="lc-tag">ROI</span><span class="lc-tag">Чек-лист</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 25 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+
+                <a href="Лекция 18.html" class="lecture-card">
+                    <div class="lc-head">
+                        <div class="lc-num">18</div>
+                        <div class="lc-eyebrow">Лекция 18 из 18 · финал<span class="lc-eyebrow-course">ИИ · Часть 5</span></div>
+                    </div>
+                    <div class="lc-title">Риски, этика, стратегия и практикум</div>
+                    <div class="lc-desc">Пять рисков ИИ, четыре принципа этики, три этапа стратегии, практикум внедрения ИИ в поддержку.</div>
+                    <div class="lc-tags"><span class="lc-tag">Риски</span><span class="lc-tag">Этика</span><span class="lc-tag">Стратегия</span></div>
+                    <div class="lc-footer"><span class="lc-duration">≈ 30 мин</span><span class="lc-cta">Открыть <span class="lc-arrow">→</span></span></div>
+                </a>
+            </div>
+        </section>
+
+        <!-- НЕТ РЕЗУЛЬТАТОВ -->
+        <div class="no-results" id="noResults">
+            <div class="nr-icon">🔍</div>
+            <div>По вашему запросу ничего не найдено.</div>
+            <div style="margin-top:8px;font-size:12px;color:var(--c-text-muted)">Попробуйте изменить ключевые слова или выбрать другой курс.</div>
+        </div>
+
+    </div>
+
+    <!-- ФУТЕР -->
+    <footer>
+        <p><strong>Курсы для экономистов-менеджеров</strong> · 4 курса · 18 лекций · единая дизайн-система</p>
+        <p style="margin-top:6px;">Сквозная нумерация 1–18 · каждая лекция включает: KPI-стрип · оглавление · карточки · «Уроки для менеджеров» · словарь · источники · видеоплееры</p>
+        <div class="foot-stats">
+            <span>⚙️ <b>1–5</b> ОС</span>
+            <span>🌐 <b>6–8</b> Интернет</span>
+            <span>📄 <b>9–13</b> Офисный софт</span>
+            <span>🤖 <b>14–18</b> ИИ</span>
+        </div>
+        <p style="margin-top:20px;font-size:11px;color:var(--c-text-muted)">Направление «Менеджмент» · 1 курс · 2026</p>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        const searchInput = document.getElementById('search');
+        const cards = document.querySelectorAll('.lecture-card');
+        const sections = document.querySelectorAll('.course-section');
+        const noResults = document.getElementById('noResults');
+        const filterBtns = document.querySelectorAll('.course-nav button[data-filter]');
+
+        let currentFilter = 'all';
+
+        function applyFilter() {
+            const query = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+            const visibleSections = {};
+
+            cards.forEach(card => {
+                const title = card.querySelector('.lc-title').textContent.toLowerCase();
+                const desc = card.querySelector('.lc-desc').textContent.toLowerCase();
+                const num = card.querySelector('.lc-num').textContent.trim();
+                const matchesQuery = !query || title.includes(query) || desc.includes(query) || num === query;
+
+                const section = card.closest('.course-section');
+                const sectionId = section.dataset.block;
+                const matchesFilter = currentFilter === 'all' || currentFilter === sectionId;
+
+                if (matchesQuery && matchesFilter) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                    visibleSections[sectionId] = true;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            sections.forEach(section => {
+                const id = section.dataset.block;
+                if (visibleSections[id]) {
+                    section.classList.remove('hidden');
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+
+            noResults.classList.toggle('show', visibleCount === 0);
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                applyFilter();
+            });
+        });
+
+        searchInput.addEventListener('input', applyFilter);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.activeElement !== searchInput) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                searchInput.blur();
+                applyFilter();
+            }
+        });
+    </script>
+
+</body>
+</html>

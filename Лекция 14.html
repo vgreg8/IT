@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 14 из 18. ИИ. Часть 1. История и эволюция</title>
+    <style>
+        :root {
+            --c-bg:#fff;--c-surface:#f8fafc;--c-border:#e2e8f0;--c-border-strong:#cbd5e0;
+            --c-text:#0f172a;--c-text-2:#334155;--c-text-3:#64748b;--c-text-muted:#94a3b8;
+            --c-primary:#2563eb;--c-primary-soft:#eff6ff;
+            --c-era1:#64748b;--c-era1-soft:#f1f5f9;
+            --c-era2:#dc2626;--c-era2-soft:#fef2f2;
+            --c-era3:#7c3aed;--c-era3-soft:#f5f3ff;
+            --c-era4:#059669;--c-era4-soft:#ecfdf5;
+            --c-fig:#0891b2;--c-fig-soft:#ecfeff;
+            --c-break:#d97706;--c-break-soft:#fffbeb;
+            --c-dark:#0f172a;--c-dark-2:#1e293b;--c-dark-3:#334155;
+            --c-dark-text:#e2e8f0;--c-dark-text-2:#94a3b8;--c-dark-accent:#60a5fa;
+            --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+            --sh-md:0 4px 12px rgba(15,23,42,.08);
+            --sh-lg:0 12px 28px rgba(15,23,42,.12);
+            --sh-focus:0 0 0 3px rgba(37,99,235,.35);
+            --f-sans:'Segoe UI',Tahoma,sans-serif;
+            --f-mono:'JetBrains Mono',Consolas,monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%}
+        body{font-family:var(--f-sans);display:flex;height:100vh;overflow:hidden;background:var(--c-bg);color:var(--c-text);padding-bottom:80px!important}
+        :focus-visible{outline:none;box-shadow:var(--sh-focus);border-radius:var(--r-sm)}
+        .student-view{width:66.66%;height:100vh;background:var(--c-bg);padding:32px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--c-border);overflow-y:auto;scroll-behavior:smooth}
+        .speaker-notes{width:33.34%;height:100%;background:var(--c-dark);color:var(--c-dark-text);padding:28px;overflow-y:auto}
+        .slide-header{font-size:26px;color:var(--c-text);font-weight:800;line-height:1.25;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid var(--c-primary);position:relative}
+        .slide-header::after{content:'';position:absolute;left:0;bottom:-3px;width:80px;height:3px;background:var(--c-era3);border-radius:3px}
+        .slide-body{flex-grow:1;display:flex;flex-direction:column;gap:22px;padding:4px 0}
+        .slide-footer{font-size:12px;color:var(--c-text-muted);text-align:right;margin-top:16px}
+        .toc{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md)}
+        .toc a{font-size:11px;font-weight:700;color:var(--c-text-2);text-decoration:none;padding:4px 9px;border-radius:var(--r-pill);background:var(--c-bg);border:1px solid var(--c-border);transition:all .15s}
+        .toc a:hover{background:var(--c-primary-soft);border-color:var(--c-primary);color:var(--c-primary)}
+        .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+        .kpi{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;text-align:center;transition:all .18s}
+        .kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .kpi .kpi-val{font-size:19px;font-weight:800;color:var(--c-text);letter-spacing:-.02em;line-height:1.1}
+        .kpi .kpi-lbl{font-size:10px;color:var(--c-text-3);margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+        .kpi.k-era .kpi-val{color:var(--c-era3)}
+        .kpi.k-fig .kpi-val{color:var(--c-fig)}
+        .kpi.k-break .kpi-val{color:var(--c-break)}
+        .section-title{font-size:15px;font-weight:800;color:var(--c-text);margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em;scroll-margin-top:12px}
+        .section-title .st-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-sm);font-size:14px}
+        .era-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+        .era-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 12px;position:relative;transition:all .18s}
+        .era-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
+        .era-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0}
+        .era-card.ec-1::before{background:var(--c-era1)}
+        .era-card.ec-2::before{background:var(--c-era2)}
+        .era-card.ec-3::before{background:var(--c-era3)}
+        .era-card.ec-4::before{background:var(--c-era4)}
+        .era-card .ec-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:800;color:#fff;margin-bottom:6px}
+        .era-card.ec-1 .ec-num{background:var(--c-era1)}
+        .era-card.ec-2 .ec-num{background:var(--c-era2)}
+        .era-card.ec-3 .ec-num{background:var(--c-era3)}
+        .era-card.ec-4 .ec-num{background:var(--c-era4)}
+        .era-card .ec-name{font-size:13px;font-weight:800;color:var(--c-text);margin-bottom:4px}
+        .era-card .ec-year{font-size:10px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:700;margin-bottom:5px}
+        .era-card .ec-desc{font-size:11px;color:var(--c-text-2);line-height:1.4}
+        .era-card .ec-analogy{margin-top:6px;padding:5px 7px;background:#fffbeb;border-left:2px solid var(--c-break);border-radius:3px;font-size:9.5px;color:#92400e;line-height:1.35;font-style:italic}
+        .fig-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+        .fig-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px;position:relative;transition:all .18s}
+        .fig-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
+        .fig-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0;background:var(--c-fig)}
+        .fig-card .fc-icon{font-size:20px;margin-bottom:5px}
+        .fig-card .fc-name{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:2px}
+        .fig-card .fc-years{font-size:10px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:700;margin-bottom:5px}
+        .fig-card .fc-desc{font-size:10.5px;color:var(--c-text-2);line-height:1.4}
+        .fig-card .fc-analogy{margin-top:6px;padding:5px 7px;background:#fffbeb;border-left:2px solid var(--c-break);border-radius:3px;font-size:9.5px;color:#92400e;line-height:1.35;font-style:italic}
+        .break-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .break-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 14px;position:relative;transition:all .18s}
+        .break-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
+        .break-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0;background:var(--c-break)}
+        .break-card .bc-year{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:var(--r-pill);background:var(--c-break-soft);color:var(--c-break);font-family:var(--f-mono);margin-bottom:6px}
+        .break-card .bc-name{font-size:13px;font-weight:800;color:var(--c-text);margin-bottom:4px}
+        .break-card .bc-desc{font-size:11px;color:var(--c-text-2);line-height:1.45}
+        .break-card .bc-meta{margin-top:7px;padding-top:7px;border-top:1px dashed var(--c-border);font-size:10px;color:var(--c-text-3);font-weight:600}
+        .lessons-box{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:1px solid #bbf7d0;border-radius:var(--r-lg);padding:16px 18px}
+        .lessons-box .section-title{color:#166534;margin-bottom:10px}
+        .lessons-box .section-title .st-icon{background:#dcfce7;color:#15803d}
+        .lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+        .lesson{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#14532d}
+        .lesson .lesson-num{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#15803d;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        .video-section{display:flex;flex-direction:column;align-items:center;gap:12px}
+        .video-container{width:100%;max-width:580px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000;aspect-ratio:16/9}
+        .links-hub{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+        .video-btn{text-decoration:none;padding:9px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;transition:all .18s;cursor:pointer;border:none;font-family:inherit}
+        .video-btn:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .rt-btn{background:#00a877}.rt-btn:hover{background:#008f65}
+        .stop-btn{background:#dc143c}.stop-btn:hover{background:#b01030}
+        .notes-header{font-size:16px;color:var(--c-dark-accent);font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c-dark-3);padding-bottom:10px}
+        .timer-badge{background:#dc2626;color:#fff;padding:3px 9px;border-radius:var(--r-pill);font-size:11px;font-family:var(--f-mono);font-weight:700}
+        .lecture-text{font-size:14px;line-height:1.68;color:var(--c-dark-text);text-align:justify}
+        .lecture-text p{margin-bottom:14px}
+        .lecture-text h3{color:var(--c-dark-accent);font-size:14.5px;margin:20px 0 10px;border-bottom:1px solid var(--c-dark-3);padding-bottom:6px;font-weight:800}
+        .lecture-text strong{color:#f1f5f9}
+        .action-hint{color:#fcd34d;font-style:italic;background:var(--c-dark-2);padding:11px 14px;border-radius:var(--r-sm);border-left:3px solid #fcd34d;margin:16px 0;font-size:12.5px;line-height:1.5}
+        .notes-section{margin-top:26px;background:var(--c-dark-2);border:1px solid var(--c-dark-3);border-radius:var(--r-md);padding:16px}
+        .notes-section-title{font-size:13.5px;font-weight:800;color:var(--c-dark-accent);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--c-dark-3);display:flex;align-items:center;gap:8px}
+        .notes-table{width:100%;border-collapse:collapse;font-size:11.5px}
+        .notes-table th{text-align:left;padding:7px 8px;font-weight:700;color:var(--c-dark-text-2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--c-dark-3)}
+        .notes-table td{padding:7px 8px;border-bottom:1px solid rgba(51,65,85,.6);color:var(--c-dark-text);vertical-align:top;line-height:1.4}
+        .notes-table tr:last-child td{border-bottom:none}
+        .notes-table tr:hover td{background:rgba(96,165,250,.06)}
+        .notes-table .abbr{font-weight:800;color:#93c5fd;font-family:var(--f-mono);font-size:11px;white-space:nowrap}
+        .notes-table .explain{color:var(--c-dark-text-2)}
+        .notes-sources{font-size:11.5px;line-height:1.55;color:var(--c-dark-text)}
+        .notes-sources .src-group{font-weight:800;color:#86efac;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+        .notes-sources .src-group:first-child{margin-top:0}
+        .notes-sources ol{margin:0 0 4px 16px;padding:0}
+        .notes-sources li{margin-bottom:5px;color:var(--c-dark-text-2)}
+        .lecture-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+        .lecture-nav .nav-progress{position:absolute;top:0;left:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);transition:width .3s;border-radius:0 3px 3px 0}
+        .lecture-nav .nav-btn-arrow{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--c-dark-text);font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled){background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.6);color:#fff;transform:translateY(-2px)}
+        .lecture-nav .nav-btn-arrow:disabled{opacity:.35;cursor:not-allowed}
+        .lecture-nav .nav-btn-arrow .arrow-icon{font-size:16px}
+        .lecture-nav .nav-btn-arrow .arrow-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+        .lecture-nav .nav-btn-arrow .arrow-label small{font-size:9px;font-weight:400;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title{font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lecture-nav .nav-center{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 20px;color:var(--c-dark-text-2);font-size:11px;border-left:1px solid rgba(255,255,255,.1);border-right:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-counter{font-size:15px;font-weight:900;color:#f1f5f9}
+        .lecture-nav .nav-counter span{color:#64748b;font-size:12px;font-weight:600}
+        .lecture-nav .nav-index-link{color:#60a5fa;text-decoration:none;font-size:11px;font-weight:700}
+        .lecture-nav .nav-index-link:hover{color:#93c5fd;text-decoration:underline}
+        .lecture-nav .nav-jump{display:flex;gap:4px;margin-left:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-jump-btn{padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--c-dark-text-2);font-size:10px;font-weight:800;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-jump-btn:hover{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5);color:#fff}
+        .lecture-nav .nav-jump-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:transparent;color:#fff}
+        .reveal{animation:fadeUp .5s ease both}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+        @media(max-width:1200px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.era-grid{grid-template-columns:repeat(2,1fr)}.fig-grid{grid-template-columns:repeat(2,1fr)}.break-grid{grid-template-columns:1fr}}
+        @media(max-width:900px){.lecture-nav{padding:10px 12px;gap:8px}.lecture-nav .nav-btn-arrow{padding:8px 12px}.lecture-nav .nav-btn-arrow .arrow-label .arrow-title{max-width:90px;font-size:11px}.lecture-nav .nav-center{padding:0 10px}.lecture-nav .nav-jump{display:none}.kpi-strip{grid-template-columns:repeat(2,1fr)}.lessons-grid{grid-template-columns:1fr}.era-grid{grid-template-columns:1fr}.fig-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+
+<div class="student-view">
+    <div>
+        <h1 class="slide-header">Часть 1. История и эволюция ИИ: от Тьюринга до ChatGPT</h1>
+        <div class="slide-body">
+
+            <nav class="toc reveal" aria-label="Содержание лекции">
+                <a href="#sec-eras">1. Три эпохи</a>
+                <a href="#sec-figures">2. Ключевые фигуры</a>
+                <a href="#sec-breaks">3. Три прорыва</a>
+                <a href="#sec-lessons">4. Уроки</a>
+            </nav>
+
+            <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры">
+                <div class="kpi k-era" role="listitem"><div class="kpi-val">1950</div><div class="kpi-lbl">тест Тьюринга</div></div>
+                <div class="kpi k-era" role="listitem"><div class="kpi-val">1997</div><div class="kpi-lbl">Deep Blue</div></div>
+                <div class="kpi k-era" role="listitem"><div class="kpi-val">2012</div><div class="kpi-lbl">AlexNet</div></div>
+                <div class="kpi k-break" role="listitem"><div class="kpi-val">2022</div><div class="kpi-lbl">ChatGPT</div></div>
+                <div class="kpi k-fig" role="listitem"><div class="kpi-val">70 лет</div><div class="kpi-lbl">истории ИИ</div></div>
+                <div class="kpi k-era" role="listitem"><div class="kpi-val">3</div><div class="kpi-lbl">волны развития</div></div>
+            </div>
+
+            <section class="reveal" id="sec-eras" aria-labelledby="eras-title">
+                <div class="section-title" id="eras-title"><span class="st-icon" aria-hidden="true">🕰️</span>1. Три эпохи ИИ: от рождения до генеративной революции</div>
+                <div class="era-grid">
+                    <div class="era-card ec-1">
+                        <div class="ec-num" aria-hidden="true">1</div>
+                        <div class="ec-name">Рождение</div>
+                        <div class="ec-year">1950–1970</div>
+                        <div class="ec-desc">Тьюринг, Дартмутская конференция, первые программы. ИИ как академическая мечта.</div>
+                        <div class="ec-analogy">Аналогия: первые чертежи летательных аппаратов — идея есть, технологий ещё нет.</div>
+                    </div>
+                    <div class="era-card ec-2">
+                        <div class="ec-num" aria-hidden="true">2</div>
+                        <div class="ec-name">Зимы ИИ</div>
+                        <div class="ec-year">1980–1990</div>
+                        <div class="ec-desc">Экспертные системы, разочарование, сокращение финансирования. Две «зимы».</div>
+                        <div class="ec-analogy">Аналогия: хайп вокруг электромобилей в 90-х — обещали много, получили мало.</div>
+                    </div>
+                    <div class="era-card ec-3">
+                        <div class="ec-num" aria-hidden="true">3</div>
+                        <div class="ec-name">Глубокое обучение</div>
+                        <div class="ec-year">2010–2020</div>
+                        <div class="ec-desc">Большие данные, GPU, нейросети. AlexNet, DeepMind, AlphaGo.</div>
+                        <div class="ec-analogy">Аналогия: промышленная революция — накопленные данные и мощность дали взрыв.</div>
+                    </div>
+                    <div class="era-card ec-4">
+                        <div class="ec-num" aria-hidden="true">4</div>
+                        <div class="ec-name">Генеративный ИИ</div>
+                        <div class="ec-year">2022 — н.в.</div>
+                        <div class="ec-desc">ChatGPT, Claude, YandexGPT. Массовое применение ИИ в бизнесе и жизни.</div>
+                        <div class="ec-analogy">Аналогия: появление смартфона — технология стала доступна каждому.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal" id="sec-figures" aria-labelledby="figures-title">
+                <div class="section-title" id="figures-title"><span class="st-icon" aria-hidden="true">👤</span>2. Ключевые фигуры: кто заложил фундамент</div>
+                <div class="fig-grid">
+                    <div class="fig-card">
+                        <div class="fc-icon" aria-hidden="true">🧠</div>
+                        <div class="fc-name">Алан Тьюринг</div>
+                        <div class="fc-years">1912–1954</div>
+                        <div class="fc-desc">Сформулировал тест Тьюринга: может ли машина мыслить? Основоположник теории ИИ.</div>
+                        <div class="fc-analogy">Аналогия: человек, придумавший сам вопрос «может ли машина думать».</div>
+                    </div>
+                    <div class="fig-card">
+                        <div class="fc-icon" aria-hidden="true">📜</div>
+                        <div class="fc-name">Джон Маккарти</div>
+                        <div class="fc-years">1927–2011</div>
+                        <div class="fc-desc">Ввёл термин «искусственный интеллект» на Дартмутской конференции в 1956 году.</div>
+                        <div class="fc-analogy">Аналогия: человек, давший имя целой области — без него мы бы говорили «машинный разум».</div>
+                    </div>
+                    <div class="fig-card">
+                        <div class="fc-icon" aria-hidden="true">🔬</div>
+                        <div class="fc-name">Джеффри Хинтон</div>
+                        <div class="fc-years">род. 1947</div>
+                        <div class="fc-desc">Отец нейросетей. Не сдался, когда все считали нейросети тупиком. Лауреат Нобелевской премии 2024.</div>
+                        <div class="fc-analogy">Аналогия: человек, который 30 лет вёл исследования, когда все говорили «это не сработает».</div>
+                    </div>
+                    <div class="fig-card">
+                        <div class="fc-icon" aria-hidden="true">🚀</div>
+                        <div class="fc-name">Сэм Альтман</div>
+                        <div class="fc-years">род. 1985</div>
+                        <div class="fc-desc">Генеральный директор OpenAI. Запустил ChatGPT и сделал генеративный ИИ массовым.</div>
+                        <div class="fc-analogy">Аналогия: Стив Джобс для смартфонов — сделал технологию доступной и популярной.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal" id="sec-breaks" aria-labelledby="breaks-title">
+                <div class="section-title" id="breaks-title"><span class="st-icon" aria-hidden="true">🚀</span>3. Три прорыва, изменившие ИИ</div>
+                <div class="break-grid">
+                    <div class="break-card">
+                        <div class="bc-year">1997</div>
+                        <div class="bc-name">Deep Blue</div>
+                        <div class="bc-desc">Компьютер IBM побеждает Гарри Каспарова в шахматы. Первое доказательство: машина может обыграть человека в интеллектуальной игре.</div>
+                        <div class="bc-meta">Символ: конец «человеческой исключительности» в шахматах</div>
+                    </div>
+                    <div class="break-card">
+                        <div class="bc-year">2012</div>
+                        <div class="bc-name">AlexNet</div>
+                        <div class="bc-desc">Нейросеть побеждает в конкурсе ImageNet с огромным отрывом. Начало революции глубокого обучения и компьютерного зрения.</div>
+                        <div class="bc-meta">Символ: нейросети доказали свою эффективность в реальной задаче</div>
+                    </div>
+                    <div class="break-card">
+                        <div class="bc-year">2022</div>
+                        <div class="bc-name">ChatGPT</div>
+                        <div class="bc-desc">Запуск OpenAI. Генеративный ИИ становится массовым: пишет тексты, код, отвечает на вопросы, генерирует идеи. 100 млн пользователей за 2 месяца.</div>
+                        <div class="bc-meta">Символ: ИИ стал доступен каждому менеджеру</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                <div class="section-title" id="lessons-title"><span class="st-icon" aria-hidden="true">🎓</span>4. Уроки для менеджеров</div>
+                <div class="lessons-grid">
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">1</span><span>ИИ развивается волнами: хайп → разочарование → реальное применение. Умейте отличать хайп от технологии.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">2</span><span>ИИ не «взорвался в 2023» — ему 70 лет. Понимание истории помогает предсказывать, что выживет, а что нет.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">3</span><span>Каждая волна ИИ была ответом на технологический прорыв: GPU, данные, алгоритмы. Бизнес-применение приходит после технологии.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">4</span><span>Не все технологии ИИ выживают. Экспертные системы 1980-х умерли, а нейросети — выжили. Смотрите на фундамент, а не на фасад.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">5</span><span>ChatGPT — не «первый ИИ», а первый массовый ИИ. Он не изобрёл технологию, а сделал её доступной. Это урок для бизнеса.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">6</span><span>Менеджер, который не понимает историю ИИ, будет принимать решения на основе хайпа. А тот, кто понимает, — на основе закономерностей.</span></div>
+                </div>
+            </section>
+
+             <div class="video-section reveal">
+                    <div class="video-container">
+                        <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: как и почему возник интернет"></iframe>
+                    </div>
+                    <div class="links-hub">
+                        <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                        <button onclick="changeVideo('https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266//')" class="video-btn rt-btn">📜 Лекция 1. Как и почему возник интернет</button>
+                    </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="slide-footer">Менеджмент · 1 курс · Искусственный интеллект · Часть 1 из 5</div>
+</div>
+
+<div class="speaker-notes">
+    <div style="position:sticky;top:0;background:var(--c-dark);padding:20px 20px 10px 20px;border-bottom:1px solid var(--c-dark-3);width:100%;z-index:100;">
+        <div class="notes-header"><span>🎙️ Скрипт преподавателя</span><span class="timer-badge">20 мин</span></div>
+        <div style="width:100%;aspect-ratio:16/9;border-radius:var(--r-sm);overflow:hidden;background:#000;box-shadow:var(--sh-md);">
+            <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true" allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+        </div>
+    </div>
+    <div class="lecture-text" style="margin-top:20px;">
+
+        <p>Добрый день, коллеги! Мы начинаем новый курс — «Искусственный интеллект для экономистов-менеджеров». И начнём с истории. Может показаться, что ИИ появился внезапно — как «взрыв» в 2023 году. Это глубокое заблуждение. ИИ развивается уже более 70 лет. И понимание этой истории помогает предсказывать, какие технологии выживут, а какие окажутся тупиковыми. Как мы видели в курсе «Офисный софт»: VisiCalc не был первой программой, но стал первым Киллер Эпп. Точно так же ChatGPT — не первый ИИ, но первый массовый ИИ.</p>
+
+        <div class="action-hint">Обратите внимание студентов на блок 1 «Три эпохи ИИ».</div>
+
+        <h3>📌 1. Три эпохи ИИ: от рождения до генеративной революции</h3>
+
+        <p>Обратите внимание на первый блок нашего слайда. Четыре карточки. Четыре эпохи. Первая — рождение ИИ. Пятидесятые и шестидесятые годы. Алан Тьюринг, Дартмутская конференция, первые программы. ИИ как академическая мечта. Аналогия проста. Это первые чертежи летательных аппаратов — идея есть, технологий ещё нет.</p>
+
+        <p>Вторая эпоха — зимы ИИ. Восьмидесятые и девяностые. Экспертные системы. Разочарование. Сокращение финансирования. Две «зимы», когда инвесторы и государство отвернулись от ИИ. Аналогия: хайп вокруг электромобилей в девяностых — обещали много, получили мало.</p>
+
+        <p>Третья эпоха — глубокое обучение. С двух тысяч десятого года. Большие данные. Графические процессоры. Нейросети. AlexNet. DeepMind. AlphaGo. Аналогия: промышленная революция — накопленные данные и мощность дали взрыв.</p>
+
+        <p>Четвёртая эпоха — генеративный ИИ. С две тысячи двадцать второго года. ChatGPT. Claude. YandexGPT. Массовое применение ИИ в бизнесе и жизни. Аналогия: появление смартфона — технология стала доступна каждому.</p>
+
+        <div class="action-hint">Перейдите к блоку 2 «Ключевые фигуры».</div>
+
+        <h3>📌 2. Ключевые фигуры: кто заложил фундамент</h3>
+
+        <p>Обратите внимание на второй блок нашего слайда. Четыре карточки. Четыре фигуры, без которых не было бы современного ИИ.</p>
+
+        <p>Алан Тьюринг. Годы жизни с тысяча девятьсот двенадцатого по тысяча девятьсот пятьдесят четвёртый. Сформулировал тест Тьюринга: может ли машина мыслить? Основоположник теории ИИ. Аналогия: человек, придумавший сам вопрос «может ли машина думать».</p>
+
+        <p>Джон Маккарти. Годы жизни с тысяча девятьсот двадцать седьмого по две тысячи одиннадцатый. Ввёл термин «искусственный интеллект» на Дартмутской конференции в тысяча девятьсот пятьдесят шестом году. Аналогия: человек, давший имя целой области.</p>
+
+        <p>Джеффри Хинтон. Родился в тысяча девятьсот сорок седьмом году. Отец нейросетей. Не сдался, когда все считали нейросети тупиком. Лауреат Нобелевской премии две тысячи двадцать четвёртого года. Аналогия: человек, который тридцать лет вёл исследования, когда все говорили «это не сработает».</p>
+
+        <p>Сэм Альтман. Родился в тысяча девятьсот восемьдесят пятом году. Генеральный директор OpenAI. Запустил ChatGPT и сделал генеративный ИИ массовым. Аналогия: Стив Джобс для смартфонов — сделал технологию доступной и популярной.</p>
+
+        <div class="action-hint">Перейдите к блоку 3 «Три прорыва».</div>
+
+        <h3>📌 3. Три прорыва, изменившие ИИ</h3>
+
+        <p>Обратите внимание на третий блок нашего слайда. Три карточки. Три события, которые изменили восприятие ИИ.</p>
+
+        <p>Первое — тысяча девятьсот девяносто седьмой год. Deep Blue от IBM побеждает Гарри Каспарова в шахматы. Первое доказательство: машина может обыграть человека в интеллектуальной игре. Символ: конец «человеческой исключительности» в шахматах.</p>
+
+        <p>Второе — две тысячи двенадцатый год. AlexNet — нейросеть побеждает в конкурсе ImageNet с огромным отрывом. Начало революции глубокого обучения и компьютерного зрения. Символ: нейросети доказали свою эффективность в реальной задаче.</p>
+
+        <p>Третье — две тысячи двадцать второй год. Запуск ChatGPT. Генеративный ИИ становится массовым: пишет тексты, код, отвечает на вопросы, генерирует идеи. Сто миллионов пользователей за два месяца. Символ: ИИ стал доступен каждому менеджеру.</p>
+
+        <div class="action-hint">Перейдите к блоку 4 «Уроки для менеджеров».</div>
+
+        <h3>📌 4. Уроки для менеджеров</h3>
+
+        <p>Обратите внимание на зелёный блок уроков. Шесть карточек.</p>
+
+        <p>Первый урок. ИИ развивается волнами: хайп, разочарование, реальное применение. Умейте отличать хайп от технологии. Второй урок. ИИ не взорвался в две тысячи двадцать третьем — ему семьдесят лет. Понимание истории помогает предсказывать, что выживет, а что нет. Третий урок. Каждая волна ИИ была ответом на технологический прорыв: графические процессоры, данные, алгоритмы. Бизнес-применение приходит после технологии. Четвёртый урок. Не все технологии ИИ выживают. Экспертные системы восьмидесятых умерли, а нейросети выжили. Смотрите на фундамент, а не на фасад. Пятый урок. ChatGPT — не первый ИИ, а первый массовый ИИ. Он не изобрёл технологию, а сделал её доступной. Это урок для бизнеса. Шестой урок. Менеджер, который не понимает историю ИИ, будет принимать решения на основе хайпа. А тот, кто понимает, — на основе закономерностей.</p>
+
+        <p>В следующей части мы разберём, как работает ИИ: машинное обучение, нейросети и большие языковые модели — простыми словами. Спасибо за внимание!</p>
+
+    </div>
+
+    <section class="notes-section" aria-labelledby="glossary-title">
+        <div class="notes-section-title" id="glossary-title"><span aria-hidden="true">📖</span>Словарь терминов</div>
+        <table class="notes-table">
+            <thead><tr><th style="width:22%">Термин</th><th style="width:32%">Расшифровка</th><th>Пояснение</th></tr></thead>
+            <tbody>
+                <tr><td class="abbr">AI / ИИ</td><td>Artificial Intelligence</td><td class="explain">Искусственный интеллект: область создания машин, имитирующих интеллект</td></tr>
+                <tr><td class="abbr">Тест Тьюринга</td><td>Turing Test</td><td class="explain">Проверка: может ли машина вести диалог, неотличимый от человеческого</td></tr>
+                <tr><td class="abbr">ML</td><td>Machine Learning</td><td class="explain">Машинное обучение: обучение модели на данных</td></tr>
+                <tr><td class="abbr">DL</td><td>Deep Learning</td><td class="explain">Глубокое обучение: нейросети с большим числом слоёв</td></tr>
+                <tr><td class="abbr">LLM</td><td>Large Language Model</td><td class="explain">Большая языковая модель: GPT, Claude, YandexGPT</td></tr>
+                <tr><td class="abbr">Deep Blue</td><td>Deep Blue</td><td class="explain">Компьютер IBM, победивший Каспарова в шахматы (1997)</td></tr>
+                <tr><td class="abbr">AlexNet</td><td>AlexNet</td><td class="explain">Нейросеть, победившая в ImageNet (2012)</td></tr>
+                <tr><td class="abbr">ImageNet</td><td>ImageNet</td><td class="explain">Крупнейший конкурс по распознаванию изображений</td></tr>
+                <tr><td class="abbr">AlphaGo</td><td>AlphaGo</td><td class="explain">Программа DeepMind, победившая в го (2016)</td></tr>
+                <tr><td class="abbr">OpenAI</td><td>OpenAI</td><td class="explain">Компания-создатель ChatGPT</td></tr>
+                <tr><td class="abbr">GPU</td><td>Graphics Processing Unit</td><td class="explain">Графический процессор, ускоряющий обучение нейросетей</td></tr>
+                <tr><td class="abbr">Зима ИИ</td><td>AI Winter</td><td class="explain">Период разочарования и сокращения финансирования ИИ</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="notes-section" aria-labelledby="sources-title">
+        <div class="notes-section-title" id="sources-title"><span aria-hidden="true">📚</span>Источники и литература</div>
+        <div class="notes-sources">
+            <div class="src-group">📖 История ИИ</div>
+            <ol>
+                <li>Алан Тьюринг. «Computing Machinery and Intelligence» (1950).</li>
+                <li>Джон Маккарти. Материалы Дартмутской конференции (1956).</li>
+                <li>Стюарт Рассел, Питер Норвиг. «Artificial Intelligence: A Modern Approach».</li>
+            </ol>
+            <div class="src-group">🏛️ Ключевые прорывы</div>
+            <ol start="4">
+                <li>Материалы IBM по Deep Blue (1997).</li>
+                <li>Крижевский и др. «ImageNet Classification with Deep Convolutional Neural Networks» (2012).</li>
+                <li>Материалы OpenAI по ChatGPT (2022).</li>
+            </ol>
+            <div class="src-group">📚 Дополнительно</div>
+            <ol start="6">
+                <li>Мелани Митчелл. «Artificial Intelligence: A Guide for Thinking Humans».</li>
+                <li>Материалы по истории «зим ИИ» и экспертных систем.</li>
+            </ol>
+        </div>
+    </section>
+</div>
+
+<script>
+    function changeVideo(embedUrl) {
+        document.getElementById('lecture-player').src = embedUrl;
+    }
+</script>
+
+<nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 14; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

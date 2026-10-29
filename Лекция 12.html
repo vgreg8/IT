@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 12 из 18. Офисный софт. Часть 4. Excel</title>
+    <style>
+        :root {
+            --c-bg:#fff;--c-surface:#f8fafc;--c-border:#e2e8f0;--c-border-strong:#cbd5e0;
+            --c-text:#0f172a;--c-text-2:#334155;--c-text-3:#64748b;--c-text-muted:#94a3b8;
+            --c-primary:#2563eb;--c-primary-soft:#eff6ff;
+            --c-pivot:#0891b2;--c-pivot-soft:#ecfeff;
+            --c-vlookup:#7c3aed;--c-vlookup-soft:#f5f3ff;
+            --c-goal:#dc2626;--c-goal-soft:#fef2f2;
+            --c-ole:#059669;--c-ole-soft:#ecfdf5;
+            --c-dark:#0f172a;--c-dark-2:#1e293b;--c-dark-3:#334155;
+            --c-dark-text:#e2e8f0;--c-dark-text-2:#94a3b8;--c-dark-accent:#60a5fa;
+            --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+            --sh-md:0 4px 12px rgba(15,23,42,.08);
+            --sh-lg:0 12px 28px rgba(15,23,42,.12);
+            --sh-focus:0 0 0 3px rgba(37,99,235,.35);
+            --f-sans:'Segoe UI',Tahoma,sans-serif;
+            --f-mono:'JetBrains Mono',Consolas,monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%}
+        body{font-family:var(--f-sans);display:flex;height:100vh;overflow:hidden;background:var(--c-bg);color:var(--c-text);padding-bottom:80px!important}
+        :focus-visible{outline:none;box-shadow:var(--sh-focus);border-radius:var(--r-sm)}
+        .student-view{width:66.66%;height:100vh;background:var(--c-bg);padding:32px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--c-border);overflow-y:auto;scroll-behavior:smooth}
+        .speaker-notes{width:33.34%;height:100%;background:var(--c-dark);color:var(--c-dark-text);padding:28px;overflow-y:auto}
+        .slide-header{font-size:26px;color:var(--c-text);font-weight:800;line-height:1.25;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid var(--c-primary);position:relative}
+        .slide-header::after{content:'';position:absolute;left:0;bottom:-3px;width:80px;height:3px;background:var(--c-goal);border-radius:3px}
+        .slide-body{flex-grow:1;display:flex;flex-direction:column;gap:22px;padding:4px 0}
+        .slide-footer{font-size:12px;color:var(--c-text-muted);text-align:right;margin-top:16px}
+        .toc{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md)}
+        .toc a{font-size:11px;font-weight:700;color:var(--c-text-2);text-decoration:none;padding:4px 9px;border-radius:var(--r-pill);background:var(--c-bg);border:1px solid var(--c-border);transition:all .15s}
+        .toc a:hover{background:var(--c-primary-soft);border-color:var(--c-primary);color:var(--c-primary)}
+        .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+        .kpi{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;text-align:center;transition:all .18s}
+        .kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .kpi .kpi-val{font-size:19px;font-weight:800;color:var(--c-text);letter-spacing:-.02em;line-height:1.1}
+        .kpi .kpi-lbl{font-size:10px;color:var(--c-text-3);margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+        .kpi.k-pivot .kpi-val{color:var(--c-pivot)}
+        .kpi.k-vlookup .kpi-val{color:var(--c-vlookup)}
+        .kpi.k-goal .kpi-val{color:var(--c-goal)}
+        .kpi.k-ole .kpi-val{color:var(--c-ole)}
+        .section-title{font-size:15px;font-weight:800;color:var(--c-text);margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em;scroll-margin-top:12px}
+        .section-title .st-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-sm);font-size:14px}
+        .func-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+        .func-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 16px;position:relative;transition:all .18s}
+        .func-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--c-border-strong)}
+        .func-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0}
+        .func-card.fc-pivot::before{background:var(--c-pivot)}
+        .func-card.fc-vlookup::before{background:var(--c-vlookup)}
+        .func-card.fc-goal::before{background:var(--c-goal)}
+        .func-card.fc-ole::before{background:var(--c-ole)}
+        .func-card .fc-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+        .func-card .fc-icon{font-size:18px}
+        .func-card .fc-name{font-size:14px;font-weight:800;color:var(--c-text)}
+        .func-card .fc-sub{font-size:10.5px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+        .func-card .fc-body{font-size:12px;color:var(--c-text-2);line-height:1.5}
+        .func-card .fc-body b{color:var(--c-text)}
+        .func-card .fc-meta{margin-top:8px;padding-top:8px;border-top:1px dashed var(--c-border);font-size:10.5px;color:var(--c-text-3);font-weight:600}
+        .func-card .fc-analogy{margin-top:7px;padding:7px 9px;background:#fffbeb;border-left:3px solid var(--c-goal);border-radius:4px;font-size:10.5px;color:#92400e;line-height:1.4;font-style:italic}
+        .comp-table{width:100%;border-collapse:collapse;font-size:12px}
+        .comp-table th{background:var(--c-dark);color:#fff;padding:10px 12px;text-align:left;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+        .comp-table td{padding:9px 12px;border-bottom:1px solid var(--c-border);color:var(--c-text-2);vertical-align:top;line-height:1.45}
+        .comp-table tr:nth-child(even) td{background:var(--c-surface)}
+        .comp-table tr:hover td{background:var(--c-primary-soft)}
+        .comp-table .ct-crit{font-weight:700;color:var(--c-text)}
+        .saving-box{background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:1px solid #6ee7b7;border-radius:var(--r-lg);padding:16px 18px}
+        .saving-box .section-title{color:#065f46;margin-bottom:10px}
+        .saving-box .section-title .st-icon{background:#d1fae5;color:#047857}
+        .saving-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+        .saving-item{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#064e3b}
+        .saving-item .saving-mark{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#047857;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        .lessons-box{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:1px solid #bbf7d0;border-radius:var(--r-lg);padding:16px 18px}
+        .lessons-box .section-title{color:#166534;margin-bottom:10px}
+        .lessons-box .section-title .st-icon{background:#dcfce7;color:#15803d}
+        .lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+        .lesson{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#14532d}
+        .lesson .lesson-num{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#15803d;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        .video-section{display:flex;flex-direction:column;align-items:center;gap:12px}
+        .video-container{width:100%;max-width:580px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000;aspect-ratio:16/9}
+        .links-hub{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+        .video-btn{text-decoration:none;padding:9px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;transition:all .18s;cursor:pointer;border:none;font-family:inherit}
+        .video-btn:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .rt-btn{background:#00a877}.rt-btn:hover{background:#008f65}
+        .stop-btn{background:#dc143c}.stop-btn:hover{background:#b01030}
+        .notes-header{font-size:16px;color:var(--c-dark-accent);font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c-dark-3);padding-bottom:10px}
+        .timer-badge{background:#dc2626;color:#fff;padding:3px 9px;border-radius:var(--r-pill);font-size:11px;font-family:var(--f-mono);font-weight:700}
+        .lecture-text{font-size:14px;line-height:1.68;color:var(--c-dark-text);text-align:justify}
+        .lecture-text p{margin-bottom:14px}
+        .lecture-text h3{color:var(--c-dark-accent);font-size:14.5px;margin:20px 0 10px;border-bottom:1px solid var(--c-dark-3);padding-bottom:6px;font-weight:800}
+        .lecture-text strong{color:#f1f5f9}
+        .action-hint{color:#fcd34d;font-style:italic;background:var(--c-dark-2);padding:11px 14px;border-radius:var(--r-sm);border-left:3px solid #fcd34d;margin:16px 0;font-size:12.5px;line-height:1.5}
+        .notes-section{margin-top:26px;background:var(--c-dark-2);border:1px solid var(--c-dark-3);border-radius:var(--r-md);padding:16px}
+        .notes-section-title{font-size:13.5px;font-weight:800;color:var(--c-dark-accent);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--c-dark-3);display:flex;align-items:center;gap:8px}
+        .notes-table{width:100%;border-collapse:collapse;font-size:11.5px}
+        .notes-table th{text-align:left;padding:7px 8px;font-weight:700;color:var(--c-dark-text-2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--c-dark-3)}
+        .notes-table td{padding:7px 8px;border-bottom:1px solid rgba(51,65,85,.6);color:var(--c-dark-text);vertical-align:top;line-height:1.4}
+        .notes-table tr:last-child td{border-bottom:none}
+        .notes-table tr:hover td{background:rgba(96,165,250,.06)}
+        .notes-table .abbr{font-weight:800;color:#93c5fd;font-family:var(--f-mono);font-size:11px;white-space:nowrap}
+        .notes-table .explain{color:var(--c-dark-text-2)}
+        .notes-sources{font-size:11.5px;line-height:1.55;color:var(--c-dark-text)}
+        .notes-sources .src-group{font-weight:800;color:#86efac;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+        .notes-sources .src-group:first-child{margin-top:0}
+        .notes-sources ol{margin:0 0 4px 16px;padding:0}
+        .notes-sources li{margin-bottom:5px;color:var(--c-dark-text-2)}
+        .lecture-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+        .lecture-nav .nav-progress{position:absolute;top:0;left:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);transition:width .3s;border-radius:0 3px 3px 0}
+        .lecture-nav .nav-btn-arrow{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--c-dark-text);font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled){background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.6);color:#fff;transform:translateY(-2px)}
+        .lecture-nav .nav-btn-arrow:disabled{opacity:.35;cursor:not-allowed}
+        .lecture-nav .nav-btn-arrow .arrow-icon{font-size:16px}
+        .lecture-nav .nav-btn-arrow .arrow-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+        .lecture-nav .nav-btn-arrow .arrow-label small{font-size:9px;font-weight:400;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title{font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lecture-nav .nav-center{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 20px;color:var(--c-dark-text-2);font-size:11px;border-left:1px solid rgba(255,255,255,.1);border-right:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-counter{font-size:15px;font-weight:900;color:#f1f5f9}
+        .lecture-nav .nav-counter span{color:#64748b;font-size:12px;font-weight:600}
+        .lecture-nav .nav-index-link{color:#60a5fa;text-decoration:none;font-size:11px;font-weight:700}
+        .lecture-nav .nav-index-link:hover{color:#93c5fd;text-decoration:underline}
+        .lecture-nav .nav-jump{display:flex;gap:4px;margin-left:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-jump-btn{padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--c-dark-text-2);font-size:10px;font-weight:800;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-jump-btn:hover{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5);color:#fff}
+        .lecture-nav .nav-jump-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:transparent;color:#fff}
+        .reveal{animation:fadeUp .5s ease both}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+        @media(max-width:1200px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.func-grid{grid-template-columns:1fr}}
+        @media(max-width:900px){.lecture-nav{padding:10px 12px;gap:8px}.lecture-nav .nav-btn-arrow{padding:8px 12px}.lecture-nav .nav-btn-arrow .arrow-label .arrow-title{max-width:90px;font-size:11px}.lecture-nav .nav-center{padding:0 10px}.lecture-nav .nav-jump{display:none}.kpi-strip{grid-template-columns:repeat(2,1fr)}.lessons-grid{grid-template-columns:1fr}.saving-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+
+<div class="student-view">
+    <div>
+        <h1 class="slide-header">Часть 4. Excel как базис финансово-экономического моделирования</h1>
+        <div class="slide-body">
+
+            <nav class="toc reveal" aria-label="Содержание лекции">
+                <a href="#sec-funcs">1. Четыре инструмента</a>
+                <a href="#sec-table">2. Сравнение</a>
+                <a href="#sec-effect">3. Эффект</a>
+                <a href="#sec-lessons">4. Уроки</a>
+            </nav>
+
+            <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры">
+                <div class="kpi k-pivot" role="listitem"><div class="kpi-val">4</div><div class="kpi-lbl">инструмента Excel</div></div>
+                <div class="kpi k-pivot" role="listitem"><div class="kpi-val">90%</div><div class="kpi-lbl">компаний держат учёт в Excel</div></div>
+                <div class="kpi k-pivot" role="listitem"><div class="kpi-val">3 клика</div><div class="kpi-lbl">до сводной таблицы</div></div>
+                <div class="kpi k-vlookup" role="listitem"><div class="kpi-val">100 000</div><div class="kpi-lbl">строк сырых данных</div></div>
+                <div class="kpi k-goal" role="listitem"><div class="kpi-val">Goal Seek</div><div class="kpi-lbl">подбор параметра</div></div>
+                <div class="kpi k-ole" role="listitem"><div class="kpi-val">OLE</div><div class="kpi-lbl">связь Word и Excel</div></div>
+            </div>
+
+            <section class="reveal" id="sec-funcs" aria-labelledby="funcs-title">
+                <div class="section-title" id="funcs-title"><span class="st-icon" aria-hidden="true">📈</span>1. Четыре инструмента Excel для менеджера</div>
+                <div class="func-grid">
+                    <div class="func-card fc-pivot">
+                        <div class="fc-head">
+                            <span class="fc-icon" aria-hidden="true">📊</span>
+                            <div>
+                                <div class="fc-name">Сводные таблицы</div>
+                                <div class="fc-sub">Pivot Tables</div>
+                            </div>
+                        </div>
+                        <div class="fc-body">За <b>3 клика</b> сгруппировать 100 тысяч строк сырых продаж и мгновенно увидеть: какой товар приносит прибыль, какой регион уходит в убыток, в какие часы происходят кассовые разрывы. Без отчётов ИТ-отдела и без программирования.</div>
+                        <div class="fc-analogy">Аналогия: конструктор LEGO — из тысячи деталей собираете нужную фигуру.</div>
+                        <div class="fc-meta">Экспресс-анализ продаж и сегментация клиентов</div>
+                    </div>
+                    <div class="func-card fc-vlookup">
+                        <div class="fc-head">
+                            <span class="fc-icon" aria-hidden="true">⛓️</span>
+                            <div>
+                                <div class="fc-name">ВПР и XLOOKUP</div>
+                                <div class="fc-sub">VLOOKUP / XLOOKUP</div>
+                            </div>
+                        </div>
+                        <div class="fc-body">Сопоставление таблицы фактических продаж со складом и прайс-листом поставщиков. Функция <b>СУММЕСЛИ</b> автоматически рассчитывает премии и KPI менеджерам по продажам. Полное исключение человеческого фактора.</div>
+                        <div class="fc-analogy">Аналогия: переводчик между двумя базами — сводит данные по общему ключу.</div>
+                        <div class="fc-meta">Исключение кассовых разрывов и ошибок ручного расчёта</div>
+                    </div>
+                    <div class="func-card fc-goal">
+                        <div class="fc-head">
+                            <span class="fc-icon" aria-hidden="true">🎯</span>
+                            <div>
+                                <div class="fc-name">Подбор параметра</div>
+                                <div class="fc-sub">Goal Seek</div>
+                            </div>
+                        </div>
+                        <div class="fc-body">Обратный расчёт финансовой модели. Например: <b>до какого уровня можно снизить цену</b> или какую скидку дать крупному клиенту, чтобы чистая прибыль не упала ниже критической отметки, а бизнес остался безубыточным.</div>
+                        <div class="fc-analogy">Аналогия: штурман — зная точку назначения, рассчитывает обратный маршрут.</div>
+                        <div class="fc-meta">Стресс-тестирование бизнеса и моделирование «Что-если»</div>
+                    </div>
+                    <div class="func-card fc-ole">
+                        <div class="fc-head">
+                            <span class="fc-icon" aria-hidden="true">🔗</span>
+                            <div>
+                                <div class="fc-name">OLE-связывание</div>
+                                <div class="fc-sub">Object Linking and Embedding</div>
+                            </div>
+                        </div>
+                        <div class="fc-body">Вставка «живого» графика из Excel в Word как связанного объекта. Если завтра изменятся курсы валют или налоги, <b>достаточно поменять одну цифру в Excel</b> — и график в Word обновится автоматически. Без переверстки отчёта.</div>
+                        <div class="fc-analogy">Аналогия: телетрансляция — картинка в студии обновляется в реальном времени.</div>
+                        <div class="fc-meta">Автообновление отчётов для инвесторов при смене курсов</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal" id="sec-table" aria-labelledby="table-title">
+                <div class="section-title" id="table-title"><span class="st-icon" aria-hidden="true">📊</span>2. Сравнение инструментов: задача и эффект</div>
+                <table class="comp-table">
+                    <thead>
+                        <tr>
+                            <th>Инструмент / Функция</th>
+                            <th>Управленческая задача</th>
+                            <th>Экономический эффект</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ct-crit">Сводные таблицы (Pivot Tables)</td>
+                            <td>Глубокий экспресс-анализ продаж, сегментация клиентов</td>
+                            <td>Мгновенное обнаружение убыточных направлений без ИТ-отдела</td>
+                        </tr>
+                        <tr>
+                            <td class="ct-crit">ВПР / XLOOKUP / СУММЕСЛИ</td>
+                            <td>Автоматическое сведение баз данных, расчёт премий и KPI</td>
+                            <td>Исключение кассовых разрывов и ошибок ручного расчёта зарплат</td>
+                        </tr>
+                        <tr>
+                            <td class="ct-crit">Подбор параметра (Goal Seek)</td>
+                            <td>Моделирование сценариев «Что-если», стресс-тестирование</td>
+                            <td>Быстрое нахождение критической цены товара для выживания бизнеса</td>
+                        </tr>
+                        <tr>
+                            <td class="ct-crit">OLE-технология связывания</td>
+                            <td>Внедрение «живых» интерактивных графиков из Excel в Word</td>
+                            <td>Автообновление финансовых отчётов для инвесторов при смене курсов</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="reveal" id="sec-effect" aria-labelledby="effect-title">
+                <div class="section-title" id="effect-title"><span class="st-icon" aria-hidden="true">💰</span>3. Экономический эффект: где Excel приносит деньги</div>
+                <div class="saving-box">
+                    <div class="section-title" style="margin-bottom:10px;">
+                        <span class="st-icon" aria-hidden="true">📊</span>
+                        Четыре зоны прямого эффекта
+                    </div>
+                    <div class="saving-grid">
+                        <div class="saving-item"><span class="saving-mark" aria-hidden="true">1</span><span><b>Скорость:</b> сводные таблицы заменяют часы ручной работы аналитика тремя кликами.</span></div>
+                        <div class="saving-item"><span class="saving-mark" aria-hidden="true">2</span><span><b>Точность:</b> ВПР и СУММЕСЛИ исключают ошибки в расчёте зарплат и премий.</span></div>
+                        <div class="saving-item"><span class="saving-mark" aria-hidden="true">3</span><span><b>Выживание:</b> подбор параметра находит критическую цену и точку безубыточности.</span></div>
+                        <div class="saving-item"><span class="saving-mark" aria-hidden="true">4</span><span><b>Синергия:</b> OLE-связка Word+Excel экономит дни на переверстке отчётов.</span></div>
+                    </div>
+                    <p style="margin-top:12px;font-size:12px;color:#064e3b;line-height:1.5;font-weight:600;">
+                        Управленческий вывод: Excel — это первая ERP-система любого бизнеса. 90% компаний держат оперативный учёт и финансовое планирование именно в таблицах. Менеджер, не владеющий Excel, теряет конкурентное преимущество.
+                    </p>
+                </div>
+            </section>
+
+            <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                <div class="section-title" id="lessons-title"><span class="st-icon" aria-hidden="true">🎓</span>4. Уроки для менеджеров</div>
+                <div class="lessons-grid">
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">1</span><span>Excel — не «программа для сеток», а первая ERP-система бизнеса. 90% компаний держат учёт в таблицах.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">2</span><span>Сводные таблицы — самый быстрый способ получить управленческую аналитику без ИТ-отдела.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">3</span><span>ВПР и XLOOKUP — мост между базами данных. Без них — ручные ошибки и кассовые разрывы.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">4</span><span>Подбор параметра — инструмент выживания в кризис. Он находит критическую цену и точку безубыточности.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">5</span><span>OLE-связка Word+Excel — экономия дней на переверстке отчётов при изменении исходных данных.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">6</span><span>Современный менеджер — архитектор автоматизированных информационных потоков, а не оператор по набору цифр.</span></div>
+                </div>
+            </section>
+
+            <div class="video-section reveal">
+                    <div class="video-container">
+                        <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: как и почему возник интернет"></iframe>
+                    </div>
+                    <div class="links-hub">
+                        <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                        <button onclick="changeVideo('https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266//')" class="video-btn rt-btn">📜 Лекция 1. Как и почему возник интернет</button>
+                    </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="slide-footer">Менеджмент · 1 курс · Офисный софт · Часть 4 из 5</div>
+</div>
+
+<div class="speaker-notes">
+    <div style="position:sticky;top:0;background:var(--c-dark);padding:20px 20px 10px 20px;border-bottom:1px solid var(--c-dark-3);width:100%;z-index:100;">
+        <div class="notes-header"><span>🎙️ Скрипт преподавателя</span><span class="timer-badge">30 мин</span></div>
+        <div style="width:100%;aspect-ratio:16/9;border-radius:var(--r-sm);overflow:hidden;background:#000;box-shadow:var(--sh-md);">
+               <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"  allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+        </div>
+    </div>
+    <div class="lecture-text" style="margin-top:20px;">
+
+        <p>Коллеги, мы переходим к финальному, фундаментальному блоку нашей лекции, посвящённому табличному процессору Майкрософт Эксель. Запомните: Эксель — это не просто программа для рисования сеточек и графиков. Это полноценная первая система планирования ресурсов предприятия любого стартапа и малого бизнеса в мире. Около девяноста процентов всех коммерческих компаний держат свой оперативный учёт, расчёт себестоимости и финансовое планирование именно в таблицах.</p>
+
+        <div class="action-hint">Обратите внимание студентов на блок 1 «Четыре инструмента Excel для менеджера».</div>
+
+        <h3>📌 1. Сводные таблицы: экспресс-анализ</h3>
+
+        <p>Посмотрите на первую карточку блока. Как будущие руководители и экономисты, вы столкнётесь с гигантскими массивами данных: хаотичными выгрузками транзакций, чеков, продаж и складских остатков. Первейший управленческий инструмент здесь — это сводные таблицы, или пивот тейблс. Они позволяют за три клика сгруппировать сто тысяч строк сырых продаж и мгновенно увидеть: какой товар приносит прибыль, какой регион уходит в убыток, и в какие часы происходят кассовые разрывы. Без отчётов ИТ-отдела и без программирования. Аналогия проста. Это конструктор Лего: из тысячи деталей вы собираете нужную фигуру.</p>
+
+        <div class="action-hint">Перейдите ко второй карточке — «ВПР и XLOOKUP».</div>
+
+        <h3>📌 2. Связывание баз данных: ВПР и XLOOKUP</h3>
+
+        <p>Обратите внимание на вторую карточку. Второй критически важный уровень — это связывание баз данных. С помощью функций ВПР, что расшифровывается как вертикальный просмотр, или более современной ИКС-ЛУКАП, экономист за долю секунды может сопоставить таблицу фактических продаж со складом и прайс-листом поставщиков. Полностью исключив человеческий фактор. А логические функции вроде СУММЕСЛИ позволяют автоматически рассчитывать премии и ключевые показатели эффективности менеджерам по продажам в зависимости от их результатов. Аналогия проста. Это переводчик между двумя базами — сводит данные по общему ключу.</p>
+
+        <div class="action-hint">Перейдите к третьей карточке — «Подбор параметра».</div>
+
+        <h3>📌 3. Подбор параметра: стресс-тестирование бизнеса</h3>
+
+        <p>Обратите внимание на третью карточку. В условиях кризиса или жёсткой рыночной конкуренции менеджер должен уметь заниматься прогнозированием и стресс-тестированием бизнес-модели. В Эксель для этого заложен мощнейший блок инструментов анализа «Что-если», главным из которых является подбор параметра, или Гоал Сик. С его помощью вы можете запустить обратный расчёт финансовой модели. Например, автоматически рассчитать, до какого уровня компания может снизить цену на товар или какую скидку дать крупному клиенту, чтобы чистая прибыль не упала ниже критической отметки, а бизнес остался безубыточным. Аналогия проста. Это штурман: зная точку назначения, он рассчитывает обратный маршрут.</p>
+
+        <div class="action-hint">Перейдите к четвёртой карточке — «OLE-связывание» и блокам 2 и 3.</div>
+
+        <h3>📌 4. OLE-связывание: живая синергия софта</h3>
+
+        <p>Обратите внимание на четвёртую карточку. В завершение нашей лекции давайте объединим текстовые и табличные процессоры в единую систему. В операционных системах существует важнейшая базовая технология — О-Эл-И, что расшифровывается как связывание и внедрение объектов. Как это применяется на практике? Вы как аналитики создаёте сложный финансовый график в Эксель, а затем копируете и вставляете его в Ворд-отчёт для инвесторов или совета директоров как связанный объект.</p>
+
+        <p>Что это даёт? Если завтра изменятся курсы валют, котировки или налоги, вам достаточно будет поменять всего одну цифру в исходном файле Эксель. Операционная система сама мгновенно пересчитает модель, обновит диаграмму и автоматически перерисует живой график внутри Ворд-документа. Вам не придётся заново переверстывать многостраничный текстовый отчёт. Это и есть настоящая синергия офисного софта. Аналогия проста. Это телетрансляция: картинка в студии обновляется в реальном времени.</p>
+
+        <h3>📌 5. Эффект и уроки</h3>
+
+        <p>Обратите внимание на зелёный блок эффекта и блок уроков. Четыре инструмента Эксель приносят прямой экономический эффект. Сводные таблицы заменяют часы ручной работы тремя кликами. ВПР и СУММЕСЛИ исключают ошибки в расчёте зарплат. Подбор параметра находит критическую цену и точку безубыточности. О-Эл-И-связка экономит дни на переверстке отчётов.</p>
+
+        <p>Главный управленческий вывод нашей лекции. Современный менеджер и экономист не просто набивают текст и цифры в программы. Вы являетесь архитекторами автоматизированных информационных потоков. Используя возможности офисных пакетов на максимум, вы минимизируете риски, защищаете коммерческую тайну и экономите главный ресурс любого бизнеса — время. В следующей части мы разберём ПауэрПойнт, совместную работу и практикум по выбору офисного пакета. Спасибо за внимание!</p>
+
+    </div>
+
+    <section class="notes-section" aria-labelledby="glossary-title">
+        <div class="notes-section-title" id="glossary-title"><span aria-hidden="true">📖</span>Словарь терминов</div>
+        <table class="notes-table">
+            <thead><tr><th style="width:22%">Термин</th><th style="width:32%">Расшифровка</th><th>Пояснение</th></tr></thead>
+            <tbody>
+                <tr><td class="abbr">Excel</td><td>Microsoft Excel</td><td class="explain">Табличный процессор Microsoft</td></tr>
+                <tr><td class="abbr">Pivot Table</td><td>Сводная таблица</td><td class="explain">Инструмент группировки и анализа больших массивов данных</td></tr>
+                <tr><td class="abbr">VLOOKUP</td><td>Vertical Lookup</td><td class="explain">Функция вертикального просмотра для сопоставления данных</td></tr>
+                <tr><td class="abbr">XLOOKUP</td><td>Extended Lookup</td><td class="explain">Современная функция поиска в Excel, замена VLOOKUP</td></tr>
+                <tr><td class="abbr">SUMIF</td><td>Sum If</td><td class="explain">Функция суммирования по условию (СУММЕСЛИ)</td></tr>
+                <tr><td class="abbr">Goal Seek</td><td>Подбор параметра</td><td class="explain">Обратный расчёт: какое значение нужно, чтобы получить заданный результат</td></tr>
+                <tr><td class="abbr">OLE</td><td>Object Linking and Embedding</td><td class="explain">Технология связывания и внедрения объектов между программами</td></tr>
+                <tr><td class="abbr">ERP</td><td>Enterprise Resource Planning</td><td class="explain">Система планирования ресурсов предприятия</td></tr>
+                <tr><td class="abbr">KPI</td><td>Key Performance Indicator</td><td class="explain">Ключевой показатель эффективности</td></tr>
+                <tr><td class="abbr">Что-если</td><td>What-If Analysis</td><td class="explain">Блок инструментов моделирования сценариев в Excel</td></tr>
+                <tr><td class="abbr">Стресс-тест</td><td>Stress Testing</td><td class="explain">Проверка бизнес-модели на устойчивость в кризисных условиях</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="notes-section" aria-labelledby="sources-title">
+        <div class="notes-section-title" id="sources-title"><span aria-hidden="true">📚</span>Источники и литература</div>
+        <div class="notes-sources">
+            <div class="src-group">📖 Документация Microsoft</div>
+            <ol>
+                <li>Документация Microsoft Excel для бизнеса.</li>
+                <li>Руководство по сводным таблицам (Pivot Tables).</li>
+                <li>Справочник по функциям VLOOKUP, XLOOKUP, СУММЕСЛИ.</li>
+            </ol>
+            <div class="src-group">🎯 Анализ и моделирование</div>
+            <ol start="4">
+                <li>Документация Microsoft по подбору параметра (Goal Seek).</li>
+                <li>Материалы по анализу «Что-если» (What-If Analysis).</li>
+            </ol>
+            <div class="src-group">🔗 Интеграция</div>
+            <ol start="6">
+                <li>Материалы Microsoft по OLE-технологии связывания объектов.</li>
+                <li>Руководство по интеграции Word и Excel в единый отчёт.</li>
+            </ol>
+        </div>
+    </section>
+</div>
+
+<script>
+    function changeVideo(embedUrl) {
+        document.getElementById('lecture-player').src = embedUrl;
+    }
+</script>
+
+<nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 12; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

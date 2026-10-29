@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 3 из 18 · ОС · Стратегический анализ</title>
+    <style>
+        :root {
+            --c-bg:#fff;--c-surface:#f8fafc;--c-border:#e2e8f0;--c-border-strong:#cbd5e0;
+            --c-text:#0f172a;--c-text-2:#334155;--c-text-3:#64748b;--c-text-muted:#94a3b8;
+            --c-primary:#2563eb;--c-primary-soft:#eff6ff;
+            --c-win:#0078d4;--c-win-soft:#e6f2fb;
+            --c-mac:#1d1d1f;--c-mac-soft:#f0f0f2;
+            --c-lin:#d97706;--c-lin-soft:#fffbeb;
+            --c-tco:#b45309;--c-tco-soft:#fef3c7;
+            --c-dark:#0f172a;--c-dark-2:#1e293b;--c-dark-3:#334155;
+            --c-dark-text:#e2e8f0;--c-dark-text-2:#94a3b8;--c-dark-accent:#60a5fa;
+            --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+            --sh-md:0 4px 12px rgba(15,23,42,.08);
+            --sh-lg:0 12px 28px rgba(15,23,42,.12);
+            --sh-focus:0 0 0 3px rgba(37,99,235,.35);
+            --f-sans:'Segoe UI',Tahoma,sans-serif;
+            --f-mono:'JetBrains Mono',Consolas,monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%}
+        body{font-family:var(--f-sans);display:flex;height:100vh;overflow:hidden;background:var(--c-bg);color:var(--c-text);padding-bottom:80px!important}
+        :focus-visible{outline:none;box-shadow:var(--sh-focus);border-radius:var(--r-sm)}
+        .student-view{width:66.66%;height:100vh;background:var(--c-bg);padding:32px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--c-border);overflow-y:auto;scroll-behavior:smooth}
+        .speaker-notes{width:33.34%;height:100%;background:var(--c-dark);color:var(--c-dark-text);padding:28px;overflow-y:auto}
+        .slide-header{font-size:26px;color:var(--c-text);font-weight:800;line-height:1.25;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid var(--c-primary);position:relative}
+        .slide-header::after{content:'';position:absolute;left:0;bottom:-3px;width:80px;height:3px;background:var(--c-lin);border-radius:3px}
+        .slide-body{flex-grow:1;display:flex;flex-direction:column;gap:22px;padding:4px 0}
+        .slide-footer{font-size:12px;color:var(--c-text-muted);text-align:right;margin-top:16px}
+        .toc{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md)}
+        .toc a{font-size:11px;font-weight:700;color:var(--c-text-2);text-decoration:none;padding:4px 9px;border-radius:var(--r-pill);background:var(--c-bg);border:1px solid var(--c-border);transition:all .15s}
+        .toc a:hover{background:var(--c-primary-soft);border-color:var(--c-primary);color:var(--c-primary)}
+        .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+        .kpi{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;text-align:center;transition:all .18s}
+        .kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .kpi .kpi-val{font-size:19px;font-weight:800;color:var(--c-text);letter-spacing:-.02em;line-height:1.1}
+        .kpi .kpi-lbl{font-size:10px;color:var(--c-text-3);margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+        .kpi.k-win .kpi-val{color:var(--c-win)}
+        .kpi.k-mac .kpi-val{color:var(--c-mac)}
+        .kpi.k-lin .kpi-val{color:var(--c-lin)}
+        .kpi.k-tco .kpi-val{color:var(--c-tco)}
+        .section-title{font-size:15px;font-weight:800;color:var(--c-text);margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em;scroll-margin-top:12px}
+        .section-title .st-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-sm);font-size:14px}
+        /* Сравнительная таблица */
+        .comp-table{width:100%;border-collapse:collapse;font-size:12px}
+        .comp-table th{background:var(--c-dark);color:#fff;padding:10px 12px;text-align:left;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+        .comp-table td{padding:9px 12px;border-bottom:1px solid var(--c-border);color:var(--c-text-2);vertical-align:top;line-height:1.45}
+        .comp-table tr:nth-child(even) td{background:var(--c-surface)}
+        .comp-table tr:hover td{background:var(--c-primary-soft)}
+        .comp-table .ct-crit{font-weight:700;color:var(--c-text)}
+        .comp-table .os-badge{display:inline-block;padding:3px 9px;border-radius:var(--r-pill);font-weight:800;font-size:10px;color:#fff;text-transform:uppercase;letter-spacing:.04em}
+        .win-bg{background:var(--c-win)}
+        .mac-bg{background:var(--c-mac)}
+        .lin-bg{background:var(--c-lin)}
+        /* Карточки платформ */
+        .plat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+        .plat-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 16px;position:relative;transition:all .18s}
+        .plat-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--c-border-strong)}
+        .plat-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0}
+        .plat-card.pc-win::before{background:var(--c-win)}
+        .plat-card.pc-mac::before{background:var(--c-mac)}
+        .plat-card.pc-lin::before{background:var(--c-lin)}
+        .plat-card .pc-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+        .plat-card .pc-icon{font-size:18px}
+        .plat-card .pc-name{font-size:14px;font-weight:800;color:var(--c-text)}
+        .plat-card .pc-sub{font-size:10.5px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+        .plat-card .pc-body{font-size:12px;color:var(--c-text-2);line-height:1.5}
+        .plat-card .pc-body b{color:var(--c-text)}
+        .plat-card .pc-meta{margin-top:8px;padding-top:8px;border-top:1px dashed var(--c-border);font-size:10.5px;color:var(--c-text-3);font-weight:600}
+        .plat-card .pc-analogy{margin-top:7px;padding:7px 9px;background:#fffbeb;border-left:3px solid var(--c-lin);border-radius:4px;font-size:10.5px;color:#92400e;line-height:1.4;font-style:italic}
+        /* TCO блок */
+        .tco-box{background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border:1px solid #fcd34d;border-radius:var(--r-lg);padding:16px 18px}
+        .tco-box .section-title{color:#92400e;margin-bottom:10px}
+        .tco-box .section-title .st-icon{background:#fef3c7;color:var(--c-tco)}
+        .tco-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+        .tco-item{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#78350f}
+        .tco-item .tco-mark{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:var(--c-tco);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        /* Уроки */
+        .lessons-box{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:1px solid #bbf7d0;border-radius:var(--r-lg);padding:16px 18px}
+        .lessons-box .section-title{color:#166534;margin-bottom:10px}
+        .lessons-box .section-title .st-icon{background:#dcfce7;color:#15803d}
+        .lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+        .lesson{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#14532d}
+        .lesson .lesson-num{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#15803d;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        /* Видео */
+        .video-section{display:flex;flex-direction:column;align-items:center;gap:12px}
+        .video-container{width:100%;max-width:580px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000;aspect-ratio:16/9}
+        .links-hub{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+        .video-btn{text-decoration:none;padding:9px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;transition:all .18s;cursor:pointer;border:none;font-family:inherit}
+        .video-btn:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .rt-btn{background:#00a877}.rt-btn:hover{background:#008f65}
+        .stop-btn{background:#dc143c}.stop-btn:hover{background:#b01030}
+        /* Правая панель */
+        .notes-header{font-size:16px;color:var(--c-dark-accent);font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c-dark-3);padding-bottom:10px}
+        .timer-badge{background:#dc2626;color:#fff;padding:3px 9px;border-radius:var(--r-pill);font-size:11px;font-family:var(--f-mono);font-weight:700}
+        .lecture-text{font-size:14px;line-height:1.68;color:var(--c-dark-text);text-align:justify}
+        .lecture-text p{margin-bottom:14px}
+        .lecture-text h3{color:var(--c-dark-accent);font-size:14.5px;margin:20px 0 10px;border-bottom:1px solid var(--c-dark-3);padding-bottom:6px;font-weight:800}
+        .lecture-text strong{color:#f1f5f9}
+        .action-hint{color:#fcd34d;font-style:italic;background:var(--c-dark-2);padding:11px 14px;border-radius:var(--r-sm);border-left:3px solid #fcd34d;margin:16px 0;font-size:12.5px;line-height:1.5}
+        .notes-section{margin-top:26px;background:var(--c-dark-2);border:1px solid var(--c-dark-3);border-radius:var(--r-md);padding:16px}
+        .notes-section-title{font-size:13.5px;font-weight:800;color:var(--c-dark-accent);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--c-dark-3);display:flex;align-items:center;gap:8px}
+        .notes-table{width:100%;border-collapse:collapse;font-size:11.5px}
+        .notes-table th{text-align:left;padding:7px 8px;font-weight:700;color:var(--c-dark-text-2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--c-dark-3)}
+        .notes-table td{padding:7px 8px;border-bottom:1px solid rgba(51,65,85,.6);color:var(--c-dark-text);vertical-align:top;line-height:1.4}
+        .notes-table tr:last-child td{border-bottom:none}
+        .notes-table tr:hover td{background:rgba(96,165,250,.06)}
+        .notes-table .abbr{font-weight:800;color:#93c5fd;font-family:var(--f-mono);font-size:11px;white-space:nowrap}
+        .notes-table .explain{color:var(--c-dark-text-2)}
+        .notes-sources{font-size:11.5px;line-height:1.55;color:var(--c-dark-text)}
+        .notes-sources .src-group{font-weight:800;color:#86efac;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+        .notes-sources .src-group:first-child{margin-top:0}
+        .notes-sources ol{margin:0 0 4px 16px;padding:0}
+        .notes-sources li{margin-bottom:5px;color:var(--c-dark-text-2)}
+        /* Навигация */
+        .lecture-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+        .lecture-nav .nav-progress{position:absolute;top:0;left:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);transition:width .3s;border-radius:0 3px 3px 0}
+        .lecture-nav .nav-btn-arrow{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--c-dark-text);font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled){background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.6);color:#fff;transform:translateY(-2px)}
+        .lecture-nav .nav-btn-arrow:disabled{opacity:.35;cursor:not-allowed}
+        .lecture-nav .nav-btn-arrow .arrow-icon{font-size:16px}
+        .lecture-nav .nav-btn-arrow .arrow-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+        .lecture-nav .nav-btn-arrow .arrow-label small{font-size:9px;font-weight:400;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title{font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lecture-nav .nav-center{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 20px;color:var(--c-dark-text-2);font-size:11px;border-left:1px solid rgba(255,255,255,.1);border-right:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-counter{font-size:15px;font-weight:900;color:#f1f5f9}
+        .lecture-nav .nav-counter span{color:#64748b;font-size:12px;font-weight:600}
+        .lecture-nav .nav-index-link{color:#60a5fa;text-decoration:none;font-size:11px;font-weight:700}
+        .lecture-nav .nav-index-link:hover{color:#93c5fd;text-decoration:underline}
+        .lecture-nav .nav-jump{display:flex;gap:4px;margin-left:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-jump-btn{padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--c-dark-text-2);font-size:10px;font-weight:800;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-jump-btn:hover{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5);color:#fff}
+        .lecture-nav .nav-jump-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:transparent;color:#fff}
+        .reveal{animation:fadeUp .5s ease both}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+        @media(max-width:1200px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.plat-grid{grid-template-columns:1fr}}
+        @media(max-width:900px){.lecture-nav{padding:10px 12px;gap:8px}.lecture-nav .nav-btn-arrow{padding:8px 12px}.lecture-nav .nav-btn-arrow .arrow-label .arrow-title{max-width:90px;font-size:11px}.lecture-nav .nav-center{padding:0 10px}.lecture-nav .nav-jump{display:none}.kpi-strip{grid-template-columns:repeat(2,1fr)}.lessons-grid{grid-template-columns:1fr}.tco-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+
+<div class="student-view">
+    <div>
+        <h1 class="slide-header">Часть 3. Стратегический анализ ОС: Windows, macOS, Linux</h1>
+        <div class="slide-body">
+
+            <nav class="toc reveal" aria-label="Содержание лекции">
+                <a href="#sec-compare">1. Сравнение платформ</a>
+                <a href="#sec-platforms">2. Три философии</a>
+                <a href="#sec-tco">3. Экономика TCO</a>
+                <a href="#sec-lessons">4. Уроки</a>
+            </nav>
+
+            <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры">
+                <div class="kpi k-win" role="listitem"><div class="kpi-val">3</div><div class="kpi-lbl">платформы</div></div>
+                <div class="kpi k-win" role="listitem"><div class="kpi-val">80%</div><div class="kpi-lbl">доля Windows на ПК</div></div>
+                <div class="kpi k-mac" role="listitem"><div class="kpi-val">2–3x</div><div class="kpi-lbl">премия Apple</div></div>
+                <div class="kpi k-lin" role="listitem"><div class="kpi-val">0 руб.</div><div class="kpi-lbl">лицензия Linux</div></div>
+                <div class="kpi k-lin" role="listitem"><div class="kpi-val">2.5x</div><div class="kpi-lbl">зарплата Linux-инженера</div></div>
+                <div class="kpi k-tco" role="listitem"><div class="kpi-val">4</div><div class="kpi-lbl">компонента TCO</div></div>
+            </div>
+
+            <!-- 1. СРАВНИТЕЛЬНАЯ ТАБЛИЦА -->
+            <section class="reveal" id="sec-compare" aria-labelledby="compare-title">
+                <div class="section-title" id="compare-title"><span class="st-icon" aria-hidden="true">⚖️</span>1. Корпоративная битва платформ: пять бизнес-критериев</div>
+                <table class="comp-table">
+                    <thead>
+                        <tr>
+                            <th>Бизнес-критерий</th>
+                            <th><span class="os-badge win-bg">Windows</span></th>
+                            <th><span class="os-badge mac-bg">macOS / iOS</span></th>
+                            <th><span class="os-badge lin-bg">Linux</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ct-crit">Рыночная ниша</td>
+                            <td>Абсолютный стандарт для офисов и корпораций</td>
+                            <td>Премиум-сегмент, маркетинг, дизайн, топ-менеджмент</td>
+                            <td>Мировой стандарт для серверов, облаков и разработки</td>
+                        </tr>
+                        <tr>
+                            <td class="ct-crit">Бизнес-модель</td>
+                            <td>Платные коммерческие лицензии, B2B-подписки</td>
+                            <td>Закрытая экосистема вместе с дорогим «железом»</td>
+                            <td>Бесплатное открытое ПО. Оплата поддержки вендоров</td>
+                        </tr>
+                        <tr>
+                            <td class="ct-crit">Совместимость</td>
+                            <td>Максимальная: 1С, ERP, любые торговые терминалы</td>
+                            <td>Строго внутри экосистемы Apple, ограничения стороннего софта</td>
+                            <td>Требует ИТ-специалистов для настройки корпоративного софта</td>
+                        </tr>
+                        <tr>
+                            <td class="ct-crit">Информационная безопасность</td>
+                            <td>Высокий риск атак — главная мишень хакеров из-за массовости</td>
+                            <td>Высокая: строгий контроль приложений, «песочницы»</td>
+                            <td>Максимальная: прозрачный код, гибкие права доступа</td>
+                        </tr>
+                        <tr>
+                            <td class="ct-crit">Экономика (TCO)</td>
+                            <td>Прогнозируемые регулярные затраты на лицензии</td>
+                            <td>Высокие стартовые затраты на премиум-технику</td>
+                            <td>Скрытые затраты: высокая оплата труда редких инженеров</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- 2. ТРИ ПЛАТФОРМЫ -->
+            <section class="reveal" id="sec-platforms" aria-labelledby="platforms-title">
+                <div class="section-title" id="platforms-title"><span class="st-icon" aria-hidden="true">🏛️</span>2. Три платформы: философия и бизнес-модель</div>
+                <div class="plat-grid">
+                    <div class="plat-card pc-win">
+                        <div class="pc-head">
+                            <span class="pc-icon" aria-hidden="true">🪟</span>
+                            <div>
+                                <div class="pc-name">Windows</div>
+                                <div class="pc-sub">Microsoft</div>
+                            </div>
+                        </div>
+                        <div class="pc-body">Философия <b>тотальной универсальности</b> и обратной совместимости. К ПК подключится любой терминал, касса, старый сканер. Весь корпоративный софт — от 1С до ERP — пишется в первую очередь под Windows.</div>
+                        <div class="pc-analogy">Аналогия: городская инфраструктура — к любой розетке можно подключить любой прибор.</div>
+                        <div class="pc-meta">80% офисных ПК в мире — главная мишень хакеров</div>
+                    </div>
+                    <div class="plat-card pc-mac">
+                        <div class="pc-head">
+                            <span class="pc-icon" aria-hidden="true">🍏</span>
+                            <div>
+                                <div class="pc-name">macOS</div>
+                                <div class="pc-sub">Apple</div>
+                            </div>
+                        </div>
+                        <div class="pc-body">Философия <b>полного контроля качества</b>. Apple сама создаёт микросхемы, ОС и софт, поэтому компьютеры работают стабильно и почти не зависают. Стандарт индустрии для креативного сектора.</div>
+                        <div class="pc-analogy">Аналогия: закрытый премиум-клуб — дорого, но всё продумано до мелочей.</div>
+                        <div class="pc-meta">Техника в 2–3 раза дороже обычных ПК</div>
+                    </div>
+                    <div class="plat-card pc-lin">
+                        <div class="pc-head">
+                            <span class="pc-icon" aria-hidden="true">🐧</span>
+                            <div>
+                                <div class="pc-name">Linux</div>
+                                <div class="pc-sub">Open Source</div>
+                            </div>
+                        </div>
+                        <div class="pc-body">Философия <b>открытого исходного кода</b>. Бесплатен, невероятно надёжен, не требователен к мощностям, максимально безопасен. Некоронованный король серверного мира: облака, банки, Telegram.</div>
+                        <div class="pc-analogy">Аналогия: опенсорсный конструктор — бесплатно, но собрать и обслуживать должен специалист.</div>
+                        <div class="pc-meta">Лицензия бесплатна, но поддержка — дорогая</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. TCO -->
+            <section class="reveal" id="sec-tco" aria-labelledby="tco-title">
+                <div class="section-title" id="tco-title"><span class="st-icon" aria-hidden="true">💰</span>3. Экономика TCO: почему бесплатный Linux может быть дорогим</div>
+                <div class="tco-box">
+                    <div class="section-title" style="margin-bottom:10px;">
+                        <span class="st-icon" aria-hidden="true">📊</span>
+                        Совокупная стоимость владения (Total Cost of Ownership)
+                    </div>
+                    <div class="tco-grid">
+                        <div class="tco-item"><span class="tco-mark" aria-hidden="true">1</span><span><b>Лицензия:</b> Windows и macOS — платно, Linux — бесплатно. Но это лишь верхушка айсберга.</span></div>
+                        <div class="tco-item"><span class="tco-mark" aria-hidden="true">2</span><span><b>Обучение персонала:</b> на Linux бухгалтеры и менеджеры переучиваются — это недели простоя.</span></div>
+                        <div class="tco-item"><span class="tco-mark" aria-hidden="true">3</span><span><b>Оплата ИТ-инженеров:</b> Linux-администратор стоит в 2–2.5 раза дороже Windows-администратора.</span></div>
+                        <div class="tco-item"><span class="tco-mark" aria-hidden="true">4</span><span><b>Простои и ошибки:</b> непривычный интерфейс замедляет офисные процессы и повышает число ошибок.</span></div>
+                    </div>
+                    <p style="margin-top:12px;font-size:12px;color:#78350f;line-height:1.5;font-weight:600;">
+                        Управленческий вывод: TCO = лицензия + обучение + зарплаты ИТ + потери от простоя. Дешёвая лицензия ≠ дешёвое владение.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 4. УРОКИ -->
+            <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                <div class="section-title" id="lessons-title"><span class="st-icon" aria-hidden="true">🎓</span>4. Уроки для менеджеров</div>
+                <div class="lessons-grid">
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">1</span><span>Выбор ОС — не вкусовое решение, а расчёт TCO: лицензия + обучение + ИТ-персонал + потери от простоя.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">2</span><span>Windows — стандарт офиса. Совместимость и дешёвая поддержка важнее «красоты» интерфейса.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">3</span><span>macOS — оправдана для креативных отделов и топ-менеджмента: стабильность, безопасность, статус.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">4</span><span>Linux — незаменим на серверах и в руках разработчиков, но опасен на столах обычных офисных сотрудников.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">5</span><span>Бесплатная лицензия ≠ дешёвое владение. Дефицитный Linux-инженер стоит в 2–2.5 раза дороже.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">6</span><span>Оптимальная стратегия — гетерогенная среда: Windows для офиса, macOS для креатива, Linux для серверов.</span></div>
+                </div>
+            </section>
+
+            <div class="video-section reveal">
+                <div class="video-container">
+                    <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: стратегический анализ платформ"></iframe>
+                </div>
+                <div class="links-hub">
+                    <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+					<button onclick="changeVideo('https://rutube.ru/play/embed/774ec7e9da72487ae99017274e43a44c/')" class="video-btn rt-btn">📹 Ролик 1. История ОС</button>
+                    <button onclick="changeVideo('https://rutube.ru/play/embed/3c8915d0112f3cec545956526ab60933/')" class="video-btn rt-btn">📹 Ролик 1. Сравнение ОС</button>
+                    
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="slide-footer">Менеджмент · 1 курс · Операционные системы · Часть 3 из 5</div>
+</div>
+
+<div class="speaker-notes">
+    <div style="position:sticky;top:0;background:var(--c-dark);padding:20px 20px 10px 20px;border-bottom:1px solid var(--c-dark-3);width:100%;z-index:100;">
+        <div class="notes-header"><span>🎙️ Скрипт преподавателя</span><span class="timer-badge">15 мин</span></div>
+        <div style="width:100%;aspect-ratio:16/9;border-radius:var(--r-sm);overflow:hidden;background:#000;box-shadow:var(--sh-md);">
+           <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"  allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+        </div>
+    </div>
+    <div class="lecture-text" style="margin-top:20px;">
+        <p>Коллеги, мы переходим к третьей, самой важной с практической точки зрения части нашей лекции. Сравнительный стратегический анализ крупнейших операционных систем. Пройдёт всего несколько лет, вы возглавите отделы или компании. И перед вами встанет задача: утвердить бюджет на закупку компьютеров и программного обеспечения. В этот момент вы должны будете выбрать технологический фундамент компании не по принципу «мне нравится эта иконка», а на основе жёстких бизнес-критериев.</p>
+        <div class="action-hint">Обратите внимание студентов на блок 1 «Корпоративная битва платформ».</div>
+        <h3>📌 1. Корпоративная битва платформ</h3>
+        <p>Посмотрите на первый блок нашего слайда. Это матрица, в которой мы сравниваем три столпа ИТ-рынка: Windows, macOS и Linux. Каждая из этих систем представляет собой совершенно разную философию, разную модель монетизации. И, что самое главное, влечёт за собой абсолютно разные финансовые последствия для предприятия. Пять критериев: рыночная ниша, бизнес-модель, совместимость, информационная безопасность и экономика совокупной стоимости владения.</p>
+        <div class="action-hint">Перейдите к блоку 2 «Три платформы: философия и бизнес-модель».</div>
+        <h3>📌 2. Windows: универсальный офисный стандарт</h3>
+        <p>Обратите внимание на первую карточку второго блока. Windows — это абсолютный монополист и классический стандарт на рынке офисных персональных компьютеров. Философия Microsoft построена на тотальной универсальности и обратной совместимости. Что это значит для бизнеса. К компьютеру на Windows без проблем подключится любой торговый терминал, кассовый аппарат, редкий заводской сканер или принтер, выпущенный десять лет назад. Весь корпоративный софт в мире — от отечественной системы 1С до тяжёлых систем планирования ресурсов предприятия — пишется в первую очередь под Windows.</p>
+        <p>Бизнес-модель Microsoft — это продажа коммерческих лицензий. Сегодня компания чаще всего продаёт их по подписке для бизнеса. С точки зрения финансового директора это плюс: затраты на программное обеспечение прогнозируемые и понятные. Однако у массовости Windows есть огромный минус — информационная безопасность. Так как Windows стоит на восьмидесяти процентах офисных персональных компьютеров в мире, она является главной мишенью для хакеров. Абсолютное большинство вирусов-вымогателей, которые шифруют базы данных компаний и требуют выкуп, пишутся именно под Windows. Выбирая эту систему, менеджер обязан закладывать в бюджет серьёзные расходы на антивирусную защиту и кибербезопасность.</p>
+        <h3>📌 macOS: премиальная экосистема контроля</h3>
+        <p>Обратите внимание на вторую карточку второго блока. Совершенно иную картину мы видим у компании Apple с её системой macOS. Бизнес-модель Apple принципиально отличается. Они не продают операционную систему отдельно. Они продают закрытую, дорогую экосистему в комплекте со своим премиальным железом — компьютерами Mac. Философия Apple — полный контроль над качеством. Поскольку они сами создают и микросхемы, и операционную систему, компьютеры Mac работают невероятно стабильно, быстро и практически не зависают.</p>
+        <p>Зачем бизнесу закупать технику, которая стоит в два-три раза дороже обычных персональных компьютеров. Во-первых, это стандарт индустрии для креативного сектора. Если вы руководите маркетинговым, дизайнерским или архитектурным агентством, ваши сотрудники на Mac будут работать быстрее благодаря оптимизации графического софта. Во-вторых, это безопасность. Архитектура macOS построена по принципу жёсткой изоляции программ, так называемых песочниц. А модерация софта в их магазине исключает попадание вирусов. Под macOS практически нет вредоносных программ, способных парализовать сеть компании. Но с точки зрения классического офиса macOS — это боль совместимости. Запустить на ней некоторые специфические государственные плагины, старые версии 1С или специализированный инженерный софт — это сложнейшая задача, требующая костылей и перенастроек.</p>
+        <h3>📌 Linux: фундамент серверной инфраструктуры</h3>
+        <p>Обратите внимание на третью карточку второго блока. И наконец, третья система — Linux. Здесь мы сталкиваемся с абсолютно уникальной бизнес-моделью — открытый исходный код. Linux бесплатен. Любой человек или компания может скачать его, установить на тысячи компьютеров и не заплатить ни копейки за лицензию. Linux — это абсолютный некоронованный король серверного мира. На нём работают облака крупнейших российских компаний, серверы мессенджеров, базы данных крупнейших ритейлеров и банков. Он невероятно надёжен, не требователен к мощностям и обладает максимальной безопасностью. Так как код открыт, любые уязвимости мгновенно заделываются мировым сообществом.</p>
+        <div class="action-hint">Перейдите к блоку 3 «Экономика TCO».</div>
+        <h3>📌 3. Экономика TCO: почему бесплатный Linux может быть дорогим</h3>
+        <p>Обратите внимание на третий блок нашего слайда. Это четыре карточки с пунктами совокупной стоимости владения. Казалось бы, вот оно — идеальное решение для эффективного менеджера. Давайте установим бесплатный Linux всем сотрудникам офиса и сэкономим миллионы на лицензиях Windows. И вот здесь, коллеги, включается главное управленческое понятие, которое вы обязаны выучить — совокупная стоимость владения, или TCO.</p>
+        <p>Совокупная стоимость владения — это не просто цена покупки софта. Это сумма всех затрат на информационные технологии за годы использования. Да, сам Linux бесплатен. Но если вы посадите за него обычных бухгалтеров или менеджеров по продажам, вы столкнётесь с катастрофой. Им придётся полностью переучиваться, так как интерфейс и логика программ отличаются от привычной Windows. Офисные процессы замедлятся, пойдут ошибки в отчётах. Более того, чтобы настраивать и поддерживать бесплатный Linux в масштабах компании, вам понадобятся системные инженеры высокого класса. А теперь посмотрите на рынок труда. Зарплата системного администратора Windows условно составляет восемьдесят тысяч рублей. А дефицитного инженера Linux — двести тысяч рублей. В итоге вся ваша мнимая экономия на бесплатных лицензиях будет полностью перекрыта гигантскими расходами на фонд оплаты труда ИТ-отдела и убытками от простоя персонала.</p>
+        <p>Управленческий вывод. Менеджер должен уметь считать совокупную стоимость владения в долгую. Windows идеальна для стандартного офиса и бэк-офиса за счёт совместимости и дешевизны поддержки. macOS оправданна для топ-менеджмента и креативных отделов ради надёжности и статуса. Linux незаменим и экономически выгоден на серверах компании и в руках разработчиков, но опасен на столах обычных офисных сотрудников.</p>
+        <div class="action-hint">Перейдите к блоку 4 «Уроки для менеджеров».</div>
+        <h3>📌 4. Уроки для менеджеров</h3>
+        <p>Обратите внимание на четвёртый блок нашего слайда. Шесть карточек с номерами и формулировками.</p>
+        <p>Первый урок. Выбор операционной системы — не вкусовое решение, а расчёт совокупной стоимости владения: лицензия плюс обучение плюс ИТ-персонал плюс потери от простоя. Второй урок. Windows — стандарт офиса. Совместимость и дешёвая поддержка важнее красоты интерфейса. Третий урок. macOS оправдана для креативных отделов и топ-менеджмента: стабильность, безопасность, статус. Четвёртый урок. Linux незаменим на серверах и в руках разработчиков, но опасен на столах обычных офисных сотрудников. Пятый урок. Бесплатная лицензия не равно дешёвое владение. Дефицитный Linux-инженер стоит в два-два с половиной раза дороже. Шестой урок. Оптимальная стратегия — гетерогенная среда. Windows для офиса, macOS для креатива, Linux для серверов.</p>
+        <p>В следующей части мы разберём инструментарий менеджера: Active Directory, лицензионную чистоту, разграничение прав доступа и MDM. Спасибо за внимание!</p>
+    </div>
+
+    <section class="notes-section" aria-labelledby="glossary-title">
+        <div class="notes-section-title" id="glossary-title"><span aria-hidden="true">📖</span>Словарь аббревиатур</div>
+        <table class="notes-table">
+            <thead><tr><th style="width:22%">Аббр.</th><th style="width:32%">Расшифровка</th><th>Пояснение</th></tr></thead>
+            <tbody>
+                <tr><td class="abbr">ОС</td><td>Операционная система</td><td class="explain">Комплекс программ для управления ресурсами</td></tr>
+                <tr><td class="abbr">TCO</td><td>Total Cost of Ownership</td><td class="explain">Совокупная стоимость владения: лицензии + обучение + поддержка + простои</td></tr>
+                <tr><td class="abbr">Windows</td><td>Windows Operating System</td><td class="explain">ОС Microsoft, стандарт офисных ПК (80% рынка)</td></tr>
+                <tr><td class="abbr">macOS</td><td>Macintosh Operating System</td><td class="explain">ОС Apple, премиум-сегмент, креатив, топ-менеджмент</td></tr>
+                <tr><td class="abbr">Linux</td><td>Linux Kernel</td><td class="explain">Открытая ОС, стандарт серверов и облаков</td></tr>
+                <tr><td class="abbr">iOS</td><td>iPhone Operating System</td><td class="explain">Мобильная ОС Apple</td></tr>
+                <tr><td class="abbr">Open Source</td><td>Открытый исходный код</td><td class="explain">Модель разработки, при которой код доступен для изучения и изменения</td></tr>
+                <tr><td class="abbr">B2B</td><td>Business to Business</td><td class="explain">Продажи компаниям, а не конечным потребителям</td></tr>
+                <tr><td class="abbr">ERP</td><td>Enterprise Resource Planning</td><td class="explain">Система планирования ресурсов предприятия</td></tr>
+                <tr><td class="abbr">CRM</td><td>Customer Relationship Management</td><td class="explain">Система управления взаимоотношениями с клиентами</td></tr>
+                <tr><td class="abbr">1С</td><td>1С:Предприятие</td><td class="explain">Российская ERP-платформа для бухгалтерии и управления</td></tr>
+                <tr><td class="abbr">ИТ</td><td>Информационные технологии</td><td class="explain">Область управления данными и вычислительными системами</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="notes-section" aria-labelledby="sources-title">
+        <div class="notes-section-title" id="sources-title"><span aria-hidden="true">📚</span>Источники и литература</div>
+        <div class="notes-sources">
+            <div class="src-group">📖 Учебники и монографии</div>
+            <ol>
+                <li>Э. Таненбаум. Современные операционные системы. — 4-е изд.</li>
+                <li>У. Столлингс. Операционные системы. — 9-е изд.</li>
+            </ol>
+            <div class="src-group">💼 Экономика ИТ и TCO</div>
+            <ol start="3">
+                <li>Материалы Gartner по совокупной стоимости владения (TCO).</li>
+                <li>Обзоры рынка операционных систем (StatCounter, Net Applications).</li>
+            </ol>
+            <div class="src-group">🏛️ Платформы и вендоры</div>
+            <ol start="5">
+                <li>Документация Microsoft Windows Server.</li>
+                <li>Документация Apple macOS и iOS.</li>
+                <li>Документация Red Hat Enterprise Linux, FreeBSD.</li>
+                <li>Материалы IBM по мэйнфреймам System/360, zSystems.</li>
+            </ol>
+        </div>
+    </section>
+</div>
+
+<script>function changeVideo(url){document.getElementById('lecture-player').src=url;}</script>
+
+<nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 3; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

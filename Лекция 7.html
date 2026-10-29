@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 7 из 18. Как устроен интернет технически: от адреса до бита</title>
+    <style>
+        /* ============================================================
+           ДИЗАЙН-ТОКЕНЫ (единая система с Блоками 1–3)
+           ============================================================ */
+        :root {
+            --c-bg: #ffffff;
+            --c-surface: #f8fafc;
+            --c-surface-2: #f1f5f9;
+            --c-border: #e2e8f0;
+            --c-border-strong: #cbd5e0;
+            --c-text: #0f172a;
+            --c-text-2: #334155;
+            --c-text-3: #64748b;
+            --c-text-muted: #94a3b8;
+            --c-primary: #2563eb;
+            --c-primary-2: #1d4ed8;
+            --c-primary-soft: #eff6ff;
+            --c-accent-mac: #dc2626;
+            --c-accent-mac-soft: #fef2f2;
+            --c-accent-ip: #d97706;
+            --c-accent-ip-soft: #fffbeb;
+            --c-accent-dns: #059669;
+            --c-accent-dns-soft: #ecfdf5;
+            --c-accent-dhcp: #7c3aed;
+            --c-accent-dhcp-soft: #f5f3ff;
+            --c-accent-arp: #0891b2;
+            --c-accent-arp-soft: #ecfeff;
+            --c-accent-tcp: #db2777;
+            --c-accent-tcp-soft: #fdf2f8;
+            --c-accent-udp: #ca8a04;
+            --c-accent-udp-soft: #fefce8;
+            --c-accent-icmp: #4f46e5;
+            --c-accent-icmp-soft: #eef2ff;
+            --c-accent-eth: #0d9488;
+            --c-accent-eth-soft: #f0fdfa;
+            --c-dark: #0f172a;
+            --c-dark-2: #1e293b;
+            --c-dark-3: #334155;
+            --c-dark-text: #e2e8f0;
+            --c-dark-text-2: #94a3b8;
+            --c-dark-accent: #60a5fa;
+
+            --r-sm: 8px;
+            --r-md: 12px;
+            --r-lg: 16px;
+            --r-xl: 20px;
+            --r-pill: 999px;
+
+            --sh-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+            --sh-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+            --sh-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+            --sh-lg: 0 12px 28px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.06);
+            --sh-focus: 0 0 0 3px rgba(37, 99, 235, 0.35);
+
+            --f-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --f-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+            --sp-1: 4px;
+            --sp-2: 8px;
+            --sp-3: 12px;
+            --sp-4: 16px;
+            --sp-5: 20px;
+            --sp-6: 24px;
+            --sp-8: 32px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            font-family: var(--f-sans);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--c-bg);
+            color: var(--c-text);
+            padding-bottom: 80px !important;
+        }
+
+        :focus-visible {
+            outline: none;
+            box-shadow: var(--sh-focus);
+            border-radius: var(--r-sm);
+        }
+
+        /* ============================================================
+           ПАНЕЛИ
+           ============================================================ */
+        .student-view {
+            width: 66.66%;
+            height: 100vh;
+            background: var(--c-bg);
+            padding: 32px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid var(--c-border);
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        .speaker-notes {
+            width: 33.34%;
+            height: 100%;
+            background: var(--c-dark);
+            color: var(--c-dark-text);
+            padding: 28px;
+            overflow-y: auto;
+        }
+
+        .slide-header {
+            font-size: 26px;
+            color: var(--c-text);
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 3px solid var(--c-primary);
+            position: relative;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -3px;
+            width: 80px;
+            height: 3px;
+            background: var(--c-accent-tcp);
+            border-radius: 3px;
+        }
+
+        .slide-body { flex-grow: 1; display: flex; flex-direction: column; gap: 22px; padding: 4px 0; }
+        .slide-footer { font-size: 12px; color: var(--c-text-muted); text-align: right; margin-top: 16px; letter-spacing: 0.01em; }
+
+        /* ============================================================
+           НАВИГАЦИЯ ПО СЕКЦИЯМ (якоря)
+           ============================================================ */
+        .toc {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 10px 12px;
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            margin-bottom: 4px;
+        }
+        .toc a {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--c-text-2);
+            text-decoration: none;
+            padding: 4px 9px;
+            border-radius: var(--r-pill);
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            transition: all .15s ease;
+            white-space: nowrap;
+        }
+        .toc a:hover { background: var(--c-primary-soft); border-color: var(--c-primary); color: var(--c-primary); }
+
+        /* ============================================================
+           KPI-СТРИП
+           ============================================================ */
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+        .kpi {
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            padding: 12px 10px;
+            text-align: center;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .kpi:hover { transform: translateY(-2px); box-shadow: var(--sh-md); border-color: var(--c-border-strong); }
+        .kpi .kpi-val { font-size: 19px; font-weight: 800; color: var(--c-text); letter-spacing: -0.02em; line-height: 1.1; }
+        .kpi .kpi-lbl { font-size: 10px; color: var(--c-text-3); margin-top: 4px; line-height: 1.3; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+        .kpi.k-mac .kpi-val { color: var(--c-accent-mac); }
+        .kpi.k-ip .kpi-val { color: var(--c-accent-ip); }
+        .kpi.k-dns .kpi-val { color: var(--c-accent-dns); }
+        .kpi.k-tcp .kpi-val { color: var(--c-accent-tcp); }
+        .kpi.k-udp .kpi-val { color: var(--c-accent-udp); }
+        .kpi.k-eth .kpi-val { color: var(--c-accent-eth); }
+
+        /* ============================================================
+           СЕКЦИИ
+           ============================================================ */
+        .section-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--c-text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.01em;
+            scroll-margin-top: 12px;
+        }
+        .section-title .st-icon {
+            width: 26px; height: 26px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--c-primary-soft);
+            color: var(--c-primary);
+            border-radius: var(--r-sm);
+            font-size: 14px;
+        }
+        .section-sub {
+            font-size: 12px;
+            color: var(--c-text-3);
+            margin: -6px 0 10px 34px;
+            line-height: 1.4;
+        }
+
+        /* ============================================================
+           СХЕМА OSI vs TCP/IP
+           ============================================================ */
+        .osi-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .osi-col {
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            padding: 12px;
+        }
+        .osi-col h4 {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--c-text);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .osi-level {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: var(--r-sm);
+            font-size: 12px;
+            margin-bottom: 4px;
+            transition: transform .15s ease;
+        }
+        .osi-level:hover { transform: translateX(2px); }
+        .osi-level .ol-num {
+            flex: 0 0 auto;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 800; color: #fff;
+        }
+        .osi-level .ol-name { font-weight: 700; color: var(--c-text); }
+        .osi-level .ol-desc { font-size: 10.5px; color: var(--c-text-3); margin-left: auto; text-align: right; line-height: 1.2; }
+        .ol-app { background: var(--c-accent-dns-soft); }
+        .ol-app .ol-num { background: var(--c-accent-dns); }
+        .ol-trans { background: var(--c-accent-tcp-soft); }
+        .ol-trans .ol-num { background: var(--c-accent-tcp); }
+        .ol-net { background: var(--c-accent-ip-soft); }
+        .ol-net .ol-num { background: var(--c-accent-ip); }
+        .ol-link { background: var(--c-accent-eth-soft); }
+        .ol-link .ol-num { background: var(--c-accent-eth); }
+        .ol-phys { background: var(--c-accent-eth-soft); }
+        .ol-phys .ol-num { background: var(--c-accent-eth); }
+        .ol-sess { background: #f5f3ff; }
+        .ol-sess .ol-num { background: #7c3aed; }
+        .ol-pres { background: #f5f3ff; }
+        .ol-pres .ol-num { background: #7c3aed; }
+
+        /* ============================================================
+           «МАТРЁШКА» ИНКАПСУЛЯЦИИ
+           ============================================================ */
+        .matryoshka {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .matr-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            border-radius: var(--r-sm);
+            font-size: 12px;
+            border: 1px solid var(--c-border);
+            background: var(--c-bg);
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .matr-row:hover { transform: translateX(3px); box-shadow: var(--sh-sm); }
+        .matr-row .mr-tag {
+            flex: 0 0 auto;
+            font-size: 9.5px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.05em; padding: 3px 8px;
+            border-radius: var(--r-pill); font-family: var(--f-mono);
+            color: #fff;
+        }
+        .matr-row .mr-body { flex: 1; min-width: 0; font-size: 12px; color: var(--c-text-2); line-height: 1.35; }
+        .matr-row .mr-body b { color: var(--c-text); }
+        .matr-row .mr-size {
+            flex: 0 0 auto; font-size: 10.5px; color: var(--c-text-3);
+            font-family: var(--f-mono); font-weight: 700;
+        }
+        .mr-app { border-left: 4px solid var(--c-accent-dns); }
+        .mr-app .mr-tag { background: var(--c-accent-dns); }
+        .mr-tcp { border-left: 4px solid var(--c-accent-tcp); }
+        .mr-tcp .mr-tag { background: var(--c-accent-tcp); }
+        .mr-ip { border-left: 4px solid var(--c-accent-ip); }
+        .mr-ip .mr-tag { background: var(--c-accent-ip); }
+        .mr-eth { border-left: 4px solid var(--c-accent-eth); }
+        .mr-eth .mr-tag { background: var(--c-accent-eth); }
+        .mr-phys { border-left: 4px solid var(--c-text-3); }
+        .mr-phys .mr-tag { background: var(--c-text-3); }
+
+        /* ============================================================
+           КАРТОЧКИ
+           ============================================================ */
+        .proto-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .proto-card {
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            padding: 14px 16px;
+            position: relative;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .proto-card:hover { transform: translateY(-3px); box-shadow: var(--sh-md); border-color: var(--c-border-strong); }
+        .proto-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 14px; bottom: 14px;
+            width: 4px;
+            border-radius: 0 3px 3px 0;
+        }
+        .proto-card.p-mac::before { background: var(--c-accent-mac); }
+        .proto-card.p-ip::before { background: var(--c-accent-ip); }
+        .proto-card.p-dns::before { background: var(--c-accent-dns); }
+        .proto-card.p-dhcp::before { background: var(--c-accent-dhcp); }
+        .proto-card.p-arp::before { background: var(--c-accent-arp); }
+        .proto-card.p-tcp::before { background: var(--c-accent-tcp); }
+        .proto-card.p-udp::before { background: var(--c-accent-udp); }
+        .proto-card.p-icmp::before { background: var(--c-accent-icmp); }
+        .proto-card .pc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+        .proto-card .pc-icon { font-size: 18px; }
+        .proto-card .pc-name { font-size: 14px; font-weight: 800; color: var(--c-text); letter-spacing: -0.01em; }
+        .proto-card .pc-sub { font-size: 10.5px; color: var(--c-text-3); font-family: var(--f-mono); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .proto-card .pc-body { font-size: 12px; color: var(--c-text-2); line-height: 1.5; }
+        .proto-card .pc-body b { color: var(--c-text); }
+        .proto-card .pc-meta { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--c-border); font-size: 10.5px; color: var(--c-text-3); font-weight: 600; }
+        .proto-card .pc-analogy {
+            margin-top: 7px; padding: 7px 9px; background: #fffbeb;
+            border-left: 3px solid #d97706; border-radius: 4px;
+            font-size: 10.5px; color: #92400e; line-height: 1.4; font-style: italic;
+        }
+
+        /* ============================================================
+           ШАГОВЫЙ ФЛОУ
+           ============================================================ */
+        .flow {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            position: relative;
+        }
+        .flow-step {
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            padding: 12px 10px 10px;
+            text-align: center;
+            position: relative;
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .flow-step:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+        .flow-step + .flow-step::before {
+            content: '→';
+            position: absolute;
+            left: -10px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--c-text-muted);
+            font-weight: 800;
+            font-size: 13px;
+        }
+        .flow-step .fs-num {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            margin: 0 auto 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800; color: #fff;
+        }
+        .flow-step .fs-name { font-size: 12px; font-weight: 800; color: var(--c-text); margin-bottom: 2px; }
+        .flow-step .fs-desc { font-size: 10.5px; color: var(--c-text-3); line-height: 1.35; }
+        .flow-tcp .fs-num { background: var(--c-accent-tcp); }
+        .flow-dhcp .fs-num { background: var(--c-accent-dhcp); }
+        .flow-arp .fs-num { background: var(--c-accent-arp); }
+
+        /* ============================================================
+           ТАБЛИЦЫ
+           ============================================================ */
+        .addr-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .addr-table th {
+            background: var(--c-dark);
+            color: #fff;
+            padding: 9px 11px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .addr-table td {
+            padding: 8px 11px;
+            border-bottom: 1px solid var(--c-border);
+            color: var(--c-text-2);
+            vertical-align: top;
+            line-height: 1.4;
+        }
+        .addr-table tr:nth-child(even) td { background: var(--c-surface); }
+        .addr-table tr:hover td { background: var(--c-primary-soft); }
+        .addr-table .mono { font-family: var(--f-mono); font-size: 11px; color: var(--c-text); font-weight: 700; }
+        .addr-table .badge {
+            display: inline-block; font-size: 9px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            padding: 2px 7px; border-radius: var(--r-pill);
+        }
+        .badge-mac { background: var(--c-accent-mac-soft); color: var(--c-accent-mac); }
+        .badge-v4 { background: var(--c-accent-ip-soft); color: var(--c-accent-ip); }
+        .badge-v6 { background: var(--c-accent-dns-soft); color: var(--c-accent-dns); }
+        .badge-port { background: var(--c-accent-tcp-soft); color: var(--c-accent-tcp); }
+
+        /* ============================================================
+           БЛОК «УРОКИ ДЛЯ МЕНЕДЖЕРОВ»
+           ============================================================ */
+        .lessons-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: var(--r-lg);
+            padding: 16px 18px;
+        }
+        .lessons-box .section-title { color: #166534; margin-bottom: 10px; }
+        .lessons-box .section-title .st-icon { background: #dcfce7; color: #15803d; }
+        .lessons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+        .lesson { display: flex; gap: 8px; font-size: 12px; line-height: 1.45; color: #14532d; }
+        .lesson .lesson-num {
+            flex: 0 0 auto; width: 18px; height: 18px; border-radius: 50%;
+            background: #15803d; color: #fff; font-size: 10px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; margin-top: 1px;
+        }
+
+        /* ============================================================
+           ВИДЕО
+           ============================================================ */
+        .video-section { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .video-container {
+            width: 100%; max-width: 580px;
+            border-radius: var(--r-lg); overflow: hidden;
+            box-shadow: var(--sh-lg); background: #000;
+            aspect-ratio: 16 / 9;
+        }
+        .links-hub { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .video-btn {
+            text-decoration: none; padding: 9px 14px; border-radius: var(--r-sm);
+            font-size: 12px; font-weight: 700; color: white;
+            display: flex; align-items: center; gap: 6px;
+            transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+            cursor: pointer; border: none; font-family: inherit;
+        }
+        .video-btn:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+        .rt-btn { background: #00a877; }
+        .rt-btn:hover { background: #008f65; }
+        .stop-btn { background: #dc143c; }
+        .stop-btn:hover { background: #b01030; }
+
+        /* ============================================================
+           ПРАВАЯ ПАНЕЛЬ
+           ============================================================ */
+        .notes-header {
+            font-size: 16px; color: var(--c-dark-accent); font-weight: 800;
+            margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--c-dark-3); padding-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+        .timer-badge {
+            background: #dc2626; color: #fff; padding: 3px 9px; border-radius: var(--r-pill);
+            font-size: 11px; font-family: var(--f-mono); font-weight: 700;
+        }
+        .lecture-text { font-size: 14px; line-height: 1.68; color: var(--c-dark-text); text-align: justify; }
+        .lecture-text p { margin-bottom: 14px; }
+        .lecture-text h3 {
+            color: var(--c-dark-accent); font-size: 14.5px; margin: 20px 0 10px;
+            border-bottom: 1px solid var(--c-dark-3); padding-bottom: 6px;
+            font-weight: 800; letter-spacing: -0.01em;
+        }
+        .lecture-text ul { margin: 8px 0 14px 18px; }
+        .lecture-text li { margin-bottom: 6px; }
+        .lecture-text strong { color: #f1f5f9; }
+        .action-hint {
+            color: #fcd34d; font-style: italic; background: var(--c-dark-2);
+            padding: 11px 14px; border-radius: var(--r-sm);
+            border-left: 3px solid #fcd34d; margin: 16px 0;
+            font-size: 12.5px; line-height: 1.5;
+        }
+
+        .notes-section {
+            margin-top: 26px;
+            background: var(--c-dark-2);
+            border: 1px solid var(--c-dark-3);
+            border-radius: var(--r-md);
+            padding: 16px 16px 14px;
+        }
+        .notes-section-title {
+            font-size: 13.5px; font-weight: 800; color: var(--c-dark-accent);
+            margin-bottom: 12px; padding-bottom: 8px;
+            border-bottom: 1px solid var(--c-dark-3);
+            display: flex; align-items: center; gap: 8px;
+            letter-spacing: -0.01em;
+        }
+        .notes-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+        .notes-table th {
+            text-align: left; padding: 7px 8px; font-weight: 700;
+            color: var(--c-dark-text-2); font-size: 10px;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--c-dark-3);
+        }
+        .notes-table td {
+            padding: 7px 8px; border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+            color: var(--c-dark-text); vertical-align: top; line-height: 1.4;
+        }
+        .notes-table tr:last-child td { border-bottom: none; }
+        .notes-table tr:hover td { background: rgba(96, 165, 250, 0.06); }
+        .notes-table .abbr { font-weight: 800; color: #93c5fd; font-family: var(--f-mono); font-size: 11px; white-space: nowrap; }
+        .notes-table .explain { color: var(--c-dark-text-2); }
+
+        .notes-sources { font-size: 11.5px; line-height: 1.55; color: var(--c-dark-text); }
+        .notes-sources .src-group {
+            font-weight: 800; color: #86efac; font-size: 10.5px;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin: 10px 0 5px;
+        }
+        .notes-sources .src-group:first-child { margin-top: 0; }
+        .notes-sources ol { margin: 0 0 4px 16px; padding: 0; }
+        .notes-sources li { margin-bottom: 5px; color: var(--c-dark-text-2); }
+        .notes-sources a { color: #93c5fd; text-decoration: none; }
+        .notes-sources a:hover { text-decoration: underline; }
+
+        /* ============================================================
+           НАВИГАЦИЯ
+           ============================================================ */
+        .lecture-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 20px; display: flex; align-items: center; justify-content: center;
+            gap: 12px; z-index: 9999; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+            font-family: var(--f-sans);
+        }
+        .lecture-nav .nav-progress {
+            position: absolute; top: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            transition: width .3s ease; border-radius: 0 3px 3px 0;
+        }
+        .lecture-nav .nav-btn-arrow {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: var(--r-md);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--c-dark-text); font-size: 13px; font-weight: 700;
+            text-decoration: none; cursor: pointer;
+            transition: all .2s ease; font-family: inherit;
+        }
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled) {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: rgba(59, 130, 246, 0.6);
+            color: #fff; transform: translateY(-2px);
+        }
+        .lecture-nav .nav-btn-arrow:disabled { opacity: .35; cursor: not-allowed; }
+        .lecture-nav .nav-btn-arrow .arrow-icon { font-size: 16px; line-height: 1; }
+        .lecture-nav .nav-btn-arrow .arrow-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+        .lecture-nav .nav-btn-arrow .arrow-label small { font-size: 9px; font-weight: 400; opacity: .7; text-transform: uppercase; letter-spacing: .5px; }
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title { font-size: 12px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lecture-nav .nav-center {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 0 20px; color: var(--c-dark-text-2); font-size: 11px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .lecture-nav .nav-counter { font-size: 15px; font-weight: 900; color: #f1f5f9; letter-spacing: -.3px; }
+        .lecture-nav .nav-counter span { color: #64748b; font-size: 12px; font-weight: 600; }
+        .lecture-nav .nav-index-link { color: #60a5fa; text-decoration: none; font-size: 11px; font-weight: 700; transition: color .2s; }
+        .lecture-nav .nav-index-link:hover { color: #93c5fd; text-decoration: underline; }
+        .lecture-nav .nav-jump { display: flex; gap: 4px; margin-left: 8px; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, 0.1); }
+        .lecture-nav .nav-jump-btn {
+            padding: 6px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1); color: var(--c-dark-text-2);
+            font-size: 10px; font-weight: 800; cursor: pointer; text-decoration: none;
+            transition: all .2s; font-family: inherit;
+        }
+        .lecture-nav .nav-jump-btn:hover { background: rgba(59, 130, 246, 0.25); border-color: rgba(59, 130, 246, 0.5); color: #fff; }
+        .lecture-nav .nav-jump-btn.active { background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-color: transparent; color: #fff; }
+
+        /* ============================================================
+           АНИМАЦИИ + REDUCED MOTION
+           ============================================================ */
+        .reveal { animation: fadeUp .5s ease both; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .001ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ============================================================
+           АДАПТИВНОСТЬ
+           ============================================================ */
+        @media (max-width: 1200px) {
+            .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+            .proto-grid { grid-template-columns: 1fr; }
+            .osi-grid { grid-template-columns: 1fr; }
+            .flow { grid-template-columns: repeat(2, 1fr); gap: 14px 8px; }
+            .flow-step + .flow-step::before { display: none; }
+        }
+        @media (max-width: 900px) {
+            .lecture-nav { padding: 10px 12px; gap: 8px; }
+            .lecture-nav .nav-btn-arrow { padding: 8px 12px; }
+            .lecture-nav .nav-btn-arrow .arrow-label .arrow-title { max-width: 90px; font-size: 11px; }
+            .lecture-nav .nav-center { padding: 0 10px; }
+            .lecture-nav .nav-jump { display: none; }
+            .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+            .lessons-grid { grid-template-columns: 1fr; }
+            .flow { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+         ЛЕВАЯ ЧАСТЬ (2/3): ЭКРАН ДЛЯ СТУДЕНТОВ
+         ============================================================ -->
+    <div class="student-view">
+        <div>
+            <h1 class="slide-header">
+                Лекция 2. Как устроен интернет технически: от адреса до бита
+            </h1>
+
+            <div class="slide-body">
+
+                <!-- ОГЛАВЛЕНИЕ ПО СЕКЦИЯМ -->
+                <nav class="toc reveal" aria-label="Содержание лекции">
+                    <a href="#sec-model">1. Модель OSI/TCP-IP</a>
+                    <a href="#sec-matr">2. Матрёшка инкапсуляции</a>
+                    <a href="#sec-mac">3. MAC-адреса</a>
+                    <a href="#sec-ip">4. IP-адреса</a>
+                    <a href="#sec-dns">5. DNS</a>
+                    <a href="#sec-dhcp">6. DHCP</a>
+                    <a href="#sec-arp">7. ARP</a>
+                    <a href="#sec-ports">8. Порты</a>
+                    <a href="#sec-tcp">9. TCP</a>
+                    <a href="#sec-udp">10. UDP</a>
+                    <a href="#sec-icmp">11. ICMP</a>
+                    <a href="#sec-eth">12. Ethernet</a>
+                    <a href="#sec-phys">13. Физический уровень</a>
+                    <a href="#sec-lessons">14. Уроки</a>
+                </nav>
+
+                <!-- KPI-СТРИП -->
+                <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры лекции">
+                    <div class="kpi k-mac" role="listitem">
+                        <div class="kpi-val">48 бит</div>
+                        <div class="kpi-lbl">MAC-адрес</div>
+                    </div>
+                    <div class="kpi k-ip" role="listitem">
+                        <div class="kpi-val">32 / 128</div>
+                        <div class="kpi-lbl">IPv4 / IPv6</div>
+                    </div>
+                    <div class="kpi k-dns" role="listitem">
+                        <div class="kpi-val">65 535</div>
+                        <div class="kpi-lbl">макс. порт</div>
+                    </div>
+                    <div class="kpi k-tcp" role="listitem">
+                        <div class="kpi-val">3</div>
+                        <div class="kpi-lbl">шага TCP handshake</div>
+                    </div>
+                    <div class="kpi k-udp" role="listitem">
+                        <div class="kpi-val">8 байт</div>
+                        <div class="kpi-lbl">заголовок UDP</div>
+                    </div>
+                    <div class="kpi k-eth" role="listitem">
+                        <div class="kpi-val">1500</div>
+                        <div class="kpi-lbl">MTU Ethernet</div>
+                    </div>
+                </div>
+
+                <!-- ============================================================
+                     1. МОДЕЛЬ OSI / TCP-IP
+                     ============================================================ -->
+                <section class="reveal" id="sec-model" aria-labelledby="model-title">
+                    <div class="section-title" id="model-title">
+                        <span class="st-icon" aria-hidden="true">🏗️</span>
+                        1. Модель OSI и TCP/IP: зачем делить сеть на уровни
+                    </div>
+                    <div class="section-sub">Аналогия: стройка. Каждый уровень — своя бригада, которая делает только свою работу и передаёт результат следующей.</div>
+                    <div class="osi-grid">
+                        <div class="osi-col">
+                            <h4>Теория: OSI (7 уровней, 1983)</h4>
+                            <div class="osi-level ol-app">
+                                <span class="ol-num">7</span>
+                                <span class="ol-name">Прикладной</span>
+                                <span class="ol-desc">программа: браузер, почта</span>
+                            </div>
+                            <div class="osi-level ol-pres">
+                                <span class="ol-num">6</span>
+                                <span class="ol-name">Представления</span>
+                                <span class="ol-desc">кодировка, шифрование</span>
+                            </div>
+                            <div class="osi-level ol-sess">
+                                <span class="ol-num">5</span>
+                                <span class="ol-name">Сеансовый</span>
+                                <span class="ol-desc">поддержание сеанса</span>
+                            </div>
+                            <div class="osi-level ol-trans">
+                                <span class="ol-num">4</span>
+                                <span class="ol-name">Транспортный</span>
+                                <span class="ol-desc">порты, TCP/UDP</span>
+                            </div>
+                            <div class="osi-level ol-net">
+                                <span class="ol-num">3</span>
+                                <span class="ol-name">Сетевой</span>
+                                <span class="ol-desc">IP-адреса, маршрутизация</span>
+                            </div>
+                            <div class="osi-level ol-link">
+                                <span class="ol-num">2</span>
+                                <span class="ol-name">Канальный</span>
+                                <span class="ol-desc">MAC, Ethernet-кадр</span>
+                            </div>
+                            <div class="osi-level ol-phys">
+                                <span class="ol-num">1</span>
+                                <span class="ol-name">Физический</span>
+                                <span class="ol-desc">провода, радиоволны</span>
+                            </div>
+                        </div>
+                        <div class="osi-col">
+                            <h4>Практика: TCP/IP (4 уровня)</h4>
+                            <div class="osi-level ol-app">
+                                <span class="ol-num">4</span>
+                                <span class="ol-name">Прикладной</span>
+                                <span class="ol-desc">OSI 5–7 вместе</span>
+                            </div>
+                            <div class="osi-level ol-trans">
+                                <span class="ol-num">3</span>
+                                <span class="ol-name">Транспортный</span>
+                                <span class="ol-desc">TCP, UDP</span>
+                            </div>
+                            <div class="osi-level ol-net">
+                                <span class="ol-num">2</span>
+                                <span class="ol-name">Межсетевой</span>
+                                <span class="ol-desc">IP, ICMP</span>
+                            </div>
+                            <div class="osi-level ol-link">
+                                <span class="ol-num">1</span>
+                                <span class="ol-name">Канальный</span>
+                                <span class="ol-desc">OSI 1–2 вместе: Ethernet, физика</span>
+                            </div>
+                            <div style="margin-top:10px; padding:10px; background:#fffbeb; border-left:3px solid #d97706; border-radius:6px; font-size:11px; color:#92400e; line-height:1.4;">
+                                <b>Зачем упростили?</b> На практике три верхних уровня OSI всегда реализует сама программа. Поэтому их объединили в один «прикладной».
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     2. МАТРЁШКА ИНКАПСУЛЯЦИИ
+                     ============================================================ -->
+                <section class="reveal" id="sec-matr" aria-labelledby="matr-title">
+                    <div class="section-title" id="matr-title">
+                        <span class="st-icon" aria-hidden="true">🪆</span>
+                        2. Матрёшка инкапсуляции: как данные обрастают заголовками
+                    </div>
+                    <div class="section-sub">Аналогия: посылка. Вы кладёте вещь в коробку, коробку — в ящик, ящик — в контейнер. На каждом слое — своя наклейка с адресом.</div>
+                    <div class="matryoshka">
+                        <div class="matr-row mr-app">
+                            <span class="mr-tag">Данные</span>
+                            <div class="mr-body"><b>Сообщение</b> — то, что создала программа (текст письма, запрос страницы)</div>
+                            <span class="mr-size">переменный</span>
+                        </div>
+                        <div class="matr-row mr-tcp">
+                            <span class="mr-tag">+ TCP</span>
+                            <div class="mr-body"><b>Сегмент</b> — сообщение разбито на части, к каждой добавлен заголовок с портами и номерами</div>
+                            <span class="mr-size">+20 байт</span>
+                        </div>
+                        <div class="matr-row mr-ip">
+                            <span class="mr-tag">+ IP</span>
+                            <div class="mr-body"><b>Пакет</b> — к сегменту добавлен заголовок с IP-адресами отправителя и получателя</div>
+                            <span class="mr-size">+20 байт</span>
+                        </div>
+                        <div class="matr-row mr-eth">
+                            <span class="mr-tag">+ Ethernet</span>
+                            <div class="mr-body"><b>Кадр</b> — к пакету добавлены MAC-адреса и контрольная сумма</div>
+                            <span class="mr-size">+18 байт</span>
+                        </div>
+                        <div class="matr-row mr-phys">
+                            <span class="mr-tag">Биты</span>
+                            <div class="mr-body"><b>Сигнал</b> — кадр превращается в поток битов: электричество, свет или радиоволны</div>
+                            <span class="mr-size">—</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     3. MAC-АДРЕСА
+                     ============================================================ -->
+                <section class="reveal" id="sec-mac" aria-labelledby="mac-title">
+                    <div class="section-title" id="mac-title">
+                        <span class="st-icon" aria-hidden="true">🪪</span>
+                        3. MAC-адрес: паспорт сетевого адаптера
+                    </div>
+                    <div class="proto-grid">
+                        <div class="proto-card p-mac">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🪪</span>
+                                <div>
+                                    <div class="pc-name">MAC-адрес</div>
+                                    <div class="pc-sub">физический адрес</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">48-битный адрес сетевого адаптера: <b>24 бита</b> — номер производителя, <b>24 бита</b> — уникальный номер. Бывает индивидуальным, групповым и широковещательным.</div>
+                            <div class="pc-analogy">Аналогия: серийный номер на заводской табличке устройства. Уникален, но не говорит, где устройство находится.</div>
+                            <div class="pc-meta">Работает только в пределах канальной среды</div>
+                        </div>
+                        <div class="proto-card p-mac">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🔀</span>
+                                <div>
+                                    <div class="pc-name">Хаб и свитч</div>
+                                    <div class="pc-sub">устройства канального уровня</div>
+                                </div>
+                            </div>
+                            <div class="pc-body"><b>Хаб</b> рассылает кадр всем — медленно и небезопасно. <b>Свитч</b> запоминает, за каким портом какой MAC, и передаёт кадр сразу нужному устройству.</div>
+                            <div class="pc-analogy">Аналогия: хаб — объявление на весь подъезд; свитч — записка в конкретный почтовый ящик.</div>
+                            <div class="pc-meta">Ограничение: не масштабируется на весь мир</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     4. IP-АДРЕСА
+                     ============================================================ -->
+                <section class="reveal" id="sec-ip" aria-labelledby="ip-title">
+                    <div class="section-title" id="ip-title">
+                        <span class="st-icon" aria-hidden="true">🌐</span>
+                        4. IP-адрес: почтовый адрес в глобальной сети
+                    </div>
+                    <div class="proto-grid">
+                        <div class="proto-card p-ip">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🌐</span>
+                                <div>
+                                    <div class="pc-name">IPv4</div>
+                                    <div class="pc-sub">32 бита</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">4 байта, каждый — от 0 до 255. Делится на <b>адрес сети</b> и <b>адрес хоста</b>; маска подсети отделяет одно от другого.</div>
+                            <div class="pc-analogy">Аналогия: адрес «город + улица + дом + квартира». Сеть — это улица, хост — квартира.</div>
+                            <div class="pc-meta">Публичные и частные адреса</div>
+                        </div>
+                        <div class="proto-card p-ip">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🆕</span>
+                                <div>
+                                    <div class="pc-name">IPv6</div>
+                                    <div class="pc-sub">128 бит</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">16 байт, запись — восемь групп hex-чисел. Введён, потому что 4 млрд адресов IPv4 исчерпались (последние блоки выданы в 2011 г.).</div>
+                            <div class="pc-analogy">Аналогия: переход с 6-значных номеров на 12-значные, когда старых перестало хватать.</div>
+                            <div class="pc-meta">Несовместим с IPv4, работают параллельно</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     5. DNS
+                     ============================================================ -->
+                <section class="reveal" id="sec-dns" aria-labelledby="dns-title">
+                    <div class="section-title" id="dns-title">
+                        <span class="st-icon" aria-hidden="true">📖</span>
+                        5. DNS: телефонная книга интернета
+                    </div>
+                    <div class="proto-card p-dns">
+                        <div class="pc-head">
+                            <span class="pc-icon" aria-hidden="true">📖</span>
+                            <div>
+                                <div class="pc-name">DNS</div>
+                                <div class="pc-sub">Domain Name System, 1983</div>
+                            </div>
+                        </div>
+                        <div class="pc-body">Сопоставляет символьные имена (домены) IP-адресам. Иерархия: корневой домен → первого уровня (.ru, .com) → второго → третьего. Записи типов <b>A</b> (IP), <b>MX</b> (почта), <b>CNAME</b> (псевдоним), <b>NS</b> (серверы домена). Кэширование на время TTL.</div>
+                        <div class="pc-analogy">Аналогия: вы помните «Почта России», а не индекс 101000. DNS — справочник, который по названию находит индекс.</div>
+                        <div class="pc-meta">Без DNS интернет был бы неудобен: пришлось бы запоминать числа</div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     6. DHCP
+                     ============================================================ -->
+                <section class="reveal" id="sec-dhcp" aria-labelledby="dhcp-title">
+                    <div class="section-title" id="dhcp-title">
+                        <span class="st-icon" aria-hidden="true">🎫</span>
+                        6. DHCP: как устройство получает IP-адрес
+                    </div>
+                    <div class="section-sub">Аналогия: регистрация в гостинице — вы не выбираете номер сами, администратор выдаёт свободный на время.</div>
+                    <div class="flow flow-dhcp" role="list">
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">1</div>
+                            <div class="fs-name">Discover</div>
+                            <div class="fs-desc">«Есть ли здесь DHCP-сервер?» — широковещательный запрос</div>
+                        </div>
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">2</div>
+                            <div class="fs-name">Offer</div>
+                            <div class="fs-desc">Сервер предлагает IP, маску, шлюз и DNS</div>
+                        </div>
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">3</div>
+                            <div class="fs-name">Request</div>
+                            <div class="fs-desc">«Беру этот адрес» — клиент подтверждает</div>
+                        </div>
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">4</div>
+                            <div class="fs-name">Acknowledge</div>
+                            <div class="fs-desc">Сервер фиксирует адрес за устройством</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px; padding:10px 12px; background:#f5f3ff; border-left:3px solid #7c3aed; border-radius:6px; font-size:11.5px; color:#4c1d95; line-height:1.45;">
+                        <b>Аренда:</b> адрес выдаётся на срок. На половине срока компьютер просит продлить; на 87,5% — ищет новый. При выключении отправляет <b>Release</b> — «адрес свободен».
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     7. ARP
+                     ============================================================ -->
+                <section class="reveal" id="sec-arp" aria-labelledby="arp-title">
+                    <div class="section-title" id="arp-title">
+                        <span class="st-icon" aria-hidden="true">🔎</span>
+                        7. ARP: как узнать MAC по IP
+                    </div>
+                    <div class="section-sub">Аналогия: вы знаете адрес дома, но не знаете, кто в нём живёт. ARP — это вопрос «Кто здесь?» на весь подъезд.</div>
+                    <div class="flow flow-arp" role="list">
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">1</div>
+                            <div class="fs-name">Запрос</div>
+                            <div class="fs-desc">Широковещательно: «Кто имеет этот IP?»</div>
+                        </div>
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">2</div>
+                            <div class="fs-name">Ответ</div>
+                            <div class="fs-desc">Владелец IP сообщает свой MAC</div>
+                        </div>
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">3</div>
+                            <div class="fs-name">Кэш</div>
+                            <div class="fs-desc">Пара IP ↔ MAC попадает в ARP-таблицу</div>
+                        </div>
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">4</div>
+                            <div class="fs-name">Кадр</div>
+                            <div class="fs-desc">Пакет отправляется по найденному MAC</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px; padding:10px 12px; background:#ecfeff; border-left:3px solid #0891b2; border-radius:6px; font-size:11.5px; color:#164e63; line-height:1.45;">
+                        <b>Шлюз по умолчанию:</b> если адресат не в нашей подсети, пакет отправляется на шлюз (роутер). Его MAC и ищется через ARP.
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     8. ПОРТЫ
+                     ============================================================ -->
+                <section class="reveal" id="sec-ports" aria-labelledby="ports-title">
+                    <div class="section-title" id="ports-title">
+                        <span class="st-icon" aria-hidden="true">🚪</span>
+                        8. Порты: двери в компьютере
+                    </div>
+                    <div class="section-sub">Аналогия: IP-адрес — это адрес дома, а порт — номер квартиры. В одном доме — десятки квартир (программ), и письмо должно попасть в нужную.</div>
+                    <table class="addr-table">
+                        <thead>
+                            <tr>
+                                <th>Диапазон</th>
+                                <th>Название</th>
+                                <th>Кто использует</th>
+                                <th>Примеры</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="mono">0–1023</td>
+                                <td><span class="badge badge-port">Общепринятые</span></td>
+                                <td>Системные службы по договорённости</td>
+                                <td>80 — HTTP, 443 — HTTPS, 53 — DNS, 25 — почта</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">1024–49151</td>
+                                <td><span class="badge badge-port">Регистрируемые</span></td>
+                                <td>Приложения, которые регистрируют порт в IANA</td>
+                                <td>Собственный веб-сервер, игровые серверы</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">49152–65535</td>
+                                <td><span class="badge badge-port">Динамические</span></td>
+                                <td>ОС выдаёт автоматически запущенным программам</td>
+                                <td>Порт вашего браузера при запросе страницы</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top:10px; padding:10px 12px; background:#fdf2f8; border-left:3px solid #db2777; border-radius:6px; font-size:11.5px; color:#831843; line-height:1.45;">
+                        <b>Почему это важно:</b> два браузера на одном компьютере получат разные порты — поэтому ответ придёт именно в тот, из которого ушёл запрос. Всё это делает операционная система, мы этого не видим.
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     9. TCP
+                     ============================================================ -->
+                <section class="reveal" id="sec-tcp" aria-labelledby="tcp-title">
+                    <div class="section-title" id="tcp-title">
+                        <span class="st-icon" aria-hidden="true">📦</span>
+                        9. TCP: надёжная доставка с гарантией
+                    </div>
+                    <div class="section-sub">Аналогия: курьер с накладной. Каждую посылку нумерует, требует подпись о получении, при потере — везёт заново.</div>
+                    <div class="proto-grid">
+                        <div class="proto-card p-tcp">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🔢</span>
+                                <div>
+                                    <div class="pc-name">Порядок и подтверждение</div>
+                                    <div class="pc-sub">нумерация байтов</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Поток данных нумеруется. В сегменте — <b>порядковый номер</b>; в ответе — <b>номер подтверждения</b> (следующий ожидаемый байт). Если подтверждение не пришло — таймер, повторная отправка.</div>
+                            <div class="pc-analogy">Аналогия: страницы рукописи пронумерованы — даже если пришли вперемешку, вы соберёте их по порядку.</div>
+                        </div>
+                        <div class="proto-card p-tcp">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🪟</span>
+                                <div>
+                                    <div class="pc-name">Окно и перегрузка</div>
+                                    <div class="pc-sub">управление потоком</div>
+                                </div>
+                            </div>
+                            <div class="pc-body"><b>Размер окна</b> — сколько байт получатель готов принять (буфер). <b>Окно перегрузки</b> — сколько отправитель решает отправить. При потере сегмента окно уменьшается, потом растёт снова.</div>
+                            <div class="pc-analogy">Аналогия: регулировщик на въезде в тоннель — впускает столько машин, сколько тоннель переварит.</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;">
+                        <div class="section-title" style="font-size:13px; margin-bottom:8px;">
+                            <span class="st-icon" aria-hidden="true">🤝</span>
+                            Установка соединения: 3-way handshake
+                        </div>
+                        <div class="flow flow-tcp" role="list">
+                            <div class="flow-step" role="listitem">
+                                <div class="fs-num" aria-hidden="true">1</div>
+                                <div class="fs-name">SYN</div>
+                                <div class="fs-desc">«Хочу соединиться» + стартовый номер</div>
+                            </div>
+                            <div class="flow-step" role="listitem">
+                                <div class="fs-num" aria-hidden="true">2</div>
+                                <div class="fs-name">SYN + ACK</div>
+                                <div class="fs-desc">«Согласен» + свой номер + подтверждение</div>
+                            </div>
+                            <div class="flow-step" role="listitem">
+                                <div class="fs-num" aria-hidden="true">3</div>
+                                <div class="fs-name">ACK</div>
+                                <div class="fs-desc">«Подтверждаю» — соединение установлено</div>
+                            </div>
+                            <div class="flow-step" role="listitem">
+                                <div class="fs-num" aria-hidden="true">4</div>
+                                <div class="fs-name">FIN / RST</div>
+                                <div class="fs-desc">FIN — вежливое закрытие, RST — аварийное</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     10. UDP
+                     ============================================================ -->
+                <section class="reveal" id="sec-udp" aria-labelledby="udp-title">
+                    <div class="section-title" id="udp-title">
+                        <span class="st-icon" aria-hidden="true">⚡</span>
+                        10. UDP: быстро, но без гарантий
+                    </div>
+                    <div class="proto-card p-udp">
+                        <div class="pc-head">
+                            <span class="pc-icon" aria-hidden="true">⚡</span>
+                            <div>
+                                <div class="pc-name">UDP</div>
+                                <div class="pc-sub">User Datagram Protocol</div>
+                            </div>
+                        </div>
+                        <div class="pc-body">Не устанавливает соединение, не гарантирует доставку, не проверяет порядок, не управляет окном и перегрузкой. Просто отправляет данные из порта в порт. Заголовок — всего <b>8 байт</b>.</div>
+                        <div class="pc-analogy">Аналогия: открытка без уведомления о вручении. Быстро и дёшево, но может потеряться — и никто не узнает.</div>
+                        <div class="pc-meta">Где нужен: видеотрансляции, видеозвонки, DNS-запросы (порт 53) — скорость важнее гарантии</div>
+                    </div>
+                    <div style="margin-top:10px; padding:10px 12px; background:#fefce8; border-left:3px solid #ca8a04; border-radius:6px; font-size:11.5px; color:#713f12; line-height:1.45;">
+                        <b>Сравнение:</b> TCP — «доставить любой ценой», UDP — «доставить как можно быстрее». Для платежа — TCP, для прямого эфира — UDP.
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     11. ICMP
+                     ============================================================ -->
+                <section class="reveal" id="sec-icmp" aria-labelledby="icmp-title">
+                    <div class="section-title" id="icmp-title">
+                        <span class="st-icon" aria-hidden="true">📡</span>
+                        11. ICMP: диагностика сети
+                    </div>
+                    <div class="proto-grid">
+                        <div class="proto-card p-icmp">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🏓</span>
+                                <div>
+                                    <div class="pc-name">ping</div>
+                                    <div class="pc-sub">доступность узла</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Отправляет <b>echo-request</b> (тип 8) и ждёт <b>echo-reply</b>. Если ответ пришёл — узел доступен. Если нет — вернётся сообщение «получатель недоступен».</div>
+                            <div class="pc-analogy">Аналогия: крикнуть в тоннель «Эй!» и ждать эха. Есть эхо — есть кто-то на другом конце.</div>
+                        </div>
+                        <div class="proto-card p-icmp">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🗺️</span>
+                                <div>
+                                    <div class="pc-name">traceroute</div>
+                                    <div class="pc-sub">маршрут до узла</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Посылает пакеты с TTL=1, 2, 3… Каждый маршрутизатор уменьшает TTL на 1; когда TTL=0 — отбрасывает пакет и возвращает ошибку «time exceeded» (тип 11). По этим ошибкам строится путь.</div>
+                            <div class="pc-analogy">Аналогия: считать столбы вдоль дороги, чтобы понять, через сколько перекрёстков вы проехали.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     12. ETHERNET
+                     ============================================================ -->
+                <section class="reveal" id="sec-eth" aria-labelledby="eth-title">
+                    <div class="section-title" id="eth-title">
+                        <span class="st-icon" aria-hidden="true">🧱</span>
+                        12. Ethernet: кадр и канальный уровень
+                    </div>
+                    <div class="proto-card p-eth">
+                        <div class="pc-head">
+                            <span class="pc-icon" aria-hidden="true">🧱</span>
+                            <div>
+                                <div class="pc-name">Ethernet-кадр</div>
+                                <div class="pc-sub">канальный уровень</div>
+                            </div>
+                        </div>
+                        <div class="pc-body">К пакету добавляются <b>MAC-адреса</b> (получателя и отправителя), <b>тип протокола</b> и <b>контрольная сумма</b> в конце. Данные кадра — от <b>46 до 1500 байт</b>. Именно поэтому TCP-сегменты режутся примерно по 1460 байт: 1460 + 20 (TCP) + 20 (IP) = 1500.</div>
+                        <div class="pc-analogy">Аналогия: контейнер для перевозки. В него можно положить не больше 1500 байт, иначе не влезет в «фуру» канального уровня.</div>
+                        <div class="pc-meta">MTU — максимальный размер блока, который пропускает среда</div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     13. ФИЗИЧЕСКИЙ УРОВЕНЬ
+                     ============================================================ -->
+                <section class="reveal" id="sec-phys" aria-labelledby="phys-title">
+                    <div class="section-title" id="phys-title">
+                        <span class="st-icon" aria-hidden="true">🔌</span>
+                        13. Физический уровень: провода и радиоволны
+                    </div>
+                    <div class="proto-grid">
+                        <div class="proto-card p-eth">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🪢</span>
+                                <div>
+                                    <div class="pc-name">Коаксиальный кабель</div>
+                                    <div class="pc-sub">1-е поколение Ethernet</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Медный провод в изоляции + металлическая сетка + пластик. Скорость до <b>10 Мбит/с</b>, топология «общая шина». Устарел.</div>
+                        </div>
+                        <div class="proto-card p-eth">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🧵</span>
+                                <div>
+                                    <div class="pc-name">Витая пара</div>
+                                    <div class="pc-sub">Fast Ethernet и далее</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">8 медных проводов, скрученных в спираль. Скрутка снижает помехи. Полудуплекс — 2 пары, дуплекс — 4 пары. Скорость — до <b>1 Гбит/с и выше</b>.</div>
+                        </div>
+                        <div class="proto-card p-eth">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">💡</span>
+                                <div>
+                                    <div class="pc-name">Оптический кабель</div>
+                                    <div class="pc-sub">магистрали и дата-центры</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Стеклянное волокно, по которому идёт свет. Электрические сигналы преобразуются в световые импульсы и обратно. Ограничение — время преобразования.</div>
+                        </div>
+                        <div class="proto-card p-eth">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">📶</span>
+                                <div>
+                                    <div class="pc-name">Радиоэфир</div>
+                                    <div class="pc-sub">Wi-Fi, мобильная связь</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Среда без проводов. Тот же поток битов, только передаётся радиоволнами. Ограничения — помехи, дальность, разделение канала между устройствами.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     14. УРОКИ ДЛЯ МЕНЕДЖЕРОВ
+                     ============================================================ -->
+                <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                    <div class="section-title" id="lessons-title">
+                        <span class="st-icon" aria-hidden="true">🎓</span>
+                        14. Уроки для менеджеров
+                    </div>
+                    <div class="lessons-grid">
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">1</span>
+                            <span>Разделение на уровни (OSI/TCP-IP) — это архитектурный принцип: каждый делает своё и не лезет в чужое. Аналог организационной структуры.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">2</span>
+                            <span>TCP vs UDP — выбор между надёжностью и скоростью. Для платежей — TCP, для видеотрансляции — UDP. Это стратегическое решение продукта.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">3</span>
+                            <span>Контроль перегрузки (окно) — пример адаптивного управления ресурсами под нагрузкой. Тот же принцип применим к бюджетам и командам.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">4</span>
+                            <span>MTU и фрагментация — ограничения инфраструктуры влияют на дизайн приложений. Нельзя «запихнуть» больше, чем пропускает среда.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">5</span>
+                            <span>DNS, DHCP, ARP — автоматизация базовых процессов. Без неё сеть не масштабируется, как и бизнес без регламентов.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">6</span>
+                            <span>ICMP и traceroute — диагностика как обязательная функция. Нельзя управлять тем, что не измеряешь.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ВИДЕО -->
+                <div class="video-section reveal">
+                    <div class="video-container">
+                        <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: как устроен интернет технически"></iframe>
+                    </div>
+                    <div class="links-hub">
+                        <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                        <button onclick="changeVideo('https://rutube.ru/play/embed/e4d97df431de51e0147927618ad957af/')" class="video-btn rt-btn">📜 Лекция 2. От адреса до бита</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            Направление «Менеджмент» | 1 курс | Курс: Как устроен интернет | Блок 2 из 3
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ПРАВАЯ ЧАСТЬ (1/3): СКРИПТ ПРЕПОДАВАТЕЛЯ
+         ============================================================ -->
+    <div class="speaker-notes">
+        <div style="position: sticky; top: 0; background: var(--c-dark); padding: 20px 20px 10px 20px; border-bottom: 1px solid var(--c-dark-3); width: 100%; z-index: 100;">
+            <div class="notes-header">
+                <span>🎙️ Скрипт лектора</span>
+                <span class="timer-badge">50 мин</span>
+            </div>
+            <div style="width: 100%; aspect-ratio: 16 / 9; border-radius: var(--r-sm); overflow: hidden; background: #000; box-shadow: var(--sh-md);">
+               <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"  allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+            </div>
+        </div>
+
+        <div class="lecture-text" style="margin-top: 20px;">
+
+            <p>Добрый день, коллеги! В первом блоке мы разобрали историю: холодная война, идея пакетов, ARPANET, NSFNET, коммерциализация. Теперь — самый важный вопрос: как всё это работает технически? Как пакет с одного компьютера доходит до другого и как тот понимает, что с этим пакетом делать? Мы пройдём путь от адреса до бита — и постараемся говорить на языке неспециалиста.</p>
+
+            <div class="action-hint">Обратите внимание студентов на оглавление в начале слайда — это карта лекции. Можно идти по якорям.</div>
+
+            <h3>📌 1. Модель OSI и TCP/IP: зачем делить сеть на уровни</h3>
+
+            <p>В 70-е годы несколько научных институтов США и Европы создают сети для обмена информацией между учёными. Со временем таких сетей стало много, и они работали обособленно. Если просто соединить их — получим глобальную сеть, интернет. Но есть одна маленькая деталь: каждая сеть немного по-разному отправляла, принимала и хранила данные. Сообщение из одной сети не могло быть принято в другой, потому что отправлялось по одним правилам, а принималось по другим.</p>
+
+            <p>Что делать? Нужна общая модель и набор правил, которым все производители сетевого оборудования будут следовать. Такая модель появилась в <strong>1983 году</strong> под названием <strong>OSI</strong> — модель организации сети. Она не описывает правила, по которым сеть должна работать, но описывает, из каких уровней сеть должна состоять, чтобы в будущем эта сеть могла объединиться с другой. Всего 7 уровней: физический, канальный, сетевой, транспортный, сеансовый, уровень представления и прикладной. Идея в том, чтобы сообщение в ходе передачи прошло каждый из этих уровней сверху вниз, оборачиваясь специальными заголовками, — как матрёшка. А на компьютере-получателе процесс идёт в обратном порядке: сообщение поднимается снизу вверх, и на каждом уровне отсекается заголовок.</p>
+
+            <p>Важно понимать: эта модель описывает, как это должно работать <em>в теории</em>. Практика редко совпадает с теорией на 100%. В ходе проектирования сетей семиуровневую модель трансформировали в <strong>четырёхуровневую TCP/IP</strong>. Главное в ней то, что она описывает не только уровни, но и набор протоколов, которые на каждом уровне должны быть реализованы — по названию двух самых популярных протоколов: TCP и IP.</p>
+
+            <p>Первый уровень сверху — <strong>прикладной</strong>. Он объединяет три верхних уровня OSI: сеансовый, представления и прикладной. Почему их объединили? Потому что на практике все эти задачи — поддержание сеанса связи, синхронизация потоков, кодировка, шифрование, сами программы — реализует сама программа. Данные на этом уровне называют <strong>сообщениями</strong>. Второй уровень — <strong>транспортный</strong>: он отвечает за передачу данных между процессами на компьютере, за порты. Третий — <strong>межсетевой</strong>: IP-адреса и маршрутизация. Четвёртый — <strong>канальный</strong>: MAC-адреса, Ethernet-кадры и физическая среда.</p>
+
+            <div class="action-hint">Переходим к «матрёшке» — это ключевая визуальная метафора всей лекции.</div>
+
+            <h3>📌 2. Матрёшка инкапсуляции</h3>
+
+            <p>Представьте посылку. Вы кладёте вещь в коробку, коробку — в ящик, ящик — в контейнер. На каждом слое — своя наклейка с адресом. Так и здесь. Программа создаёт <strong>сообщение</strong>. Транспортный уровень режет его на <strong>сегменты</strong> и добавляет заголовок с портами и номерами. Межсетевой уровень добавляет заголовок с IP-адресами — получается <strong>пакет</strong>. Канальный уровень добавляет MAC-адреса и контрольную сумму — получается <strong>кадр</strong>. Физический уровень превращает кадр в поток битов: электричество, свет или радиоволны. На каждом шаге заголовок — это служебная информация, как наклейка на посылке.</p>
+
+            <h3>📌 3. MAC-адрес: паспорт сетевого адаптера</h3>
+
+            <p>Начнём снизу. Если мы возьмём глобальный интернет и разобьём его на локальные подсети, получим канальную среду — например, многоквартирный дом с роутером провайдера. Поток битов в канальной среде разбивается на кадры. Но передаём мы их не всем, а конкретному устройству с сетевым интерфейсом. У каждого адаптера есть свой уникальный адрес — <strong>MAC-адрес</strong>. Это 48-битный физический адрес: первые 24 бита — номер производителя, вторые 24 — уникальный номер. Аналогия: серийный номер на заводской табличке. Уникален, но не говорит, где устройство находится.</p>
+
+            <p>В локальной сети устройства соединяются через <strong>хаб</strong> или <strong>свитч</strong>. Хаб рассылает кадр всем — медленно и небезопасно. Свитч запоминает, за каким портом какой MAC, и передаёт кадр сразу нужному устройству. Аналогия: хаб — объявление на весь подъезд; свитч — записка в конкретный почтовый ящик. Но у MAC-адресации есть ограничение: она не масштабируется на весь мир. Для миллиардов устройств нужны огромные таблицы, которые не поместятся в память.</p>
+
+            <h3>📌 4. IP-адрес: почтовый адрес в глобальной сети</h3>
+
+            <p>Решение — виртуальные <strong>IP-адреса</strong>. IPv4 — 32 бита, 4 байта, каждый от 0 до 255. Делится на адрес сети и адрес хоста; маска подсети отделяет одно от другого. Аналогия: «город + улица + дом + квартира». Сеть — это улица, хост — квартира. IPv6 — 128 бит, введён, потому что 4 млрд адресов IPv4 исчерпались: последние блоки выданы в 2011 году. Аналогия: переход с 6-значных номеров на 12-значные, когда старых перестало хватать. IPv4 и IPv6 несовместимы, работают параллельно.</p>
+
+            <h3>📌 5. DNS: телефонная книга интернета</h3>
+
+            <p>Человеку легче запоминать слова, чем числа. <strong>DNS</strong> (1983) сопоставляет символьные имена IP-адресам. Иерархия: корневой домен → первого уровня (.ru, .com) → второго → третьего. Записи типов A (IP), MX (почта), CNAME (псевдоним), NS (серверы домена). Кэширование на время TTL. Аналогия: вы помните «Почта России», а не индекс 101000. DNS — справочник, который по названию находит индекс. Без DNS интернет был бы неудобен: пришлось бы запоминать числа.</p>
+
+            <h3>📌 6. DHCP: как устройство получает IP-адрес</h3>
+
+            <p>Заранее IP-адрес DHCP-сервера неизвестен, поэтому отправляется широковещательный запрос. Четыре шага: <strong>Discover</strong> («Есть ли здесь DHCP-сервер?») → <strong>Offer</strong> (сервер предлагает IP, маску, шлюз и DNS) → <strong>Request</strong> («Беру этот адрес») → <strong>Acknowledge</strong> (сервер фиксирует адрес за устройством). Аналогия: регистрация в гостинице — вы не выбираете номер сами, администратор выдаёт свободный на время. Аренда: на половине срока компьютер просит продлить, на 87,5% — ищет новый. При выключении отправляет Release — «адрес свободен».</p>
+
+            <h3>📌 7. ARP: как узнать MAC по IP</h3>
+
+            <p>Зная только IP, отправить пакет нельзя: в канальной среде пакеты всё равно разбиваются на кадры и отправляются по MAC-адресу. <strong>ARP</strong> решает эту задачу: широковещательный запрос «Кто имеет этот IP?» → ответ с MAC → пара IP ↔ MAC попадает в ARP-таблицу → пакет отправляется по найденному MAC. Аналогия: вы знаете адрес дома, но не знаете, кто в нём живёт. ARP — это вопрос «Кто здесь?» на весь подъезд. Если адресат не в нашей подсети, пакет отправляется на шлюз по умолчанию — роутер, и его MAC ищется через ARP.</p>
+
+            <div class="action-hint">Переходим к транспортному уровню — портам, TCP и UDP. Это самая «менеджерская» часть: выбор между надёжностью и скоростью.</div>
+
+            <h3>📌 8. Порты: двери в компьютере</h3>
+
+            <p>Когда сообщение приходит на компьютер, возникает вопрос: какой из десятков запущенных программ его передать? Нужна адресация в рамках устройства — <strong>порт</strong>. Это целое число от 1 до 65535. Три диапазона: <strong>общепринятые</strong> (0–1023: 80 — HTTP, 443 — HTTPS, 53 — DNS, 25 — почта), <strong>регистрируемые</strong> (1024–49151: приложения регистрируют порт в IANA) и <strong>динамические</strong> (49152–65535: ОС выдаёт автоматически). Аналогия: IP-адрес — это адрес дома, а порт — номер квартиры. В одном доме — десятки квартир (программ), и письмо должно попасть в нужную. Два браузера на одном компьютере получат разные порты — поэтому ответ придёт именно в тот, из которого ушёл запрос.</p>
+
+            <h3>📌 9. TCP: надёжная доставка с гарантией</h3>
+
+            <p><strong>TCP</strong> — это курьер с накладной. Каждую посылку нумерует, требует подпись о получении, при потере — везёт заново. Поток данных нумеруется; в сегменте — порядковый номер, в ответе — номер подтверждения (следующий ожидаемый байт). Если подтверждение не пришло — таймер, повторная отправка. Аналогия: страницы рукописи пронумерованы — даже если пришли вперемешку, вы соберёте их по порядку.</p>
+
+            <p>Кроме порядка, есть <strong>окно</strong> — сколько байт получатель готов принять (буфер), и <strong>окно перегрузки</strong> — сколько отправитель решает отправить. При потере сегмента окно уменьшается, потом растёт снова. Аналогия: регулировщик на въезде в тоннель — впускает столько машин, сколько тоннель переварит. Установка соединения — <strong>3-way handshake</strong>: SYN → SYN+ACK → ACK. Закрытие — FIN (вежливое) или RST (аварийное).</p>
+
+            <h3>📌 10. UDP: быстро, но без гарантий</h3>
+
+            <p><strong>UDP</strong> не устанавливает соединение, не гарантирует доставку, не проверяет порядок, не управляет окном и перегрузкой. Просто отправляет данные из порта в порт. Заголовок — всего 8 байт. Аналогия: открытка без уведомления о вручении. Быстро и дёшево, но может потеряться — и никто не узнает. Где нужен: видеотрансляции, видеозвонки, DNS-запросы (порт 53) — скорость важнее гарантии. Сравнение: TCP — «доставить любой ценой», UDP — «доставить как можно быстрее». Для платежа — TCP, для прямого эфира — UDP.</p>
+
+            <h3>📌 11. ICMP: диагностика сети</h3>
+
+            <p><strong>ICMP</strong> используется для диагностики. <strong>ping</strong> отправляет echo-request (тип 8) и ждёт echo-reply. Если ответ пришёл — узел доступен. Аналогия: крикнуть в тоннель «Эй!» и ждать эха. <strong>traceroute</strong> посылает пакеты с TTL=1, 2, 3… Каждый маршрутизатор уменьшает TTL на 1; когда TTL=0 — отбрасывает пакет и возвращает ошибку «time exceeded» (тип 11). По этим ошибкам строится путь. Аналогия: считать столбы вдоль дороги, чтобы понять, через сколько перекрёстков вы проехали.</p>
+
+            <h3>📌 12. Ethernet: кадр и канальный уровень</h3>
+
+            <p>К пакету добавляются MAC-адреса (получателя и отправителя), тип протокола и контрольная сумма в конце. Данные кадра — от 46 до 1500 байт. Именно поэтому TCP-сегменты режутся примерно по 1460 байт: 1460 + 20 (TCP) + 20 (IP) = 1500. Аналогия: контейнер для перевозки. В него можно положить не больше 1500 байт, иначе не влезет в «фуру» канального уровня. MTU — максимальный размер блока, который пропускает среда.</p>
+
+            <h3>📌 13. Физический уровень: провода и радиоволны</h3>
+
+            <p>Здесь нет заголовков и протоколов — только поток битов и среда передачи. <strong>Коаксиальный кабель</strong> — медный провод в изоляции + металлическая сетка + пластик; скорость до 10 Мбит/с, топология «общая шина»; устарел. <strong>Витая пара</strong> — 8 медных проводов, скрученных в спираль; скрутка снижает помехи; полудуплекс — 2 пары, дуплекс — 4 пары; скорость до 1 Гбит/с и выше. <strong>Оптический кабель</strong> — стеклянное волокно, по которому идёт свет; электрические сигналы преобразуются в световые импульсы и обратно; ограничение — время преобразования. <strong>Радиоэфир</strong> — Wi-Fi, мобильная связь; тот же поток битов, только радиоволнами.</p>
+
+            <h3>📌 14. Итоги и уроки для менеджеров</h3>
+
+            <p>Мы прошли путь от адреса до бита. Ключевая логика: MAC-адрес работает в канальной среде; IP-адрес объединяет сети в глобальный интернет; DNS превращает IP в удобные имена; DHCP автоматически выдаёт адреса; ARP находит MAC по IP; порты доставляют данные нужной программе; TCP гарантирует доставку, UDP — скорость; ICMP диагностирует сеть; Ethernet упаковывает всё в кадры; физический уровень передаёт биты.</p>
+
+            <p>Уроки для менеджеров: разделение на уровни — архитектурный принцип; TCP vs UDP — выбор между надёжностью и скоростью; контроль перегрузки — адаптивное управление ресурсами; MTU и фрагментация — ограничения инфраструктуры влияют на дизайн; DNS, DHCP, ARP — автоматизация базовых процессов; ICMP и traceroute — диагностика как обязательная функция.</p>
+
+            <p>На следующем блоке мы разберём, как всё это превращается в страницу: HTML, URL, HTTP, HTTPS, cookies, CORS и WebSocket. Спасибо за внимание!</p>
+
+        </div>
+
+        <!-- ============================================================
+             СЛОВАРЬ АББРЕВИАТУР
+             ============================================================ -->
+        <section class="notes-section" aria-labelledby="glossary-title">
+            <div class="notes-section-title" id="glossary-title">
+                <span aria-hidden="true">📖</span> Словарь аббревиатур
+            </div>
+            <table class="notes-table">
+                <thead>
+                    <tr>
+                        <th style="width: 16%;">Аббр.</th>
+                        <th style="width: 34%;">Расшифровка</th>
+                        <th>Пояснение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="abbr">OSI</td><td>Open Systems Interconnection</td><td class="explain">Теоретическая 7-уровневая модель сети (1983)</td></tr>
+                    <tr><td class="abbr">TCP/IP</td><td>Transmission Control Protocol / Internet Protocol</td><td class="explain">Практическая 4-уровневая модель; набор протоколов интернета</td></tr>
+                    <tr><td class="abbr">MAC</td><td>Media Access Control</td><td class="explain">48-битный физический адрес сетевого адаптера</td></tr>
+                    <tr><td class="abbr">IP</td><td>Internet Protocol</td><td class="explain">Логический адрес; IPv4 — 32 бита, IPv6 — 128 бит</td></tr>
+                    <tr><td class="abbr">DNS</td><td>Domain Name System</td><td class="explain">Сопоставление доменных имён IP-адресам (1983)</td></tr>
+                    <tr><td class="abbr">DHCP</td><td>Dynamic Host Configuration Protocol</td><td class="explain">Автоматическая выдача IP, маски, шлюза и DNS</td></tr>
+                    <tr><td class="abbr">ARP</td><td>Address Resolution Protocol</td><td class="explain">Определение MAC-адреса по IP</td></tr>
+                    <tr><td class="abbr">TCP</td><td>Transmission Control Protocol</td><td class="explain">Надёжная доставка: нумерация, подтверждения, окно, handshake</td></tr>
+                    <tr><td class="abbr">UDP</td><td>User Datagram Protocol</td><td class="explain">Быстрая доставка без гарантий; заголовок 8 байт</td></tr>
+                    <tr><td class="abbr">ICMP</td><td>Internet Control Message Protocol</td><td class="explain">Диагностика: ping (echo) и traceroute (time exceeded)</td></tr>
+                    <tr><td class="abbr">Ethernet</td><td>Ethernet (IEEE 802.3)</td><td class="explain">Канальный уровень: MAC-адреса, кадр 46–1500 байт, контрольная сумма</td></tr>
+                    <tr><td class="abbr">MTU</td><td>Maximum Transmission Unit</td><td class="explain">Максимальный размер блока, который пропускает среда (1500 для Ethernet)</td></tr>
+                    <tr><td class="abbr">IANA</td><td>Internet Assigned Numbers Authority</td><td class="explain">Управление IP-адресами и портами</td></tr>
+                    <tr><td class="abbr">TTL</td><td>Time To Live</td><td class="explain">Максимальное число маршрутизаторов, через которые может пройти пакет</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ============================================================
+             ИСТОЧНИКИ
+             ============================================================ -->
+        <section class="notes-section" aria-labelledby="sources-title">
+            <div class="notes-section-title" id="sources-title">
+                <span aria-hidden="true">📚</span> Источники и литература
+            </div>
+            <div class="notes-sources">
+                <div class="src-group">🌐 Базовые протоколы</div>
+                <ol>
+                    <li>RFC 791 — Internet Protocol (IPv4). — IETF.</li>
+                    <li>RFC 8200 — Internet Protocol, Version 6 (IPv6). — IETF.</li>
+                    <li>RFC 793 — Transmission Control Protocol (TCP). — IETF.</li>
+                    <li>RFC 768 — User Datagram Protocol (UDP). — IETF.</li>
+                    <li>RFC 792 — Internet Control Message Protocol (ICMP). — IETF.</li>
+                </ol>
+                <div class="src-group">📖 Адресация и службы</div>
+                <ol start="6">
+                    <li>RFC 826 — An Ethernet Address Resolution Protocol (ARP). — IETF.</li>
+                    <li>RFC 2131 — Dynamic Host Configuration Protocol (DHCP). — IETF.</li>
+                    <li>RFC 1034 / 1035 — Domain Names. — IETF.</li>
+                    <li>IEEE 802.3 — Ethernet Standard.</li>
+                </ol>
+                <div class="src-group">📚 Дополнительно</div>
+                <ol start="10">
+                    <li>Э. Таненбаум, Д. Уэзеролл. Компьютерные сети. — 5-е изд.</li>
+                    <li>Материалы IANA по диапазонам портов.</li>
+                    <li>Документы по модели OSI (ISO/IEC 7498-1).</li>
+                </ol>
+            </div>
+        </section>
+    </div>
+
+    <!-- СКРИПТ -->
+    <script>
+        function changeVideo(embedUrl) {
+            document.getElementById('lecture-player').src = embedUrl;
+        }
+    </script>
+
+    <!-- ============================================================
+         НАВИГАЦИЯ МЕЖДУ ЛЕКЦИЯМИ
+         ============================================================ -->
+   <nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 7; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

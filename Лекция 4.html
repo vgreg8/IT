@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 4 из 18 · ОС · Процессы и память</title>
+    <style>
+        :root {
+            --c-bg:#fff;--c-surface:#f8fafc;--c-border:#e2e8f0;--c-border-strong:#cbd5e0;
+            --c-text:#0f172a;--c-text-2:#334155;--c-text-3:#64748b;--c-text-muted:#94a3b8;
+            --c-primary:#2563eb;--c-primary-soft:#eff6ff;
+            --c-proc:#2563eb;--c-proc-soft:#eff6ff;
+            --c-sched:#7c3aed;--c-sched-soft:#f5f3ff;
+            --c-dead:#dc2626;--c-dead-soft:#fef2f2;
+            --c-mem:#0891b2;--c-mem-soft:#ecfeff;
+            --c-fs:#d97706;--c-fs-soft:#fffbeb;
+            --c-rights:#059669;--c-rights-soft:#ecfdf5;
+            --c-practice:#db2777;--c-practice-soft:#fdf2f8;
+            --c-dark:#0f172a;--c-dark-2:#1e293b;--c-dark-3:#334155;
+            --c-dark-text:#e2e8f0;--c-dark-text-2:#94a3b8;--c-dark-accent:#60a5fa;
+            --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+            --sh-md:0 4px 12px rgba(15,23,42,.08);
+            --sh-lg:0 12px 28px rgba(15,23,42,.12);
+            --sh-focus:0 0 0 3px rgba(37,99,235,.35);
+            --f-sans:'Segoe UI',Tahoma,sans-serif;
+            --f-mono:'JetBrains Mono',Consolas,monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%}
+        body{font-family:var(--f-sans);display:flex;height:100vh;overflow:hidden;background:var(--c-bg);color:var(--c-text);padding-bottom:80px!important}
+        :focus-visible{outline:none;box-shadow:var(--sh-focus);border-radius:var(--r-sm)}
+        .student-view{width:66.66%;height:100vh;background:var(--c-bg);padding:32px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--c-border);overflow-y:auto;scroll-behavior:smooth}
+        .speaker-notes{width:33.34%;height:100%;background:var(--c-dark);color:var(--c-dark-text);padding:28px;overflow-y:auto}
+        .slide-header{font-size:26px;color:var(--c-text);font-weight:800;line-height:1.25;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid var(--c-primary);position:relative}
+        .slide-header::after{content:'';position:absolute;left:0;bottom:-3px;width:80px;height:3px;background:var(--c-practice);border-radius:3px}
+        .slide-body{flex-grow:1;display:flex;flex-direction:column;gap:22px;padding:4px 0}
+        .slide-footer{font-size:12px;color:var(--c-text-muted);text-align:right;margin-top:16px}
+        .toc{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md)}
+        .toc a{font-size:11px;font-weight:700;color:var(--c-text-2);text-decoration:none;padding:4px 9px;border-radius:var(--r-pill);background:var(--c-bg);border:1px solid var(--c-border);transition:all .15s}
+        .toc a:hover{background:var(--c-primary-soft);border-color:var(--c-primary);color:var(--c-primary)}
+        .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+        .kpi{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;text-align:center;transition:all .18s}
+        .kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .kpi .kpi-val{font-size:19px;font-weight:800;color:var(--c-text);letter-spacing:-.02em;line-height:1.1}
+        .kpi .kpi-lbl{font-size:10px;color:var(--c-text-3);margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+        .kpi.k-proc .kpi-val{color:var(--c-proc)}
+        .kpi.k-sched .kpi-val{color:var(--c-sched)}
+        .kpi.k-dead .kpi-val{color:var(--c-dead)}
+        .kpi.k-mem .kpi-val{color:var(--c-mem)}
+        .kpi.k-fs .kpi-val{color:var(--c-fs)}
+        .kpi.k-rights .kpi-val{color:var(--c-rights)}
+        .section-title{font-size:15px;font-weight:800;color:var(--c-text);margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em;scroll-margin-top:12px}
+        .section-title .st-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-sm);font-size:14px}
+        /* ПРОЦЕССЫ: 5 состояний */
+        .states-flow{display:flex;align-items:stretch;gap:6px}
+        .state-card{flex:1;background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;text-align:center;position:relative;transition:all .18s}
+        .state-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .state-card::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;border-radius:3px 3px 0 0}
+        .state-card.sc-new::before{background:var(--c-proc)}
+        .state-card.sc-ready::before{background:var(--c-sched)}
+        .state-card.sc-running::before{background:var(--c-rights)}
+        .state-card.sc-waiting::before{background:var(--c-fs)}
+        .state-card.sc-terminated::before{background:var(--c-text-3)}
+        .state-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:800;color:#fff;background:var(--c-text-3);margin-bottom:6px}
+        .state-card.sc-new .state-num{background:var(--c-proc)}
+        .state-card.sc-ready .state-num{background:var(--c-sched)}
+        .state-card.sc-running .state-num{background:var(--c-rights)}
+        .state-card.sc-waiting .state-num{background:var(--c-fs)}
+        .state-name{font-size:12px;font-weight:800;color:var(--c-text);margin-bottom:3px}
+        .state-desc{font-size:10px;color:var(--c-text-2);line-height:1.35}
+        .state-arrow{display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--c-text-muted);font-weight:800;flex:0 0 auto;padding:0 2px}
+        /* PCB card */
+        .pcb-card{margin-top:12px;background:var(--c-proc-soft);border:1px solid #bfdbfe;border-radius:var(--r-md);padding:12px 16px}
+        .pcb-card .pcb-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+        .pcb-card .pcb-icon{font-size:16px}
+        .pcb-card .pcb-name{font-size:13px;font-weight:800;color:var(--c-text)}
+        .pcb-card .pcb-sub{font-size:10px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+        .pcb-card .pcb-body{font-size:11.5px;color:var(--c-text-2);line-height:1.5}
+        .pcb-card .pcb-body b{color:var(--c-text)}
+        /* Карточки планировщика */
+        .sched-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .sched-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 16px;position:relative;transition:all .18s}
+        .sched-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
+        .sched-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0;background:var(--c-sched)}
+        .sched-card .sc-icon{font-size:18px;margin-bottom:6px}
+        .sched-card .sc-name{font-size:13px;font-weight:800;color:var(--c-text);margin-bottom:3px}
+        .sched-card .sc-sub{font-size:10px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+        .sched-card .sc-desc{font-size:11px;color:var(--c-text-2);line-height:1.45}
+        .sched-card .sc-analogy{margin-top:6px;padding:5px 7px;background:#fffbeb;border-left:2px solid var(--c-fs);border-radius:3px;font-size:10px;color:#92400e;line-height:1.35;font-style:italic}
+        /* Deadlocks: 4 условия */
+        .dead-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+        .dead-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 14px;position:relative;transition:all .18s;border-left:3px solid var(--c-dead)}
+        .dead-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .dead-card .dc-num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--c-dead);color:#fff;font-size:10px;font-weight:800;margin-bottom:4px}
+        .dead-card .dc-name{font-size:12px;font-weight:800;color:var(--c-text);margin-bottom:2px}
+        .dead-card .dc-desc{font-size:10.5px;color:var(--c-text-2);line-height:1.4}
+        /* Память: 3 карточки */
+        .mem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .mem-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 16px;position:relative;transition:all .18s}
+        .mem-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
+        .mem-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0;background:var(--c-mem)}
+        .mem-card .mc-icon{font-size:18px;margin-bottom:6px}
+        .mem-card .mc-name{font-size:13px;font-weight:800;color:var(--c-text);margin-bottom:3px}
+        .mem-card .mc-sub{font-size:10px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+        .mem-card .mc-desc{font-size:11px;color:var(--c-text-2);line-height:1.45}
+        .mem-card .mc-analogy{margin-top:6px;padding:5px 7px;background:#fffbeb;border-left:2px solid var(--c-fs);border-radius:3px;font-size:10px;color:#92400e;line-height:1.35;font-style:italic}
+        /* Файловые системы: таблица */
+        .fs-table{width:100%;border-collapse:collapse;font-size:12px}
+        .fs-table th{background:var(--c-dark);color:#fff;padding:10px 12px;text-align:left;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+        .fs-table td{padding:9px 12px;border-bottom:1px solid var(--c-border);color:var(--c-text-2);vertical-align:top;line-height:1.45}
+        .fs-table tr:nth-child(even) td{background:var(--c-surface)}
+        .fs-table tr:hover td{background:var(--c-fs-soft)}
+        .fs-table .fs-name{font-weight:800;color:var(--c-text);font-family:var(--f-mono);font-size:11.5px}
+        /* Права: 3 карточки */
+        .rights-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+        .rights-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 14px;position:relative;transition:all .18s;border-left:3px solid var(--c-rights)}
+        .rights-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .rights-card .rc-icon{font-size:18px;margin-bottom:4px}
+        .rights-card .rc-name{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:2px}
+        .rights-card .rc-sub{font-size:10px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+        .rights-card .rc-desc{font-size:10.5px;color:var(--c-text-2);line-height:1.4}
+        /* Практикум */
+        .practice-box{background:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);border:1px solid #fbcfe8;border-radius:var(--r-lg);padding:16px 18px}
+        .practice-box .section-title{color:#9d174d;margin-bottom:10px}
+        .practice-box .section-title .st-icon{background:#fce7f3;color:var(--c-practice)}
+        .practice-case{background:#fff;border:1px solid #fbcfe8;border-radius:var(--r-md);padding:12px 14px;margin-bottom:12px}
+        .practice-case .pc-title{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:6px}
+        .practice-case .pc-row{display:flex;justify-content:space-between;font-size:11.5px;color:var(--c-text-2);padding:5px 0;border-bottom:1px dashed #fbcfe8}
+        .practice-case .pc-row:last-child{border-bottom:none}
+        .practice-case .pc-row b{color:var(--c-text);font-family:var(--f-mono)}
+        .practice-case .pc-row.pc-total{padding-top:7px;border-top:1.5px solid #fbcfe8;border-bottom:none;margin-top:3px;font-weight:800}
+        .practice-case .pc-row.pc-total b{color:var(--c-practice)}
+        .practice-verdict{margin-top:10px;padding:8px 10px;background:#fff;border-left:3px solid var(--c-practice);border-radius:4px;font-size:11px;color:#831843;line-height:1.4;font-weight:600}
+        .checklist{background:#fff;border:1px solid #fbcfe8;border-radius:var(--r-md);padding:12px 14px}
+        .checklist .ck-title{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:6px}
+        .checklist .ck-item{display:flex;gap:6px;font-size:11px;color:var(--c-text-2);line-height:1.4;padding:3px 0}
+        .checklist .ck-mark{flex:0 0 auto;color:var(--c-practice);font-weight:800}
+        /* Уроки */
+        .lessons-box{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:1px solid #bbf7d0;border-radius:var(--r-lg);padding:16px 18px}
+        .lessons-box .section-title{color:#166534;margin-bottom:10px}
+        .lessons-box .section-title .st-icon{background:#dcfce7;color:#15803d}
+        .lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+        .lesson{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#14532d}
+        .lesson .lesson-num{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#15803d;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        /* Видео */
+        .video-section{display:flex;flex-direction:column;align-items:center;gap:12px}
+        .video-container{width:100%;max-width:580px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000;aspect-ratio:16/9}
+        .links-hub{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+        .video-btn{text-decoration:none;padding:9px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;transition:all .18s;cursor:pointer;border:none;font-family:inherit}
+        .video-btn:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .rt-btn{background:#00a877}.rt-btn:hover{background:#008f65}
+        .stop-btn{background:#dc143c}.stop-btn:hover{background:#b01030}
+        /* Правая панель */
+        .notes-header{font-size:16px;color:var(--c-dark-accent);font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c-dark-3);padding-bottom:10px}
+        .timer-badge{background:#dc2626;color:#fff;padding:3px 9px;border-radius:var(--r-pill);font-size:11px;font-family:var(--f-mono);font-weight:700}
+        .lecture-text{font-size:14px;line-height:1.68;color:var(--c-dark-text);text-align:justify}
+        .lecture-text p{margin-bottom:14px}
+        .lecture-text h3{color:var(--c-dark-accent);font-size:14.5px;margin:20px 0 10px;border-bottom:1px solid var(--c-dark-3);padding-bottom:6px;font-weight:800}
+        .lecture-text strong{color:#f1f5f9}
+        .action-hint{color:#fcd34d;font-style:italic;background:var(--c-dark-2);padding:11px 14px;border-radius:var(--r-sm);border-left:3px solid #fcd34d;margin:16px 0;font-size:12.5px;line-height:1.5}
+        .notes-section{margin-top:26px;background:var(--c-dark-2);border:1px solid var(--c-dark-3);border-radius:var(--r-md);padding:16px}
+        .notes-section-title{font-size:13.5px;font-weight:800;color:var(--c-dark-accent);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--c-dark-3);display:flex;align-items:center;gap:8px}
+        .notes-table{width:100%;border-collapse:collapse;font-size:11.5px}
+        .notes-table th{text-align:left;padding:7px 8px;font-weight:700;color:var(--c-dark-text-2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--c-dark-3)}
+        .notes-table td{padding:7px 8px;border-bottom:1px solid rgba(51,65,85,.6);color:var(--c-dark-text);vertical-align:top;line-height:1.4}
+        .notes-table tr:last-child td{border-bottom:none}
+        .notes-table tr:hover td{background:rgba(96,165,250,.06)}
+        .notes-table .abbr{font-weight:800;color:#93c5fd;font-family:var(--f-mono);font-size:11px;white-space:nowrap}
+        .notes-table .explain{color:var(--c-dark-text-2)}
+        .notes-sources{font-size:11.5px;line-height:1.55;color:var(--c-dark-text)}
+        .notes-sources .src-group{font-weight:800;color:#86efac;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+        .notes-sources .src-group:first-child{margin-top:0}
+        .notes-sources ol{margin:0 0 4px 16px;padding:0}
+        .notes-sources li{margin-bottom:5px;color:var(--c-dark-text-2)}
+        /* Навигация */
+        .lecture-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+        .lecture-nav .nav-progress{position:absolute;top:0;left:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);transition:width .3s;border-radius:0 3px 3px 0}
+        .lecture-nav .nav-btn-arrow{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--c-dark-text);font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled){background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.6);color:#fff;transform:translateY(-2px)}
+        .lecture-nav .nav-btn-arrow:disabled{opacity:.35;cursor:not-allowed}
+        .lecture-nav .nav-btn-arrow .arrow-icon{font-size:16px}
+        .lecture-nav .nav-btn-arrow .arrow-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+        .lecture-nav .nav-btn-arrow .arrow-label small{font-size:9px;font-weight:400;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title{font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lecture-nav .nav-center{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 20px;color:var(--c-dark-text-2);font-size:11px;border-left:1px solid rgba(255,255,255,.1);border-right:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-counter{font-size:15px;font-weight:900;color:#f1f5f9}
+        .lecture-nav .nav-counter span{color:#64748b;font-size:12px;font-weight:600}
+        .lecture-nav .nav-index-link{color:#60a5fa;text-decoration:none;font-size:11px;font-weight:700}
+        .lecture-nav .nav-index-link:hover{color:#93c5fd;text-decoration:underline}
+        .lecture-nav .nav-jump{display:flex;gap:4px;margin-left:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-jump-btn{padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--c-dark-text-2);font-size:10px;font-weight:800;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-jump-btn:hover{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5);color:#fff}
+        .lecture-nav .nav-jump-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:transparent;color:#fff}
+        .reveal{animation:fadeUp .5s ease both}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+        @media(max-width:1200px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.sched-grid,.mem-grid{grid-template-columns:1fr}.states-flow{flex-wrap:wrap}.state-card{min-width:calc(50% - 20px)}}
+        @media(max-width:900px){.lecture-nav{padding:10px 12px;gap:8px}.lecture-nav .nav-btn-arrow{padding:8px 12px}.lecture-nav .nav-btn-arrow .arrow-label .arrow-title{max-width:90px;font-size:11px}.lecture-nav .nav-center{padding:0 10px}.lecture-nav .nav-jump{display:none}.kpi-strip{grid-template-columns:repeat(2,1fr)}.lessons-grid{grid-template-columns:1fr}.dead-grid,.rights-grid{grid-template-columns:1fr}.states-flow{flex-direction:column}.state-arrow{transform:rotate(90deg);padding:4px 0}}
+    </style>
+</head>
+<body>
+
+<div class="student-view">
+    <div>
+        <h1 class="slide-header">Часть 4. Процессы, память, файловая система</h1>
+        <div class="slide-body">
+
+            <nav class="toc reveal" aria-label="Содержание лекции">
+                <a href="#sec-processes">1. Процессы</a>
+                <a href="#sec-sched">2. Планировщик</a>
+                <a href="#sec-dead">3. Deadlocks</a>
+                <a href="#sec-mem">4. Память</a>
+                <a href="#sec-fs">5. Файлы и права</a>
+                <a href="#sec-practice">6. Практикум</a>
+                <a href="#sec-lessons">7. Уроки</a>
+            </nav>
+
+            <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры">
+                <div class="kpi k-proc" role="listitem"><div class="kpi-val">5</div><div class="kpi-lbl">состояний процесса</div></div>
+                <div class="kpi k-sched" role="listitem"><div class="kpi-val">3</div><div class="kpi-lbl">алгоритма планировщика</div></div>
+                <div class="kpi k-dead" role="listitem"><div class="kpi-val">4</div><div class="kpi-lbl">условия deadlock</div></div>
+                <div class="kpi k-mem" role="listitem"><div class="kpi-val">3</div><div class="kpi-lbl">типа памяти</div></div>
+                <div class="kpi k-fs" role="listitem"><div class="kpi-val">3</div><div class="kpi-lbl">файловые системы</div></div>
+                <div class="kpi k-rights" role="listitem"><div class="kpi-val">RWX</div><div class="kpi-lbl">3 права доступа</div></div>
+            </div>
+
+            <!-- 1. ПРОЦЕССЫ -->
+            <section class="reveal" id="sec-processes" aria-labelledby="processes-title">
+                <div class="section-title" id="processes-title"><span class="st-icon" aria-hidden="true">⚙️</span>1. Процессы: пять состояний жизненного цикла</div>
+                <div class="states-flow" role="list">
+                    <div class="state-card sc-new" role="listitem"><div class="state-num" aria-hidden="true">1</div><div class="state-name">Новый</div><div class="state-desc">Программа загружена, но не готова к выполнению</div></div>
+                    <div class="state-arrow" aria-hidden="true">→</div>
+                    <div class="state-card sc-ready" role="listitem"><div class="state-num" aria-hidden="true">2</div><div class="state-name">Готов</div><div class="state-desc">Ждёт, когда планировщик выделит процессор</div></div>
+                    <div class="state-arrow" aria-hidden="true">→</div>
+                    <div class="state-card sc-running" role="listitem"><div class="state-num" aria-hidden="true">3</div><div class="state-name">Выполняется</div><div class="state-desc">Процессор выполняет инструкции программы</div></div>
+                    <div class="state-arrow" aria-hidden="true">→</div>
+                    <div class="state-card sc-waiting" role="listitem"><div class="state-num" aria-hidden="true">4</div><div class="state-name">Ожидает</div><div class="state-desc">Ждёт ввода-вывода: диск, сеть, принтер</div></div>
+                    <div class="state-arrow" aria-hidden="true">→</div>
+                    <div class="state-card sc-terminated" role="listitem"><div class="state-num" aria-hidden="true">5</div><div class="state-name">Завершён</div><div class="state-desc">Программа закончила работу, ресурсы освобождаются</div></div>
+                </div>
+                <div class="pcb-card">
+                    <div class="pcb-head">
+                        <span class="pcb-icon" aria-hidden="true">📋</span>
+                        <div>
+                            <div class="pcb-name">PCB — Process Control Block</div>
+                            <div class="pcb-sub">блок управления процессом</div>
+                        </div>
+                    </div>
+                    <div class="pcb-body">Для каждого процесса ОС хранит <b>PCB</b> — «личное дело»: идентификатор <b>PID</b>, состояние, приоритет, регистры процессора, открытые файлы, выделенную память. Когда процесс переключается, ОС сохраняет его PCB и загружает PCB следующего. Аналогия: <b>медицинская карта пациента</b> — всё о нём, пока он не на приёме.</div>
+                </div>
+            </section>
+
+            <!-- 2. ПЛАНИРОВЩИК -->
+            <section class="reveal" id="sec-sched" aria-labelledby="sched-title">
+                <div class="section-title" id="sched-title"><span class="st-icon" aria-hidden="true">📊</span>2. Планировщик: три алгоритма распределения процессора</div>
+                <div class="sched-grid">
+                    <div class="sched-card">
+                        <div class="sc-icon" aria-hidden="true">🚶</div>
+                        <div class="sc-name">FIFO</div>
+                        <div class="sc-sub">First In First Out</div>
+                        <div class="sc-desc">Первый пришёл — первый ушёл. Простая очередь: процессор достаётся процессу, который первым встал в очередь. Минус: короткая задача может ждать долгую.</div>
+                        <div class="sc-analogy">Аналогия: очередь в кассу — кто первый, того и обслуживают.</div>
+                    </div>
+                    <div class="sched-card">
+                        <div class="sc-icon" aria-hidden="true">⚡</div>
+                        <div class="sc-name">SJF</div>
+                        <div class="sc-sub">Shortest Job First</div>
+                        <div class="sc-desc">Сначала — самая короткая задача. Минимизирует среднее время ожидания. Минус: длинные задачи могут «застрять» надолго — starvation.</div>
+                        <div class="sc-analogy">Аналогия: экспресс-касса для тех, у кого мало покупок.</div>
+                    </div>
+                    <div class="sched-card">
+                        <div class="sc-icon" aria-hidden="true">🔄</div>
+                        <div class="sc-name">Round Robin</div>
+                        <div class="sc-sub">карусель</div>
+                        <div class="sc-desc">Каждому процессу — фиксированный квант времени. Не успел — в конец очереди. Справедливо и предсказуемо. Стандарт для интерактивных систем.</div>
+                        <div class="sc-analogy">Аналогия: каждый говорит по минуте, потом передаёт слово следующему.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. DEADLOCKS -->
+            <section class="reveal" id="sec-dead" aria-labelledby="dead-title">
+                <div class="section-title" id="dead-title"><span class="st-icon" aria-hidden="true">🔒</span>3. Deadlocks: четыре условия взаимной блокировки</div>
+                <div class="dead-grid" role="list">
+                    <div class="dead-card" role="listitem"><div class="dc-num" aria-hidden="true">1</div><div class="dc-name">Взаимное исключение</div><div class="dc-desc">Ресурс может быть занят только одним процессом одновременно.</div></div>
+                    <div class="dead-card" role="listitem"><div class="dc-num" aria-hidden="true">2</div><div class="dc-name">Удержание и ожидание</div><div class="dc-desc">Процесс держит один ресурс и ждёт второй, занятый другим.</div></div>
+                    <div class="dead-card" role="listitem"><div class="dc-num" aria-hidden="true">3</div><div class="dc-name">Отсутствие принудительного изъятия</div><div class="dc-desc">Ресурс нельзя отобрать силой — только освободить добровольно.</div></div>
+                    <div class="dead-card" role="listitem"><div class="dc-num" aria-hidden="true">4</div><div class="dc-name">Циклическое ожидание</div><div class="dc-desc">А ждёт Б, Б ждёт В, В ждёт А — замкнутый круг.</div></div>
+                </div>
+            </section>
+
+            <!-- 4. ПАМЯТЬ -->
+            <section class="reveal" id="sec-mem" aria-labelledby="mem-title">
+                <div class="section-title" id="mem-title"><span class="st-icon" aria-hidden="true">🧠</span>4. Память: три уровня управления</div>
+                <div class="mem-grid">
+                    <div class="mem-card">
+                        <div class="mc-icon" aria-hidden="true">💾</div>
+                        <div class="mc-name">Физическая память</div>
+                        <div class="mc-sub">RAM</div>
+                        <div class="mc-desc">Реальные микросхемы оперативной памяти. Ограничена: 8, 16, 32 гигабайта. Быстрая, но дорогая.</div>
+                        <div class="mc-analogy">Аналогия: рабочий стол — всё под рукой, но места мало.</div>
+                    </div>
+                    <div class="mem-card">
+                        <div class="mc-icon" aria-hidden="true">📚</div>
+                        <div class="mc-name">Виртуальная память</div>
+                        <div class="mc-sub">Paging</div>
+                        <div class="mc-desc">ОС создаёт иллюзию большой памяти: разбивает на страницы и подгружает нужные. Программа «думает», что у неё гигабайты.</div>
+                        <div class="mc-analogy">Аналогия: библиотека — книги на полках, нужные приносят по запросу.</div>
+                    </div>
+                    <div class="mem-card">
+                        <div class="mc-icon" aria-hidden="true">🔄</div>
+                        <div class="mc-name">Swapping</div>
+                        <div class="mc-sub">подкачка</div>
+                        <div class="mc-desc">Если физической памяти не хватает, ОС выгружает неактивные страницы на диск. Медленно, но позволяет работать.</div>
+                        <div class="mc-analogy">Аналогия: часть вещей — в кладовке, приношу, когда нужно.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. ФАЙЛОВАЯ СИСТЕМА + ПРАВА -->
+            <section class="reveal" id="sec-fs" aria-labelledby="fs-title">
+                <div class="section-title" id="fs-title"><span class="st-icon" aria-hidden="true">🗂️</span>5. Файловая система: где хранятся данные</div>
+                <table class="fs-table">
+                    <thead>
+                        <tr>
+                            <th>Файловая система</th>
+                            <th>Платформа</th>
+                            <th>Ключевая особенность</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fs-name">FAT32</td>
+                            <td>Windows, Linux, macOS</td>
+                            <td>Максимальная совместимость. Ограничение: файл не больше 4 ГБ.</td>
+                        </tr>
+                        <tr>
+                            <td class="fs-name">NTFS</td>
+                            <td>Windows</td>
+                            <td>Журналирование, права ACL, шифрование, поддержка больших дисков.</td>
+                        </tr>
+                        <tr>
+                            <td class="fs-name">ext4</td>
+                            <td>Linux</td>
+                            <td>Журналирование, большие объёмы, высокая стабильность и скорость.</td>
+                        </tr>
+                        <tr>
+                            <td class="fs-name">inode</td>
+                            <td>Linux (внутри ext4)</td>
+                            <td>Индексный дескриптор: хранит метаданные файла, а не сам файл.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="rights-grid">
+                    <div class="rights-card">
+                        <div class="rc-icon" aria-hidden="true">🔑</div>
+                        <div class="rc-name">RWX</div>
+                        <div class="rc-sub">Read, Write, Execute</div>
+                        <div class="rc-desc">Три базовых права в Unix/Linux: читать, писать, выполнять.</div>
+                    </div>
+                    <div class="rights-card">
+                        <div class="rc-icon" aria-hidden="true">📋</div>
+                        <div class="rc-name">ACL</div>
+                        <div class="rc-sub">Access Control List</div>
+                        <div class="rc-desc">Список управления доступом в Windows: кому что можно с файлом.</div>
+                    </div>
+                    <div class="rights-card">
+                        <div class="rc-icon" aria-hidden="true">🛡️</div>
+                        <div class="rc-name">UAC</div>
+                        <div class="rc-sub">User Account Control</div>
+                        <div class="rc-desc">Контроль учётных записей: подтверждение прав администратора при установке.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. ПРАКТИКУМ -->
+            <section class="reveal" id="sec-practice" aria-labelledby="practice-title">
+                <div class="section-title" id="practice-title"><span class="st-icon" aria-hidden="true">🧮</span>6. Практикум: TCO в цифрах и чек-лист закупки</div>
+                <div class="practice-box">
+                    <div class="section-title" style="margin-bottom:10px;">
+                        <span class="st-icon" aria-hidden="true">📊</span>
+                        Кейс: 100 сотрудников, сравнение Windows и Linux
+                    </div>
+                    <div class="practice-case">
+                        <div class="pc-title">Windows: лицензия + администратор</div>
+                        <div class="pc-row"><span>Лицензии (100 × 15 000)</span><b>1 500 000</b></div>
+                        <div class="pc-row"><span>Администратор (80 000 × 12)</span><b>960 000 / год</b></div>
+                        <div class="pc-row pc-total"><span>Итого в первый год</span><b>2 460 000</b></div>
+                    </div>
+                    <div class="practice-case">
+                        <div class="pc-title">Linux: обучение + инженер</div>
+                        <div class="pc-row"><span>Лицензии</span><b>0</b></div>
+                        <div class="pc-row"><span>Обучение (100 × 20 000)</span><b>2 000 000</b></div>
+                        <div class="pc-row"><span>Инженер (200 000 × 12)</span><b>2 400 000 / год</b></div>
+                        <div class="pc-row pc-total"><span>Итого в первый год</span><b>4 400 000</b></div>
+                    </div>
+                    <div class="practice-verdict">Вывод: Linux дороже на 1 940 000 рублей в первый год. И на 1 440 000 рублей — в последующие. Это и есть TCO — дешёвая лицензия ≠ дешёвое владение.</div>
+                    <div class="checklist" style="margin-top:12px;">
+                        <div class="ck-title">Чек-лист закупки ОС для компании</div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Сколько сотрудников и какие у них задачи?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Есть ли критичные приложения (1С, ERP, торговые терминалы)?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Какой бюджет на лицензии, обучение, ИТ-персонал?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Есть ли специалисты нужной квалификации на рынке труда?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Какой SLA нужен от поставщика поддержки?</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. УРОКИ -->
+            <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                <div class="section-title" id="lessons-title"><span class="st-icon" aria-hidden="true">🎓</span>7. Уроки для менеджеров</div>
+                <div class="lessons-grid">
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">1</span><span>Процессы и PCB — это «личные дела» программ. Понимание состояний помогает ставить задачи ИТ-отделу: где узкое место, где зависание.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">2</span><span>Планировщик — это аналог распределения рабочего времени. FIFO, SJF, Round Robin — три стратегии, каждая со своими компромиссами.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">3</span><span>Deadlocks — это «пробки» в системе. Четыре условия: взаимное исключение, удержание, отсутствие изъятия, цикл. Управление — профилактика, а не лечение.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">4</span><span>Память и swapping — это про ресурсы. Виртуальная память — иллюзия, которая работает. Но за неё платят скоростью.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">5</span><span>Файловая система и права — это про безопасность данных. NTFS, ext4, ACL, UAC — не аббревиатуры, а инструменты защиты бизнеса.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">6</span><span>Практикум по TCO — главный навык менеджера. Считать нужно в долгую: лицензия + обучение + ИТ-персонал + потери от простоя.</span></div>
+                </div>
+            </section>
+
+            <div class="video-section reveal">
+                <div class="video-container">
+                    <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: процессы, память, файловая система"></iframe>
+                </div>
+                <div class="links-hub">
+                    <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                    <button onclick="changeVideo('https://rutube.ru/play/embed/38f8a042252b74bcf08b238c057186dc/')" class="video-btn rt-btn">📹 Лекция. Аппаратное обеспечение компьютеров</button>
+                    <button onclick="changeVideo('https://rutube.ru/play/embed/877f807e4d5ffaa6557abc43439fa0e0/')" class="video-btn rt-btn">📜 Лекция. Структура операционных систем</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="slide-footer">Менеджмент · 1 курс · Операционные системы · Часть 4 из 5 (финал)</div>
+</div>
+
+<div class="speaker-notes">
+    <div style="position:sticky;top:0;background:var(--c-dark);padding:20px 20px 10px 20px;border-bottom:1px solid var(--c-dark-3);width:100%;z-index:100;">
+        <div class="notes-header"><span>🎙️ Скрипт преподавателя</span><span class="timer-badge">15 мин</span></div>
+        <div style="width:100%;aspect-ratio:16/9;border-radius:var(--r-sm);overflow:hidden;background:#000;box-shadow:var(--sh-md);">
+           <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"  allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+        </div>
+    </div>
+    <div class="lecture-text" style="margin-top:20px;">
+        <p>Коллеги, мы добрались до финальной части нашего курса. В первых четырёх частях мы разобрали историю, классификацию, стратегический анализ платформ и инструментарий менеджера. Теперь — внутренняя механика. Как операционная система управляет процессами, памятью и файловой системой. Это тот уровень, который менеджер обязан понимать, чтобы правильно ставить задачи ИТ-отделу и оценивать ресурсы цифровой трансформации.</p>
+        <div class="action-hint">Обратите внимание студентов на блок 1 «Процессы: пять состояний жизненного цикла».</div>
+        <h3>📌 1. Процессы: пять состояний</h3>
+        <p>Обратите внимание на первый блок нашего слайда. Пять карточек в строку. Пять состояний процесса. Новый. Готов. Выполняется. Ожидает. Завершён.</p>
+        <p>Любая запущенная программа — это процесс. Он проходит через пять состояний. В состоянии «Новый» программа загружена, но не готова к выполнению. В состоянии «Готов» она ждёт, когда планировщик выделит процессор. В состоянии «Выполняется» процессор выполняет её инструкции. В состоянии «Ожидает» она ждёт ввода-вывода: диск, сеть, принтер. В состоянии «Завершён» программа закончила работу, ресурсы освобождаются.</p>
+        <p>Под карточками состояний — отдельная карточка с голубым фоном. Блок управления процессом. По-английски PCB, что расшифровывается как Process Control Block. В русской транслитерации — Процесс Контрол Блок. Для каждого процесса операционная система хранит это личное дело. Идентификатор процесса, или сокращённо PID. Состояние. Приоритет. Регистры процессора. Открытые файлы. Выделенную память. Когда процесс переключается, операционная система сохраняет его блок управления и загружает блок следующего. Аналогия проста. Это медицинская карта пациента. Всё о нём, пока он не на приёме.</p>
+        <div class="action-hint">Перейдите к блоку 2 «Планировщик».</div>
+        <h3>📌 2. Планировщик: три алгоритма</h3>
+        <p>Обратите внимание на второй блок нашего слайда. Три карточки. Три алгоритма распределения процессора между процессами.</p>
+        <p>Первый алгоритм — ФИФО. Что расшифровывается как First In First Out. В русской транслитерации — Фёрст Ин Фёрст Аут. Первый пришёл — первый ушёл. Простая очередь. Процессор достаётся процессу, который первым встал в очередь. Минус: короткая задача может ждать долгую. Аналогия проста. Это очередь в кассу. Кто первый, того и обслуживают.</p>
+        <p>Второй алгоритм — эс-джей-эф. Что расшифровывается как Shortest Job First. В русской транслитерации — Шортест Джоб Фёрст. Сначала — самая короткая задача. Минимизирует среднее время ожидания. Минус: длинные задачи могут застрять надолго. Это называется starvation, или «голодание». Аналогия проста. Экспресс-касса для тех, у кого мало покупок.</p>
+        <p>Третий алгоритм — Раунд Робин. Карусель. Каждому процессу — фиксированный квант времени. Не успел — в конец очереди. Справедливо и предсказуемо. Стандарт для интерактивных систем. Аналогия проста. Каждый говорит по минуте, потом передаёт слово следующему.</p>
+        <div class="action-hint">Перейдите к блоку 3 «Deadlocks».</div>
+        <h3>📌 3. Deadlocks: четыре условия</h3>
+        <p>Обратите внимание на третий блок нашего слайда. Четыре карточки с красными полосами. Четыре условия взаимной блокировки. По-английски deadlock. В русской транслитерации — дедлок. Это ситуация, когда процессы блокируют друг друга и не могут двигаться дальше. Дедлок возникает только если выполняются одновременно все четыре условия. Уберите одно — дедлока не будет.</p>
+        <p>Первое условие — взаимное исключение. Ресурс может быть занят только одним процессом одновременно. Второе — удержание и ожидание. Процесс держит один ресурс и ждёт второй, занятый другим. Третье — отсутствие принудительного изъятия. Ресурс нельзя отобрать силой, только освободить добровольно. Четвёртое — циклическое ожидание. А ждёт Б, Б ждёт В, В ждёт А. Замкнутый круг.</p>
+        <p>Аналогия проста. Четыре машины на перекрёстке. Каждая ждёт, пока проедет другая. И никто не может тронуться. Для менеджера это метафора «пробок» в системе. Управление дедлоками — это профилактика, а не лечение. Проектировать процессы так, чтобы дедлоков не возникало.</p>
+        <div class="action-hint">Перейдите к блоку 4 «Память».</div>
+        <h3>📌 4. Память: три уровня</h3>
+        <p>Обратите внимание на четвёртый блок нашего слайда. Три карточки с голубыми полосами. Три уровня управления памятью.</p>
+        <p>Первый уровень — физическая память. По-английски RAM, что расшифровывается как Random Access Memory. В русской транслитерации — РЭМ. Реальные микросхемы оперативной памяти. Ограничена: восемь, шестнадцать, тридцать два гигабайта. Быстрая, но дорогая. Аналогия проста. Рабочий стол. Всё под рукой, но места мало.</p>
+        <p>Второй уровень — виртуальная память. По-английски paging, или «страничная организация». Операционная система создаёт иллюзию большой памяти. Разбивает данные на страницы и подгружает только нужные. Программа думает, что у неё гигабайты. Аналогия проста. Библиотека. Книги на полках. Нужные приносят по запросу.</p>
+        <p>Третий уровень — swapping. В русской транслитерации — своппинг. Подкачка. Если физической памяти не хватает, операционная система выгружает неактивные страницы на диск. Медленно, но позволяет работать. Аналогия проста. Часть вещей — в кладовке. Приношу, когда нужно.</p>
+        <div class="action-hint">Перейдите к блоку 5 «Файлы и права».</div>
+        <h3>📌 5. Файловая система и права</h3>
+        <p>Обратите внимание на пятый блок нашего слайда. Это таблица с четырьмя строками и три карточки с правами доступа.</p>
+        <p>В таблице четыре файловые системы. ФАТ-тридцать два — максимальная совместимость, но файл не больше четырёх гигабайт. Эн-ти-эф-эс — журналирование, права, шифрование, поддержка больших дисков. Это стандарт для Виндоус. ext-четыре — журналирование, большие объёмы, высокая стабильность. Это стандарт для Линукс. И inode — индексный дескриптор внутри ext-четыре. Он хранит метаданные файла, а не сам файл.</p>
+        <p>Под таблицей — три карточки с правами доступа. Первая — эр-дабл-ю-экс. Что расшифровывается как Read, Write, Execute. В русской транслитерации — Рид, Райт, Экзекьют. Три базовых права в Юникс и Линукс. Читать, писать, выполнять. Вторая — эй-си-эл. Что расшифровывается как Access Control List. В русской транслитерации — Аксесс Контрол Лист. Список управления доступом в Виндоус. Кому что можно с файлом. Третья — ю-эй-си. Что расшифровывается как User Account Control. В русской транслитерации — Юзер Аккаунт Контрол. Контроль учётных записей. Подтверждение прав администратора при установке программ.</p>
+        <div class="action-hint">Перейдите к блоку 6 «Практикум».</div>
+        <h3>📌 6. Практикум: TCO в цифрах</h3>
+        <p>Обратите внимание на шестой блок нашего слайда. Это розовый блок с практическим кейсом и чек-листом.</p>
+        <p>Давайте посчитаем совокупную стоимость владения на конкретном примере. Компания, сто сотрудников. Сравниваем Виндоус и Линукс.</p>
+        <p>Виндоус. Лицензии: сто умножить на пятнадцать тысяч рублей равно один миллион пятьсот тысяч рублей. Администратор: восемьдесят тысяч в месяц умножить на двенадцать равно девятьсот шестьдесят тысяч рублей в год. Итого в первый год: два миллиона четыреста шестьдесят тысяч рублей.</p>
+        <p>Линукс. Лицензии: ноль рублей. Обучение: сто умножить на двадцать тысяч равно два миллиона рублей. Инженер: двести тысяч в месяц умножить на двенадцать равно два миллиона четыреста тысяч рублей в год. Итого в первый год: четыре миллиона четыреста тысяч рублей.</p>
+        <p>Вывод в розовом блоке. Линукс дороже на один миллион девятьсот сорок тысяч рублей в первый год. И на один миллион четыреста сорок тысяч рублей — в последующие. Это и есть совокупная стоимость владения. Дешёвая лицензия не равно дешёвое владение.</p>
+        <p>Под кейсом — чек-лист закупки операционной системы для компании. Пять пунктов. Первый. Сколько сотрудников и какие у них задачи. Второй. Есть ли критичные приложения: один-эс, системы планирования ресурсов предприятия, торговые терминалы. Третий. Какой бюджет на лицензии, обучение и информационный персонал. Четвёртый. Есть ли специалисты нужной квалификации на рынке труда. Пятый. Какой уровень обслуживания нужен от поставщика поддержки.</p>
+        <div class="action-hint">Перейдите к блоку 7 «Уроки для менеджеров».</div>
+        <h3>📌 7. Уроки для менеджеров</h3>
+        <p>Обратите внимание на седьмой блок нашего слайда. Шесть карточек с номерами и формулировками.</p>
+        <p>Первый урок. Процессы и блоки управления — это личные дела программ. Понимание состояний помогает ставить задачи информационному отделу: где узкое место, где зависание. Второй урок. Планировщик — это аналог распределения рабочего времени. ФИФО, эс-джей-эф, Раунд Робин — три стратегии, каждая со своими компромиссами. Третий урок. Дедлоки — это пробки в системе. Четыре условия: взаимное исключение, удержание, отсутствие изъятия, цикл. Управление — профилактика, а не лечение. Четвёртый урок. Память и своппинг — это про ресурсы. Виртуальная память — иллюзия, которая работает. Но за неё платят скоростью. Пятый урок. Файловая система и права — это про безопасность данных. Эн-ти-эф-эс, ext-четыре, эй-си-эл, ю-эй-си — не аббревиатуры, а инструменты защиты бизнеса. Шестой урок. Практикум по совокупной стоимости владения — главный навык менеджера. Считать нужно в долгую: лицензия плюс обучение плюс информационный персонал плюс потери от простоя.</p>
+        <p>На этом мы завершаем курс «Операционные системы для менеджеров». Мы прошли путь от перфокарт и мэйнфреймов до облачных экосистем. Разобрали классификацию. Сравнили три платформы. Изучили инструментарий менеджера: Актив Дайрэктори, лицензии, права доступа, Эм-Ди-Эм. И разобрали внутреннюю механику: процессы, память, файловую систему. Эти знания — фундамент для принятия обоснованных управленческих решений в цифровой экономике. Спасибо за внимание!</p>
+    </div>
+
+    <section class="notes-section" aria-labelledby="glossary-title">
+        <div class="notes-section-title" id="glossary-title"><span aria-hidden="true">📖</span>Словарь аббревиатур</div>
+        <table class="notes-table">
+            <thead><tr><th style="width:22%">Аббр.</th><th style="width:32%">Расшифровка</th><th>Пояснение</th></tr></thead>
+            <tbody>
+                <tr><td class="abbr">PCB</td><td>Process Control Block</td><td class="explain">Блок управления процессом: «личное дело» процесса</td></tr>
+                <tr><td class="abbr">PID</td><td>Process Identifier</td><td class="explain">Уникальный идентификатор процесса</td></tr>
+                <tr><td class="abbr">FIFO</td><td>First In First Out</td><td class="explain">Планировщик: первый пришёл — первый ушёл</td></tr>
+                <tr><td class="abbr">SJF</td><td>Shortest Job First</td><td class="explain">Планировщик: сначала самая короткая задача</td></tr>
+                <tr><td class="abbr">Round Robin</td><td>Round Robin</td><td class="explain">Планировщик: каждому процессу — квант времени</td></tr>
+                <tr><td class="abbr">RAM</td><td>Random Access Memory</td><td class="explain">Оперативная память с произвольным доступом</td></tr>
+                <tr><td class="abbr">Paging</td><td>Paging</td><td class="explain">Страничная организация виртуальной памяти</td></tr>
+                <tr><td class="abbr">Swapping</td><td>Swapping</td><td class="explain">Подкачка: выгрузка страниц на диск</td></tr>
+                <tr><td class="abbr">FAT32</td><td>File Allocation Table, 32 bit</td><td class="explain">Файловая система с совместимостью, но ограничением 4 ГБ на файл</td></tr>
+                <tr><td class="abbr">NTFS</td><td>New Technology File System</td><td class="explain">Файловая система Windows: журналирование, права, шифрование</td></tr>
+                <tr><td class="abbr">ext4</td><td>Fourth Extended Filesystem</td><td class="explain">Файловая система Linux: журналирование, большие объёмы</td></tr>
+                <tr><td class="abbr">inode</td><td>Index Node</td><td class="explain">Индексный дескриптор: метаданные файла в Linux</td></tr>
+                <tr><td class="abbr">RWX</td><td>Read, Write, Execute</td><td class="explain">Три базовых права доступа в Unix/Linux</td></tr>
+                <tr><td class="abbr">ACL</td><td>Access Control List</td><td class="explain">Список управления доступом в Windows</td></tr>
+                <tr><td class="abbr">UAC</td><td>User Account Control</td><td class="explain">Контроль учётных записей в Windows</td></tr>
+                <tr><td class="abbr">TCO</td><td>Total Cost of Ownership</td><td class="explain">Совокупная стоимость владения</td></tr>
+                <tr><td class="abbr">1С</td><td>1С:Предприятие</td><td class="explain">Российская ERP-платформа для бухгалтерии и управления</td></tr>
+                <tr><td class="abbr">ERP</td><td>Enterprise Resource Planning</td><td class="explain">Система планирования ресурсов предприятия</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="notes-section" aria-labelledby="sources-title">
+        <div class="notes-section-title" id="sources-title"><span aria-hidden="true">📚</span>Источники и литература</div>
+        <div class="notes-sources">
+            <div class="src-group">📖 Учебники и монографии</div>
+            <ol>
+                <li>Э. Таненбаум. Современные операционные системы. — 4-е изд.</li>
+                <li>Э. Таненбаум, А. Вудхалл. Операционные системы: разработка и реализация.</li>
+                <li>У. Столлингс. Операционные системы. — 9-е изд.</li>
+            </ol>
+            <div class="src-group">⚙️ Процессы и планировщик</div>
+            <ol start="4">
+                <li>Материалы по алгоритмам планирования: FIFO, SJF, Round Robin.</li>
+                <li>Классическая теория deadlocks: четыре условия Коффмана.</li>
+            </ol>
+            <div class="src-group">🧠 Память и файловые системы</div>
+            <ol start="6">
+                <li>Документация по виртуальной памяти и страничной организации.</li>
+                <li>Спецификации файловых систем FAT32, NTFS, ext4.</li>
+                <li>Материалы Microsoft по ACL и UAC.</li>
+            </ol>
+            <div class="src-group">💼 Экономика ИТ</div>
+            <ol start="9">
+                <li>Материалы Gartner по совокупной стоимости владения (TCO).</li>
+                <li>Обзоры рынка операционных систем (StatCounter, Net Applications).</li>
+            </ol>
+        </div>
+    </section>
+</div>
+
+<script>function changeVideo(url){document.getElementById('lecture-player').src=url;}</script>
+
+<nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 4; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

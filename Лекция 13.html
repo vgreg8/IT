@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 13 из 18. Офисный софт. Часть 5. PowerPoint и практикум</title>
+    <style>
+        :root {
+            --c-bg:#fff;--c-surface:#f8fafc;--c-border:#e2e8f0;--c-border-strong:#cbd5e0;
+            --c-text:#0f172a;--c-text-2:#334155;--c-text-3:#64748b;--c-text-muted:#94a3b8;
+            --c-primary:#2563eb;--c-primary-soft:#eff6ff;
+            --c-ppt:#d24726;--c-ppt-soft:#fef2f2;
+            --c-collab:#0891b2;--c-collab-soft:#ecfeff;
+            --c-tco:#b45309;--c-tco-soft:#fef3c7;
+            --c-check:#059669;--c-check-soft:#ecfdf5;
+            --c-dark:#0f172a;--c-dark-2:#1e293b;--c-dark-3:#334155;
+            --c-dark-text:#e2e8f0;--c-dark-text-2:#94a3b8;--c-dark-accent:#60a5fa;
+            --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+            --sh-md:0 4px 12px rgba(15,23,42,.08);
+            --sh-lg:0 12px 28px rgba(15,23,42,.12);
+            --sh-focus:0 0 0 3px rgba(37,99,235,.35);
+            --f-sans:'Segoe UI',Tahoma,sans-serif;
+            --f-mono:'JetBrains Mono',Consolas,monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%}
+        body{font-family:var(--f-sans);display:flex;height:100vh;overflow:hidden;background:var(--c-bg);color:var(--c-text);padding-bottom:80px!important}
+        :focus-visible{outline:none;box-shadow:var(--sh-focus);border-radius:var(--r-sm)}
+        .student-view{width:66.66%;height:100vh;background:var(--c-bg);padding:32px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--c-border);overflow-y:auto;scroll-behavior:smooth}
+        .speaker-notes{width:33.34%;height:100%;background:var(--c-dark);color:var(--c-dark-text);padding:28px;overflow-y:auto}
+        .slide-header{font-size:26px;color:var(--c-text);font-weight:800;line-height:1.25;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid var(--c-primary);position:relative}
+        .slide-header::after{content:'';position:absolute;left:0;bottom:-3px;width:80px;height:3px;background:var(--c-ppt);border-radius:3px}
+        .slide-body{flex-grow:1;display:flex;flex-direction:column;gap:22px;padding:4px 0}
+        .slide-footer{font-size:12px;color:var(--c-text-muted);text-align:right;margin-top:16px}
+        .toc{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md)}
+        .toc a{font-size:11px;font-weight:700;color:var(--c-text-2);text-decoration:none;padding:4px 9px;border-radius:var(--r-pill);background:var(--c-bg);border:1px solid var(--c-border);transition:all .15s}
+        .toc a:hover{background:var(--c-primary-soft);border-color:var(--c-primary);color:var(--c-primary)}
+        .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+        .kpi{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;text-align:center;transition:all .18s}
+        .kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .kpi .kpi-val{font-size:19px;font-weight:800;color:var(--c-text);letter-spacing:-.02em;line-height:1.1}
+        .kpi .kpi-lbl{font-size:10px;color:var(--c-text-3);margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+        .kpi.k-ppt .kpi-val{color:var(--c-ppt)}
+        .kpi.k-collab .kpi-val{color:var(--c-collab)}
+        .kpi.k-tco .kpi-val{color:var(--c-tco)}
+        .kpi.k-check .kpi-val{color:var(--c-check)}
+        .section-title{font-size:15px;font-weight:800;color:var(--c-text);margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em;scroll-margin-top:12px}
+        .section-title .st-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-sm);font-size:14px}
+        .ppt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .ppt-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 16px;position:relative;transition:all .18s}
+        .ppt-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--c-border-strong)}
+        .ppt-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0;background:var(--c-ppt)}
+        .ppt-card .pc-icon{font-size:18px;margin-bottom:6px}
+        .ppt-card .pc-name{font-size:13px;font-weight:800;color:var(--c-text);margin-bottom:3px}
+        .ppt-card .pc-sub{font-size:10px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+        .ppt-card .pc-desc{font-size:11px;color:var(--c-text-2);line-height:1.45}
+        .ppt-card .pc-analogy{margin-top:6px;padding:5px 7px;background:#fffbeb;border-left:2px solid var(--c-tco);border-radius:3px;font-size:10px;color:#92400e;line-height:1.35;font-style:italic}
+        .collab-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .collab-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 16px;position:relative;transition:all .18s}
+        .collab-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
+        .collab-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0;background:var(--c-collab)}
+        .collab-card .cc-icon{font-size:18px;margin-bottom:6px}
+        .collab-card .cc-name{font-size:13px;font-weight:800;color:var(--c-text);margin-bottom:3px}
+        .collab-card .cc-sub{font-size:10px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+        .collab-card .cc-desc{font-size:11px;color:var(--c-text-2);line-height:1.45}
+        .practice-box{background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border:1px solid #fbbf24;border-radius:var(--r-lg);padding:16px 18px}
+        .practice-box .section-title{color:#92400e;margin-bottom:10px}
+        .practice-box .section-title .st-icon{background:#fde68a;color:var(--c-tco)}
+        .practice-case{background:#fff;border:1px solid #fde68a;border-radius:var(--r-md);padding:12px 14px;margin-bottom:10px}
+        .practice-case .pc-title{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:6px}
+        .practice-case .pc-row{display:flex;justify-content:space-between;font-size:11.5px;color:var(--c-text-2);padding:5px 0;border-bottom:1px dashed #fde68a}
+        .practice-case .pc-row:last-child{border-bottom:none}
+        .practice-case .pc-row b{color:var(--c-text);font-family:var(--f-mono)}
+        .practice-case .pc-row.pc-total{padding-top:7px;border-top:1.5px solid #fde68a;border-bottom:none;margin-top:3px;font-weight:800}
+        .practice-case .pc-row.pc-total b{color:var(--c-tco)}
+        .practice-verdict{margin-top:10px;padding:8px 10px;background:#fff;border-left:3px solid var(--c-tco);border-radius:4px;font-size:11px;color:#78350f;line-height:1.4;font-weight:600}
+        .checklist{background:#fff;border:1px solid #fde68a;border-radius:var(--r-md);padding:12px 14px;margin-top:10px}
+        .checklist .ck-title{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:6px}
+        .checklist .ck-item{display:flex;gap:6px;font-size:11px;color:var(--c-text-2);line-height:1.4;padding:3px 0}
+        .checklist .ck-mark{flex:0 0 auto;color:var(--c-check);font-weight:800}
+        .lessons-box{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:1px solid #bbf7d0;border-radius:var(--r-lg);padding:16px 18px}
+        .lessons-box .section-title{color:#166534;margin-bottom:10px}
+        .lessons-box .section-title .st-icon{background:#dcfce7;color:#15803d}
+        .lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+        .lesson{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#14532d}
+        .lesson .lesson-num{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#15803d;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        .video-section{display:flex;flex-direction:column;align-items:center;gap:12px}
+        .video-container{width:100%;max-width:580px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000;aspect-ratio:16/9}
+        .links-hub{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+        .video-btn{text-decoration:none;padding:9px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;transition:all .18s;cursor:pointer;border:none;font-family:inherit}
+        .video-btn:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .rt-btn{background:#00a877}.rt-btn:hover{background:#008f65}
+        .stop-btn{background:#dc143c}.stop-btn:hover{background:#b01030}
+        .notes-header{font-size:16px;color:var(--c-dark-accent);font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c-dark-3);padding-bottom:10px}
+        .timer-badge{background:#dc2626;color:#fff;padding:3px 9px;border-radius:var(--r-pill);font-size:11px;font-family:var(--f-mono);font-weight:700}
+        .lecture-text{font-size:14px;line-height:1.68;color:var(--c-dark-text);text-align:justify}
+        .lecture-text p{margin-bottom:14px}
+        .lecture-text h3{color:var(--c-dark-accent);font-size:14.5px;margin:20px 0 10px;border-bottom:1px solid var(--c-dark-3);padding-bottom:6px;font-weight:800}
+        .lecture-text strong{color:#f1f5f9}
+        .action-hint{color:#fcd34d;font-style:italic;background:var(--c-dark-2);padding:11px 14px;border-radius:var(--r-sm);border-left:3px solid #fcd34d;margin:16px 0;font-size:12.5px;line-height:1.5}
+        .notes-section{margin-top:26px;background:var(--c-dark-2);border:1px solid var(--c-dark-3);border-radius:var(--r-md);padding:16px}
+        .notes-section-title{font-size:13.5px;font-weight:800;color:var(--c-dark-accent);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--c-dark-3);display:flex;align-items:center;gap:8px}
+        .notes-table{width:100%;border-collapse:collapse;font-size:11.5px}
+        .notes-table th{text-align:left;padding:7px 8px;font-weight:700;color:var(--c-dark-text-2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--c-dark-3)}
+        .notes-table td{padding:7px 8px;border-bottom:1px solid rgba(51,65,85,.6);color:var(--c-dark-text);vertical-align:top;line-height:1.4}
+        .notes-table tr:last-child td{border-bottom:none}
+        .notes-table tr:hover td{background:rgba(96,165,250,.06)}
+        .notes-table .abbr{font-weight:800;color:#93c5fd;font-family:var(--f-mono);font-size:11px;white-space:nowrap}
+        .notes-table .explain{color:var(--c-dark-text-2)}
+        .notes-sources{font-size:11.5px;line-height:1.55;color:var(--c-dark-text)}
+        .notes-sources .src-group{font-weight:800;color:#86efac;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+        .notes-sources .src-group:first-child{margin-top:0}
+        .notes-sources ol{margin:0 0 4px 16px;padding:0}
+        .notes-sources li{margin-bottom:5px;color:var(--c-dark-text-2)}
+        .lecture-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+        .lecture-nav .nav-progress{position:absolute;top:0;left:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);transition:width .3s;border-radius:0 3px 3px 0}
+        .lecture-nav .nav-btn-arrow{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--c-dark-text);font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled){background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.6);color:#fff;transform:translateY(-2px)}
+        .lecture-nav .nav-btn-arrow:disabled{opacity:.35;cursor:not-allowed}
+        .lecture-nav .nav-btn-arrow .arrow-icon{font-size:16px}
+        .lecture-nav .nav-btn-arrow .arrow-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+        .lecture-nav .nav-btn-arrow .arrow-label small{font-size:9px;font-weight:400;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title{font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lecture-nav .nav-center{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 20px;color:var(--c-dark-text-2);font-size:11px;border-left:1px solid rgba(255,255,255,.1);border-right:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-counter{font-size:15px;font-weight:900;color:#f1f5f9}
+        .lecture-nav .nav-counter span{color:#64748b;font-size:12px;font-weight:600}
+        .lecture-nav .nav-index-link{color:#60a5fa;text-decoration:none;font-size:11px;font-weight:700}
+        .lecture-nav .nav-index-link:hover{color:#93c5fd;text-decoration:underline}
+        .lecture-nav .nav-jump{display:flex;gap:4px;margin-left:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-jump-btn{padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--c-dark-text-2);font-size:10px;font-weight:800;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-jump-btn:hover{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5);color:#fff}
+        .lecture-nav .nav-jump-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:transparent;color:#fff}
+        .reveal{animation:fadeUp .5s ease both}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+        @media(max-width:1200px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.ppt-grid,.collab-grid{grid-template-columns:1fr}}
+        @media(max-width:900px){.lecture-nav{padding:10px 12px;gap:8px}.lecture-nav .nav-btn-arrow{padding:8px 12px}.lecture-nav .nav-btn-arrow .arrow-label .arrow-title{max-width:90px;font-size:11px}.lecture-nav .nav-center{padding:0 10px}.lecture-nav .nav-jump{display:none}.kpi-strip{grid-template-columns:repeat(2,1fr)}.lessons-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+
+<div class="student-view">
+    <div>
+        <h1 class="slide-header">Часть 5. PowerPoint, совместная работа и практикум</h1>
+        <div class="slide-body">
+
+            <nav class="toc reveal" aria-label="Содержание лекции">
+                <a href="#sec-ppt">1. PowerPoint</a>
+                <a href="#sec-collab">2. Совместная работа</a>
+                <a href="#sec-practice">3. Практикум TCO</a>
+                <a href="#sec-lessons">4. Уроки</a>
+            </nav>
+
+            <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры">
+                <div class="kpi k-ppt" role="listitem"><div class="kpi-val">3</div><div class="kpi-lbl">правила PowerPoint</div></div>
+                <div class="kpi k-ppt" role="listitem"><div class="kpi-val">10/20/30</div><div class="kpi-lbl">правило Кавасаки</div></div>
+                <div class="kpi k-collab" role="listitem"><div class="kpi-val">3</div><div class="kpi-lbl">платформы совместной работы</div></div>
+                <div class="kpi k-tco" role="listitem"><div class="kpi-val">2</div><div class="kpi-lbl">сценария TCO</div></div>
+                <div class="kpi k-tco" role="listitem"><div class="kpi-val">1 940 000</div><div class="kpi-lbl">разница в рублях</div></div>
+                <div class="kpi k-check" role="listitem"><div class="kpi-val">5</div><div class="kpi-lbl">пунктов чек-листа</div></div>
+            </div>
+
+            <section class="reveal" id="sec-ppt" aria-labelledby="ppt-title">
+                <div class="section-title" id="ppt-title"><span class="st-icon" aria-hidden="true">🎤</span>1. PowerPoint: сторителлинг и визуализация данных</div>
+                <div class="ppt-grid">
+                    <div class="ppt-card">
+                        <div class="pc-icon" aria-hidden="true">📖</div>
+                        <div class="pc-name">Сторителлинг</div>
+                        <div class="pc-sub">Storytelling</div>
+                        <div class="pc-desc">Презентация — это не набор слайдов, а <b>история с началом, конфликтом и решением</b>. Каждый слайд отвечает на один вопрос и ведёт аудиторию к выводу.</div>
+                        <div class="pc-analogy">Аналогия: хороший фильм — зритель не отвлекается, а следит за сюжетом.</div>
+                    </div>
+                    <div class="ppt-card">
+                        <div class="pc-icon" aria-hidden="true">📊</div>
+                        <div class="pc-name">Визуализация данных</div>
+                        <div class="pc-sub">Data Visualization</div>
+                        <div class="pc-desc">Один график вместо десяти таблиц. Правило: <b>если цифру можно показать графиком — покажи графиком</b>. Диаграммы из Excel вставляются в PowerPoint как связанные объекты.</div>
+                        <div class="pc-analogy">Аналогия: карта вместо списка улиц — быстрее понять, куда идти.</div>
+                    </div>
+                    <div class="ppt-card">
+                        <div class="pc-icon" aria-hidden="true">✂️</div>
+                        <div class="pc-name">Правило 10/20/30</div>
+                        <div class="pc-sub">Кавасаки</div>
+                        <div class="pc-desc"><b>10 слайдов, 20 минут, 30-й шрифт</b>. Гай Кавасаки сформулировал: короткие презентации лучше длинных, а мелкий шрифт — признак непроработанности.</div>
+                        <div class="pc-analogy">Аналогия: короткое письмо читают до конца, длинное — бросают на втором абзаце.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal" id="sec-collab" aria-labelledby="collab-title">
+                <div class="section-title" id="collab-title"><span class="st-icon" aria-hidden="true">🤝</span>2. Совместная работа: три платформы</div>
+                <div class="collab-grid">
+                    <div class="collab-card">
+                        <div class="cc-icon" aria-hidden="true">☁️</div>
+                        <div class="cc-name">OneDrive</div>
+                        <div class="cc-sub">Microsoft</div>
+                        <div class="cc-desc">Облачное хранилище Microsoft. Синхронизация файлов между устройствами, совместное редактирование в реальном времени, версионирование.</div>
+                    </div>
+                    <div class="collab-card">
+                        <div class="cc-icon" aria-hidden="true">🏢</div>
+                        <div class="cc-name">SharePoint</div>
+                        <div class="cc-sub">Microsoft</div>
+                        <div class="cc-desc">Корпоративная платформа для командной работы. Хранение документов, общие рабочие пространства, интеграция с Office 365.</div>
+                    </div>
+                    <div class="collab-card">
+                        <div class="cc-icon" aria-hidden="true">🌐</div>
+                        <div class="cc-name">Google Workspace</div>
+                        <div class="cc-sub">Google</div>
+                        <div class="cc-desc">Облачная экосистема Google: Документы, Таблицы, Презентации, Диск. Идеальна для совместной работы в реальном времени.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal" id="sec-practice" aria-labelledby="practice-title">
+                <div class="section-title" id="practice-title"><span class="st-icon" aria-hidden="true">🧮</span>3. Практикум: TCO офисного пакета в цифрах</div>
+                <div class="practice-box">
+                    <div class="section-title" style="margin-bottom:10px;">
+                        <span class="st-icon" aria-hidden="true">📊</span>
+                        Кейс: 100 сотрудников, сравнение MS 365 и Open Source
+                    </div>
+                    <div class="practice-case">
+                        <div class="pc-title">Microsoft 365: лицензии + поддержка</div>
+                        <div class="pc-row"><span>Лицензии (100 × 15 000)</span><b>1 500 000</b></div>
+                        <div class="pc-row"><span>Обучение (100 × 5 000)</span><b>500 000</b></div>
+                        <div class="pc-row"><span>Поддержка (80 000 × 12)</span><b>960 000 / год</b></div>
+                        <div class="pc-row pc-total"><span>Итого в первый год</span><b>2 960 000</b></div>
+                    </div>
+                    <div class="practice-case">
+                        <div class="pc-title">Open Source (LibreOffice): обучение + инженер</div>
+                        <div class="pc-row"><span>Лицензии</span><b>0</b></div>
+                        <div class="pc-row"><span>Обучение (100 × 25 000)</span><b>2 500 000</b></div>
+                        <div class="pc-row"><span>Инженер (200 000 × 12)</span><b>2 400 000 / год</b></div>
+                        <div class="pc-row pc-total"><span>Итого в первый год</span><b>4 900 000</b></div>
+                    </div>
+                    <div class="practice-verdict">Вывод: Open Source дороже на 1 940 000 рублей в первый год. И на 1 440 000 — в последующие. Это и есть TCO — дешёвая лицензия не равно дешёвое владение.</div>
+                    <div class="checklist">
+                        <div class="ck-title">Чек-лист закупки офисного пакета для компании</div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Сколько сотрудников и какие у них задачи? (базовые или тяжёлая аналитика)</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Есть ли критичные приложения и макросы VBA?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Какой бюджет на лицензии, обучение, ИТ-персонал?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Есть ли требования по импортозамещению и Реестру ПО?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Какой SLA нужен от поставщика поддержки?</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                <div class="section-title" id="lessons-title"><span class="st-icon" aria-hidden="true">🎓</span>4. Уроки для менеджеров</div>
+                <div class="lessons-grid">
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">1</span><span>PowerPoint — не «программа для слайдов», а инструмент сторителлинга и убеждения.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">2</span><span>Правило 10/20/30: короткие презентации убеждают лучше длинных.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">3</span><span>Один график лучше десяти таблиц. Визуализация данных — ключевой навык менеджера.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">4</span><span>Совместная работа — не «фишка», а необходимость. OneDrive, SharePoint, Google Workspace ускоряют процессы.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">5</span><span>Практикум TCO: считайте полную стоимость владения, а не только цену лицензии.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">6</span><span>Чек-лист закупки — практический артефакт. Используйте его в реальной работе.</span></div>
+                </div>
+            </section>
+
+             <div class="video-section reveal">
+                    <div class="video-container">
+                        <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: как и почему возник интернет"></iframe>
+                    </div>
+                    <div class="links-hub">
+                        <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                        <button onclick="changeVideo('https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266//')" class="video-btn rt-btn">📜 Лекция 1. Как и почему возник интернет</button>
+                    </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="slide-footer">Менеджмент · 1 курс · Офисный софт · Часть 5 из 5 (финал)</div>
+</div>
+
+<div class="speaker-notes">
+    <div style="position:sticky;top:0;background:var(--c-dark);padding:20px 20px 10px 20px;border-bottom:1px solid var(--c-dark-3);width:100%;z-index:100;">
+        <div class="notes-header"><span>🎙️ Скрипт преподавателя</span><span class="timer-badge">15 мин</span></div>
+        <div style="width:100%;aspect-ratio:16/9;border-radius:var(--r-sm);overflow:hidden;background:#000;box-shadow:var(--sh-md);">
+              <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"  allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+        </div>
+    </div>
+    <div class="lecture-text" style="margin-top:20px;">
+
+        <p>Коллеги, мы добрались до финальной части нашего курса «Офисный софт для менеджеров». В первых четырёх частях мы разобрали историю, альтернативы Майкрософт Офис, Ворд и Эксель. Теперь — три финальные темы. ПауэрПойнт как инструмент убеждения. Совместная работа в облачных экосистемах. И практикум по выбору офисного пакета с расчётом совокупной стоимости владения.</p>
+
+        <div class="action-hint">Обратите внимание студентов на блок 1 «PowerPoint: сторителлинг и визуализация данных».</div>
+
+        <h3>📌 1. PowerPoint: сторителлинг и визуализация данных</h3>
+
+        <p>Обратите внимание на первый блок нашего слайда. Три карточки. Три правила ПауэрПойнт.</p>
+
+        <p>Первое — сторителлинг. Презентация — это не набор слайдов, а история с началом, конфликтом и решением. Каждый слайд отвечает на один вопрос и ведёт аудиторию к выводу. Аналогия проста. Это хороший фильм: зритель не отвлекается, а следит за сюжетом.</p>
+
+        <p>Второе — визуализация данных. Один график вместо десяти таблиц. Правило простое: если цифру можно показать графиком — покажи графиком. Диаграммы из Эксель вставляются в ПауэрПойнт как связанные объекты. Аналогия: карта вместо списка улиц — быстрее понять, куда идти.</p>
+
+        <p>Третье — правило десяти, двадцати, тридцати. Гай Кавасаки сформулировал: десять слайдов, двадцать минут, тридцатый шрифт. Короткие презентации лучше длинных, а мелкий шрифт — признак непроработанности. Аналогия: короткое письмо читают до конца, длинное — бросают на втором абзаце.</p>
+
+        <div class="action-hint">Перейдите к блоку 2 «Совместная работа: три платформы».</div>
+
+        <h3>📌 2. Совместная работа: три платформы</h3>
+
+        <p>Обратите внимание на второй блок нашего слайда. Три карточки. Три платформы совместной работы.</p>
+
+        <p>Первая — ВанДрайв от Майкрософт. Облачное хранилище. Синхронизация файлов между устройствами, совместное редактирование в реальном времени, версионирование. Вторая — ШейрПойнт. Корпоративная платформа для командной работы. Хранение документов, общие рабочие пространства, интеграция с Офис 365. Третья — Гугл Воркспейс. Облачная экосистема Гугл: Документы, Таблицы, Презентации, Диск. Идеальна для совместной работы в реальном времени.</p>
+
+        <div class="action-hint">Перейдите к блоку 3 «Практикум: TCO офисного пакета в цифрах».</div>
+
+        <h3>📌 3. Практикум: TCO офисного пакета</h3>
+
+        <p>Обратите внимание на жёлтый блок практикума. Это практический кейс с расчётами и чек-лист закупки. Компания, сто сотрудников. Сравниваем Майкрософт 365 и Open Source.</p>
+
+        <p>Первый сценарий — Майкрософт 365. Лицензии: сто умножить на пятнадцать тысяч равно один миллион пятьсот тысяч. Обучение: сто умножить на пять тысяч равно пятьсот тысяч. Поддержка: восемьдесят тысяч в месяц умножить на двенадцать равно девятьсот шестьдесят тысяч в год. Итого в первый год: два миллиона девятьсот шестьдесят тысяч рублей.</p>
+
+        <p>Второй сценарий — Open Source, ЛибреОфис. Лицензии: ноль. Обучение: сто умножить на двадцать пять тысяч равно два миллиона пятьсот тысяч. Инженер: двести тысяч в месяц умножить на двенадцать равно два миллиона четыреста тысяч в год. Итого в первый год: четыре миллиона девятьсот тысяч рублей.</p>
+
+        <p>Вывод. Open Source дороже на один миллион девятьсот сорок тысяч рублей в первый год. И на один миллион четыреста сорок тысяч — в последующие. Это и есть совокупная стоимость владения. Дешёвая лицензия не равно дешёвое владение.</p>
+
+        <p>Под кейсом — чек-лист закупки офисного пакета. Пять пунктов. Первый. Сколько сотрудников и какие у них задачи: базовые или тяжёлая аналитика. Второй. Есть ли критичные приложения и макросы VBA. Третий. Какой бюджет на лицензии, обучение, информационный персонал. Четвёртый. Есть ли требования по импортозамещению и Реестру ПО. Пятый. Какой уровень обслуживания нужен от поставщика поддержки. Этот чек-лист — практический инструмент. Используйте его в реальной работе.</p>
+
+        <div class="action-hint">Перейдите к блоку 4 «Уроки для менеджеров».</div>
+
+        <h3>📌 4. Уроки для менеджеров</h3>
+
+        <p>Обратите внимание на зелёный блок уроков. Шесть карточек.</p>
+
+        <p>Первый урок. ПауэрПойнт — не программа для слайдов, а инструмент сторителлинга и убеждения. Второй урок. Правило десяти, двадцати, тридцати: короткие презентации убеждают лучше длинных. Третий урок. Один график лучше десяти таблиц. Визуализация данных — ключевой навык менеджера. Четвёртый урок. Совместная работа — не фишка, а необходимость. ВанДрайв, ШейрПойнт, Гугл Воркспейс ускоряют процессы. Пятый урок. Практикум по совокупной стоимости владения: считайте полную стоимость владения, а не только цену лицензии. Шестой урок. Чек-лист закупки — практический артефакт. Используйте его в реальной работе.</p>
+
+        <p>На этом мы завершаем курс «Офисный софт для менеджеров». Мы прошли путь от амбарных книг и ВизиКалк до ПауэрПойнт и облачных экосистем. Разобрали альтернативы Майкрософт Офис. Изучили Ворд и Эксель. И научились считать совокупную стоимость владения офисным пакетом. Эти знания — фундамент для принятия обоснованных управленческих решений в цифровой экономике. Спасибо за внимание! Курс завершён. Я готов ответить на ваши вопросы.</p>
+
+    </div>
+
+    <section class="notes-section" aria-labelledby="glossary-title">
+        <div class="notes-section-title" id="glossary-title"><span aria-hidden="true">📖</span>Словарь терминов</div>
+        <table class="notes-table">
+            <thead><tr><th style="width:22%">Термин</th><th style="width:32%">Расшифровка</th><th>Пояснение</th></tr></thead>
+            <tbody>
+                <tr><td class="abbr">PowerPoint</td><td>Microsoft PowerPoint</td><td class="explain">Программа для создания презентаций</td></tr>
+                <tr><td class="abbr">Storytelling</td><td>Сторителлинг</td><td class="explain">Искусство рассказывать историю через слайды</td></tr>
+                <tr><td class="abbr">10/20/30</td><td>Правило Кавасаки</td><td class="explain">10 слайдов, 20 минут, 30-й шрифт</td></tr>
+                <tr><td class="abbr">OneDrive</td><td>Microsoft OneDrive</td><td class="explain">Облачное хранилище Microsoft</td></tr>
+                <tr><td class="abbr">SharePoint</td><td>Microsoft SharePoint</td><td class="explain">Корпоративная платформа для командной работы</td></tr>
+                <tr><td class="abbr">Google Workspace</td><td>Google Workspace</td><td class="explain">Облачная экосистема Google: Документы, Таблицы, Диск</td></tr>
+                <tr><td class="abbr">TCO</td><td>Total Cost of Ownership</td><td class="explain">Совокупная стоимость владения</td></tr>
+                <tr><td class="abbr">SLA</td><td>Service Level Agreement</td><td class="explain">Соглашение об уровне обслуживания</td></tr>
+                <tr><td class="abbr">VBA</td><td>Visual Basic for Applications</td><td class="explain">Язык макросов в Microsoft Office</td></tr>
+                <tr><td class="abbr">Реестр ПО</td><td>Реестр российского ПО</td><td class="explain">Официальный список отечественного ПО Минцифры РФ</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="notes-section" aria-labelledby="sources-title">
+        <div class="notes-section-title" id="sources-title"><span aria-hidden="true">📚</span>Источники и литература</div>
+        <div class="notes-sources">
+            <div class="src-group">📖 Презентации</div>
+            <ol>
+                <li>Гай Кавасаки. «Правило 10/20/30».</li>
+                <li>Документация Microsoft PowerPoint.</li>
+                <li>Нэнси Дуарте. «Slide:ology» — визуализация данных.</li>
+            </ol>
+            <div class="src-group">🤝 Совместная работа</div>
+            <ol start="4">
+                <li>Документация Microsoft OneDrive и SharePoint.</li>
+                <li>Документация Google Workspace.</li>
+            </ol>
+            <div class="src-group">💼 Экономика ИТ</div>
+            <ol start="6">
+                <li>Материалы Gartner по совокупной стоимости владения (TCO).</li>
+                <li>Реестр российского ПО Минцифры РФ.</li>
+            </ol>
+        </div>
+    </section>
+</div>
+
+<script>
+    function changeVideo(embedUrl) {
+        document.getElementById('lecture-player').src = embedUrl;
+    }
+</script>
+
+<nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 13; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

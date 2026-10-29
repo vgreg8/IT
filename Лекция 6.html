@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 6 из 18 · Интернет · История</title>
+    <style>
+        /* ============================================================
+           ДИЗАЙН-ТОКЕНЫ (единая система с Блоками 2–3)
+           ============================================================ */
+        :root {
+            --c-bg: #ffffff;
+            --c-surface: #f8fafc;
+            --c-surface-2: #f1f5f9;
+            --c-border: #e2e8f0;
+            --c-border-strong: #cbd5e0;
+            --c-text: #0f172a;
+            --c-text-2: #334155;
+            --c-text-3: #64748b;
+            --c-text-muted: #94a3b8;
+            --c-primary: #2563eb;
+            --c-primary-2: #1d4ed8;
+            --c-primary-soft: #eff6ff;
+            --c-accent-war: #dc2626;
+            --c-accent-war-soft: #fef2f2;
+            --c-accent-idea: #d97706;
+            --c-accent-idea-soft: #fffbeb;
+            --c-accent-build: #059669;
+            --c-accent-build-soft: #ecfdf5;
+            --c-accent-science: #7c3aed;
+            --c-accent-science-soft: #f5f3ff;
+            --c-accent-biz: #0891b2;
+            --c-accent-biz-soft: #ecfeff;
+            --c-dark: #0f172a;
+            --c-dark-2: #1e293b;
+            --c-dark-3: #334155;
+            --c-dark-text: #e2e8f0;
+            --c-dark-text-2: #94a3b8;
+            --c-dark-accent: #60a5fa;
+
+            --r-sm: 8px;
+            --r-md: 12px;
+            --r-lg: 16px;
+            --r-xl: 20px;
+            --r-pill: 999px;
+
+            --sh-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+            --sh-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+            --sh-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+            --sh-lg: 0 12px 28px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.06);
+            --sh-focus: 0 0 0 3px rgba(37, 99, 235, 0.35);
+
+            --f-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --f-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+            --sp-1: 4px;
+            --sp-2: 8px;
+            --sp-3: 12px;
+            --sp-4: 16px;
+            --sp-5: 20px;
+            --sp-6: 24px;
+            --sp-8: 32px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            font-family: var(--f-sans);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--c-bg);
+            color: var(--c-text);
+            padding-bottom: 80px !important;
+        }
+
+        :focus-visible {
+            outline: none;
+            box-shadow: var(--sh-focus);
+            border-radius: var(--r-sm);
+        }
+
+        /* ============================================================
+           ПАНЕЛИ
+           ============================================================ */
+        .student-view {
+            width: 66.66%;
+            height: 100vh;
+            background: var(--c-bg);
+            padding: 32px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid var(--c-border);
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        .speaker-notes {
+            width: 33.34%;
+            height: 100%;
+            background: var(--c-dark);
+            color: var(--c-dark-text);
+            padding: 28px;
+            overflow-y: auto;
+        }
+
+        .slide-header {
+            font-size: 26px;
+            color: var(--c-text);
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 3px solid var(--c-primary);
+            position: relative;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -3px;
+            width: 80px;
+            height: 3px;
+            background: var(--c-accent-war);
+            border-radius: 3px;
+        }
+
+        .slide-body { flex-grow: 1; display: flex; flex-direction: column; gap: 22px; padding: 4px 0; }
+        .slide-footer { font-size: 12px; color: var(--c-text-muted); text-align: right; margin-top: 16px; letter-spacing: 0.01em; }
+
+        /* ============================================================
+           ОГЛАВЛЕНИЕ ПО СЕКЦИЯМ (якоря)
+           ============================================================ */
+        .toc {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 10px 12px;
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            margin-bottom: 4px;
+        }
+        .toc a {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--c-text-2);
+            text-decoration: none;
+            padding: 4px 9px;
+            border-radius: var(--r-pill);
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            transition: all .15s ease;
+            white-space: nowrap;
+        }
+        .toc a:hover { background: var(--c-primary-soft); border-color: var(--c-primary); color: var(--c-primary); }
+
+        /* ============================================================
+           KPI-СТРИП
+           ============================================================ */
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+        .kpi {
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            padding: 12px 10px;
+            text-align: center;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .kpi:hover { transform: translateY(-2px); box-shadow: var(--sh-md); border-color: var(--c-border-strong); }
+        .kpi .kpi-val { font-size: 20px; font-weight: 800; color: var(--c-text); letter-spacing: -0.02em; line-height: 1.1; }
+        .kpi .kpi-lbl { font-size: 10.5px; color: var(--c-text-3); margin-top: 4px; line-height: 1.3; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+        .kpi.kpi-war .kpi-val { color: var(--c-accent-war); }
+        .kpi.kpi-idea .kpi-val { color: var(--c-accent-idea); }
+        .kpi.kpi-build .kpi-val { color: var(--c-accent-build); }
+        .kpi.kpi-science .kpi-val { color: var(--c-accent-science); }
+        .kpi.kpi-biz .kpi-val { color: var(--c-accent-biz); }
+
+        /* ============================================================
+           СЕКЦИИ
+           ============================================================ */
+        .section-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--c-text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.01em;
+            scroll-margin-top: 12px;
+        }
+        .section-title .st-icon {
+            width: 26px; height: 26px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--c-primary-soft);
+            color: var(--c-primary);
+            border-radius: var(--r-sm);
+            font-size: 14px;
+        }
+        .section-sub {
+            font-size: 12px;
+            color: var(--c-text-3);
+            margin: -6px 0 10px 34px;
+            line-height: 1.4;
+        }
+
+        /* ============================================================
+           ВОРОНКА ПРИЧИННОСТИ
+           ============================================================ */
+        .cause-funnel {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            counter-reset: cause;
+        }
+        .cause-step {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            counter-increment: cause;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .cause-step:hover { transform: translateX(3px); box-shadow: var(--sh-md); border-color: var(--c-border-strong); }
+        .cause-step + .cause-step { margin-top: 26px; }
+        .cause-step + .cause-step::before {
+            content: '';
+            position: absolute;
+            top: -22px;
+            left: 34px;
+            width: 2px;
+            height: 18px;
+            background: linear-gradient(180deg, var(--c-border-strong), var(--c-primary));
+            border-radius: 2px;
+        }
+        .cause-step + .cause-step::after {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 30px;
+            width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid var(--c-primary);
+        }
+        .cause-num {
+            flex: 0 0 auto;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800;
+            font-size: 13px;
+            color: #fff;
+            background: var(--c-primary);
+            box-shadow: 0 0 0 4px var(--c-primary-soft);
+        }
+        .cause-num::before { content: counter(cause); }
+        .cause-body { flex: 1; min-width: 0; }
+        .cause-body strong {
+            display: block;
+            font-size: 13.5px;
+            color: var(--c-text);
+            margin-bottom: 3px;
+            line-height: 1.3;
+        }
+        .cause-body span {
+            font-size: 12.5px;
+            color: var(--c-text-2);
+            line-height: 1.45;
+            display: block;
+        }
+        .cause-body .cause-analogy {
+            margin-top: 6px;
+            padding: 6px 9px;
+            background: #fffbeb;
+            border-left: 3px solid var(--c-accent-idea);
+            border-radius: 4px;
+            font-size: 11px;
+            color: #92400e;
+            line-height: 1.4;
+            font-style: italic;
+        }
+        .cause-step.cs-war { border-left: 4px solid var(--c-accent-war); }
+        .cause-step.cs-war .cause-num { background: var(--c-accent-war); box-shadow: 0 0 0 4px var(--c-accent-war-soft); }
+        .cause-step.cs-war + .cause-step::before { background: linear-gradient(180deg, var(--c-accent-war), var(--c-accent-idea)); }
+        .cause-step.cs-idea { border-left: 4px solid var(--c-accent-idea); }
+        .cause-step.cs-idea .cause-num { background: var(--c-accent-idea); box-shadow: 0 0 0 4px var(--c-accent-idea-soft); }
+        .cause-step.cs-idea + .cause-step::before { background: linear-gradient(180deg, var(--c-accent-idea), var(--c-accent-build)); }
+        .cause-step.cs-build { border-left: 4px solid var(--c-accent-build); }
+        .cause-step.cs-build .cause-num { background: var(--c-accent-build); box-shadow: 0 0 0 4px var(--c-accent-build-soft); }
+
+        /* ============================================================
+           ТАЙМЛАЙН-РЕЛЬС
+           ============================================================ */
+        .rail {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            position: relative;
+            padding-top: 18px;
+        }
+        .rail::before {
+            content: '';
+            position: absolute;
+            top: 28px;
+            left: 8%;
+            right: 8%;
+            height: 3px;
+            background: linear-gradient(90deg,
+                var(--c-accent-war),
+                var(--c-accent-idea),
+                var(--c-accent-build),
+                var(--c-accent-science),
+                var(--c-accent-biz));
+            border-radius: 3px;
+            opacity: 0.35;
+        }
+        .rail-card {
+            position: relative;
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            padding: 34px 10px 12px;
+            text-align: center;
+            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        }
+        .rail-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--sh-lg);
+            border-color: var(--c-border-strong);
+        }
+        .rail-dot {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+            color: #fff;
+            border: 4px solid var(--c-bg);
+            box-shadow: var(--sh-md);
+            z-index: 2;
+        }
+        .rail-card.rc-war .rail-dot { background: var(--c-accent-war); }
+        .rail-card.rc-idea .rail-dot { background: var(--c-accent-idea); }
+        .rail-card.rc-build .rail-dot { background: var(--c-accent-build); }
+        .rail-card.rc-science .rail-dot { background: var(--c-accent-science); }
+        .rail-card.rc-biz .rail-dot { background: var(--c-accent-biz); }
+
+        .rail-year {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--c-text);
+            letter-spacing: -0.01em;
+            margin-bottom: 2px;
+        }
+        .rail-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--c-text-2);
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+        .rail-desc {
+            font-size: 10.5px;
+            color: var(--c-text-3);
+            line-height: 1.35;
+        }
+        .rail-card.active {
+            border-color: var(--c-accent-biz);
+            background: var(--c-accent-biz-soft);
+            box-shadow: 0 0 0 1px var(--c-accent-biz), var(--sh-md);
+        }
+        .rail-card.active .rail-year { color: var(--c-accent-biz); }
+        .rail-card.active .rail-dot {
+            animation: pulseDot 2.2s ease-in-out infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(8, 145, 178, 0.45); }
+            50% { box-shadow: 0 0 0 10px rgba(8, 145, 178, 0); }
+        }
+        .rail-badge {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 2px 7px;
+            border-radius: var(--r-pill);
+            background: var(--c-accent-biz);
+            color: #fff;
+        }
+
+        /* ============================================================
+           КАРТОЧНАЯ СЕТКА «КТО РАЗРАБОТАЛ»
+           ============================================================ */
+        .people-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .person-card {
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            padding: 12px 12px 10px;
+            position: relative;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .person-card:hover { transform: translateY(-3px); box-shadow: var(--sh-md); border-color: var(--c-border-strong); }
+        .person-role {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 2px 7px;
+            border-radius: var(--r-pill);
+            margin-bottom: 7px;
+        }
+        .role-customer { background: var(--c-accent-war-soft); color: var(--c-accent-war); }
+        .role-architect { background: var(--c-accent-idea-soft); color: var(--c-accent-idea); }
+        .role-implement { background: var(--c-accent-build-soft); color: var(--c-accent-build); }
+        .role-commercial { background: var(--c-accent-biz-soft); color: var(--c-accent-biz); }
+        .person-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--c-text);
+            line-height: 1.25;
+            margin-bottom: 3px;
+        }
+        .person-contrib {
+            font-size: 11.5px;
+            color: var(--c-text-2);
+            line-height: 1.4;
+        }
+        .person-impact {
+            margin-top: 7px;
+            padding-top: 7px;
+            border-top: 1px dashed var(--c-border);
+            font-size: 10.5px;
+            color: var(--c-text-3);
+            font-weight: 600;
+        }
+        .person-analogy {
+            margin-top: 7px;
+            padding: 6px 9px;
+            background: #fffbeb;
+            border-left: 3px solid var(--c-accent-idea);
+            border-radius: 4px;
+            font-size: 10.5px;
+            color: #92400e;
+            line-height: 1.4;
+            font-style: italic;
+        }
+
+        /* ============================================================
+           БЛОК КОММЕРЦИАЛИЗАЦИИ (Tier 1/2/3)
+           ============================================================ */
+        .tier-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .tier-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--r-md);
+            border: 1px solid var(--c-border);
+            background: var(--c-bg);
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .tier-row:hover { transform: translateX(3px); box-shadow: var(--sh-md); }
+        .tier-row .tr-badge {
+            flex: 0 0 auto;
+            font-size: 10px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.05em; padding: 3px 9px;
+            border-radius: var(--r-pill); font-family: var(--f-mono);
+            color: #fff; background: var(--c-accent-biz);
+        }
+        .tier-row .tr-body { flex: 1; min-width: 0; font-size: 12px; color: var(--c-text-2); line-height: 1.4; }
+        .tier-row .tr-body b { color: var(--c-text); }
+        .tier-row .tr-analogy {
+            flex: 0 0 auto; font-size: 10.5px; color: #92400e;
+            background: #fffbeb; padding: 4px 8px; border-radius: 4px;
+            font-style: italic; max-width: 40%; line-height: 1.3;
+        }
+        .tier-row.tr-1 { border-left: 4px solid var(--c-accent-biz); }
+        .tier-row.tr-2 { border-left: 4px solid var(--c-accent-science); }
+        .tier-row.tr-2 .tr-badge { background: var(--c-accent-science); }
+        .tier-row.tr-3 { border-left: 4px solid var(--c-accent-build); }
+        .tier-row.tr-3 .tr-badge { background: var(--c-accent-build); }
+
+        /* ============================================================
+           БЛОК «УРОКИ ДЛЯ МЕНЕДЖЕРОВ»
+           ============================================================ */
+        .lessons-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: var(--r-lg);
+            padding: 16px 18px;
+        }
+        .lessons-box .section-title { color: #166534; margin-bottom: 10px; }
+        .lessons-box .section-title .st-icon { background: #dcfce7; color: #15803d; }
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 16px;
+        }
+        .lesson {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            line-height: 1.45;
+            color: #14532d;
+        }
+        .lesson .lesson-num {
+            flex: 0 0 auto;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: #15803d;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: 1px;
+        }
+
+        /* ============================================================
+           ВИДЕО
+           ============================================================ */
+        .video-section { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .video-container {
+            width: 100%; max-width: 580px;
+            border-radius: var(--r-lg); overflow: hidden;
+            box-shadow: var(--sh-lg); background: #000;
+            aspect-ratio: 16 / 9;
+        }
+        .links-hub { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .video-btn {
+            text-decoration: none; padding: 9px 14px; border-radius: var(--r-sm);
+            font-size: 12px; font-weight: 700; color: white;
+            display: flex; align-items: center; gap: 6px;
+            transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+            cursor: pointer; border: none; font-family: inherit;
+        }
+        .video-btn:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+        .rt-btn { background: #00a877; }
+        .rt-btn:hover { background: #008f65; }
+        .stop-btn { background: #dc143c; }
+        .stop-btn:hover { background: #b01030; }
+
+        /* ============================================================
+           ПРАВАЯ ПАНЕЛЬ
+           ============================================================ */
+        .notes-header {
+            font-size: 16px; color: var(--c-dark-accent); font-weight: 800;
+            margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--c-dark-3); padding-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+        .timer-badge {
+            background: #dc2626; color: #fff; padding: 3px 9px; border-radius: var(--r-pill);
+            font-size: 11px; font-family: var(--f-mono); font-weight: 700;
+        }
+        .lecture-text { font-size: 14px; line-height: 1.68; color: var(--c-dark-text); text-align: justify; }
+        .lecture-text p { margin-bottom: 14px; }
+        .lecture-text h3 {
+            color: var(--c-dark-accent); font-size: 14.5px; margin: 20px 0 10px;
+            border-bottom: 1px solid var(--c-dark-3); padding-bottom: 6px;
+            font-weight: 800; letter-spacing: -0.01em;
+        }
+        .lecture-text ul { margin: 8px 0 14px 18px; }
+        .lecture-text li { margin-bottom: 6px; }
+        .lecture-text strong { color: #f1f5f9; }
+        .action-hint {
+            color: #fcd34d; font-style: italic; background: var(--c-dark-2);
+            padding: 11px 14px; border-radius: var(--r-sm);
+            border-left: 3px solid #fcd34d; margin: 16px 0;
+            font-size: 12.5px; line-height: 1.5;
+        }
+
+        .notes-section {
+            margin-top: 26px;
+            background: var(--c-dark-2);
+            border: 1px solid var(--c-dark-3);
+            border-radius: var(--r-md);
+            padding: 16px 16px 14px;
+        }
+        .notes-section-title {
+            font-size: 13.5px; font-weight: 800; color: var(--c-dark-accent);
+            margin-bottom: 12px; padding-bottom: 8px;
+            border-bottom: 1px solid var(--c-dark-3);
+            display: flex; align-items: center; gap: 8px;
+            letter-spacing: -0.01em;
+        }
+        .notes-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+        .notes-table th {
+            text-align: left; padding: 7px 8px; font-weight: 700;
+            color: var(--c-dark-text-2); font-size: 10px;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--c-dark-3);
+        }
+        .notes-table td {
+            padding: 7px 8px; border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+            color: var(--c-dark-text); vertical-align: top; line-height: 1.4;
+        }
+        .notes-table tr:last-child td { border-bottom: none; }
+        .notes-table tr:hover td { background: rgba(96, 165, 250, 0.06); }
+        .notes-table .abbr { font-weight: 800; color: #93c5fd; font-family: var(--f-mono); font-size: 11px; white-space: nowrap; }
+        .notes-table .explain { color: var(--c-dark-text-2); }
+
+        .notes-sources { font-size: 11.5px; line-height: 1.55; color: var(--c-dark-text); }
+        .notes-sources .src-group {
+            font-weight: 800; color: #86efac; font-size: 10.5px;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin: 10px 0 5px;
+        }
+        .notes-sources .src-group:first-child { margin-top: 0; }
+        .notes-sources ol { margin: 0 0 4px 16px; padding: 0; }
+        .notes-sources li { margin-bottom: 5px; color: var(--c-dark-text-2); }
+        .notes-sources a { color: #93c5fd; text-decoration: none; }
+        .notes-sources a:hover { text-decoration: underline; }
+
+        /* ============================================================
+           НАВИГАЦИЯ
+           ============================================================ */
+        .lecture-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 20px; display: flex; align-items: center; justify-content: center;
+            gap: 12px; z-index: 9999; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+            font-family: var(--f-sans);
+        }
+        .lecture-nav .nav-progress {
+            position: absolute; top: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            transition: width .3s ease; border-radius: 0 3px 3px 0;
+        }
+        .lecture-nav .nav-btn-arrow {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: var(--r-md);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--c-dark-text); font-size: 13px; font-weight: 700;
+            text-decoration: none; cursor: pointer;
+            transition: all .2s ease; font-family: inherit;
+        }
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled) {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: rgba(59, 130, 246, 0.6);
+            color: #fff; transform: translateY(-2px);
+        }
+        .lecture-nav .nav-btn-arrow:disabled { opacity: .35; cursor: not-allowed; }
+        .lecture-nav .nav-btn-arrow .arrow-icon { font-size: 16px; line-height: 1; }
+        .lecture-nav .nav-btn-arrow .arrow-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+        .lecture-nav .nav-btn-arrow .arrow-label small { font-size: 9px; font-weight: 400; opacity: .7; text-transform: uppercase; letter-spacing: .5px; }
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title { font-size: 12px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lecture-nav .nav-center {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 0 20px; color: var(--c-dark-text-2); font-size: 11px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .lecture-nav .nav-counter { font-size: 15px; font-weight: 900; color: #f1f5f9; letter-spacing: -.3px; }
+        .lecture-nav .nav-counter span { color: #64748b; font-size: 12px; font-weight: 600; }
+        .lecture-nav .nav-index-link { color: #60a5fa; text-decoration: none; font-size: 11px; font-weight: 700; transition: color .2s; }
+        .lecture-nav .nav-index-link:hover { color: #93c5fd; text-decoration: underline; }
+        .lecture-nav .nav-jump { display: flex; gap: 4px; margin-left: 8px; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, 0.1); }
+        .lecture-nav .nav-jump-btn {
+            padding: 6px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1); color: var(--c-dark-text-2);
+            font-size: 10px; font-weight: 800; cursor: pointer; text-decoration: none;
+            transition: all .2s; font-family: inherit;
+        }
+        .lecture-nav .nav-jump-btn:hover { background: rgba(59, 130, 246, 0.25); border-color: rgba(59, 130, 246, 0.5); color: #fff; }
+        .lecture-nav .nav-jump-btn.active { background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-color: transparent; color: #fff; }
+
+        /* ============================================================
+           АНИМАЦИИ + REDUCED MOTION
+           ============================================================ */
+        .reveal { animation: fadeUp .5s ease both; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .001ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ============================================================
+           АДАПТИВНОСТЬ
+           ============================================================ */
+        @media (max-width: 1200px) {
+            .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+            .people-grid { grid-template-columns: repeat(2, 1fr); }
+            .rail { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+            .rail-title { font-size: 11px; }
+            .rail-desc { font-size: 10px; }
+        }
+        @media (max-width: 900px) {
+            .lecture-nav { padding: 10px 12px; gap: 8px; }
+            .lecture-nav .nav-btn-arrow { padding: 8px 12px; }
+            .lecture-nav .nav-btn-arrow .arrow-label .arrow-title { max-width: 90px; font-size: 11px; }
+            .lecture-nav .nav-center { padding: 0 10px; }
+            .lecture-nav .nav-jump { display: none; }
+            .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+            .rail { grid-template-columns: 1fr; gap: 14px; padding-top: 0; }
+            .rail::before { display: none; }
+            .rail-card { padding: 14px 14px 14px 56px; text-align: left; }
+            .rail-dot { top: 50%; left: -6px; transform: translateY(-50%); }
+            .people-grid { grid-template-columns: 1fr; }
+            .lessons-grid { grid-template-columns: 1fr; }
+            .tier-row { flex-wrap: wrap; }
+            .tier-row .tr-analogy { max-width: 100%; flex-basis: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+         ЛЕВАЯ ЧАСТЬ (2/3): ЭКРАН ДЛЯ СТУДЕНТОВ
+         ============================================================ -->
+    <div class="student-view">
+        <div>
+            <h1 class="slide-header">
+                Лекция 1. Как и почему возник интернет: исторический блок
+            </h1>
+
+            <div class="slide-body">
+
+                <!-- ОГЛАВЛЕНИЕ ПО СЕКЦИЯМ -->
+                <nav class="toc reveal" aria-label="Содержание лекции">
+                    <a href="#sec-causes">1. Причины</a>
+                    <a href="#sec-timeline">2. Хронология</a>
+                    <a href="#sec-people">3. Кто разработал</a>
+                    <a href="#sec-arpanet">4. ARPANET</a>
+                    <a href="#sec-nsfnet">5. NSFNET</a>
+                    <a href="#sec-biz">6. Коммерциализация</a>
+                    <a href="#sec-lessons">7. Уроки</a>
+                </nav>
+
+                <!-- KPI-СТРИП -->
+                <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры лекции">
+                    <div class="kpi kpi-war" role="listitem">
+                        <div class="kpi-val">1959</div>
+                        <div class="kpi-lbl">старт холодной войны</div>
+                    </div>
+                    <div class="kpi kpi-idea" role="listitem">
+                        <div class="kpi-val">1964</div>
+                        <div class="kpi-lbl">идея пакетов (Бэрон)</div>
+                    </div>
+                    <div class="kpi kpi-build" role="listitem">
+                        <div class="kpi-val">1969</div>
+                        <div class="kpi-lbl">первое сообщение</div>
+                    </div>
+                    <div class="kpi kpi-build" role="listitem">
+                        <div class="kpi-val">640 км</div>
+                        <div class="kpi-lbl">между узлами</div>
+                    </div>
+                    <div class="kpi kpi-science" role="listitem">
+                        <div class="kpi-val">4</div>
+                        <div class="kpi-lbl">института-участника</div>
+                    </div>
+                    <div class="kpi kpi-biz" role="listitem">
+                        <div class="kpi-val">Tier 1</div>
+                        <div class="kpi-lbl">первые интернет-гиганты</div>
+                    </div>
+                </div>
+
+                <!-- ============================================================
+                     1. ВОРОНКА ПРИЧИННОСТИ
+                     ============================================================ -->
+                <section class="reveal" id="sec-causes" aria-labelledby="causes-title">
+                    <div class="section-title" id="causes-title">
+                        <span class="st-icon" aria-hidden="true">🧭</span>
+                        1. Почему интернет вообще появился: воронка причинности
+                    </div>
+                    <div class="cause-funnel">
+                        <div class="cause-step cs-war">
+                            <div class="cause-num" aria-hidden="true"></div>
+                            <div class="cause-body">
+                                <strong>Холодная война (конец 1950-х, США)</strong>
+                                <span>Угроза ядерной войны настолько велика, что о ней всерьёз задумываются верхушки государств.</span>
+                                <div class="cause-analogy">Аналогия: как страховка от пожара — пока не случилось, но готовиться нужно заранее.</div>
+                            </div>
+                        </div>
+                        <div class="cause-step cs-idea">
+                            <div class="cause-num" aria-hidden="true"></div>
+                            <div class="cause-body">
+                                <strong>Потребность в быстрой и безопасной связи</strong>
+                                <span>Главный фактор успешного ведения войны — возможность обмена информацией между «своими».</span>
+                                <div class="cause-analogy">Аналогия: рация в разведке — без неё отряд слеп и разобщён.</div>
+                            </div>
+                        </div>
+                        <div class="cause-step cs-idea">
+                            <div class="cause-num" aria-hidden="true"></div>
+                            <div class="cause-body">
+                                <strong>Уязвимость существующих средств связи</strong>
+                                <span>Перехват → расшифровка → точное попадание в крупный узел сети изолирует целые территории.</span>
+                                <div class="cause-analogy">Аналогия: один мост через реку — разрушил его, и целый район отрезан.</div>
+                            </div>
+                        </div>
+                        <div class="cause-step cs-build">
+                            <div class="cause-num" aria-hidden="true"></div>
+                            <div class="cause-body">
+                                <strong>Заказ Министерства обороны США → RAND</strong>
+                                <span>Создать сеть, которую не разрушат даже ядерные удары. Идею поручено придумать корпорации RAND.</span>
+                                <div class="cause-analogy">Аналогия: заказ на дорогу с объездными путями — чтобы даже при перекрытии одной трассы можно было доехать.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     2. ТАЙМЛАЙН-РЕЛЬС
+                     ============================================================ -->
+                <section class="reveal" id="sec-timeline" aria-labelledby="timeline-title">
+                    <div class="section-title" id="timeline-title">
+                        <span class="st-icon" aria-hidden="true">🕐</span>
+                        2. Хронология: от идеи до первых интернет-гигантов
+                    </div>
+                    <div class="rail" role="list">
+                        <div class="rail-card rc-war" role="listitem">
+                            <div class="rail-dot" aria-hidden="true">💣</div>
+                            <div class="rail-year">1950-е</div>
+                            <div class="rail-title">Холодная война</div>
+                            <div class="rail-desc">Угроза ядерного удара</div>
+                        </div>
+                        <div class="rail-card rc-idea" role="listitem">
+                            <div class="rail-dot" aria-hidden="true">📦</div>
+                            <div class="rail-year">1960-е</div>
+                            <div class="rail-title">Пол Бэрон</div>
+                            <div class="rail-desc">Идея пакетной передачи</div>
+                        </div>
+                        <div class="rail-card rc-build" role="listitem">
+                            <div class="rail-dot" aria-hidden="true">🖥️</div>
+                            <div class="rail-year">1969</div>
+                            <div class="rail-title">ARPANET</div>
+                            <div class="rail-desc">Первое сообщение «LO»</div>
+                        </div>
+                        <div class="rail-card rc-science" role="listitem">
+                            <div class="rail-dot" aria-hidden="true">🎓</div>
+                            <div class="rail-year">1980-е</div>
+                            <div class="rail-title">NSFNET</div>
+                            <div class="rail-desc">Интернет для науки</div>
+                        </div>
+                        <div class="rail-card rc-biz active" role="listitem">
+                            <div class="rail-dot" aria-hidden="true">💰</div>
+                            <div class="rail-year">кон. 1980-х</div>
+                            <div class="rail-title">Коммерциализация</div>
+                            <div class="rail-desc">Первые провайдеры</div>
+                            <span class="rail-badge">финал блока</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     3. КАРТОЧНАЯ СЕТКА «КТО РАЗРАБОТАЛ»
+                     ============================================================ -->
+                <section class="reveal" id="sec-people" aria-labelledby="people-title">
+                    <div class="section-title" id="people-title">
+                        <span class="st-icon" aria-hidden="true">👥</span>
+                        3. Кто разработал: ключевые фигуры и организации
+                    </div>
+                    <div class="people-grid">
+                        <div class="person-card">
+                            <span class="person-role role-customer">Заказчик</span>
+                            <div class="person-name">Министерство обороны США</div>
+                            <div class="person-contrib">Заказ на сеть, устойчивую к ядерным ударам; создание ARPA.</div>
+                            <div class="person-impact">Двигатель проекта</div>
+                            <div class="person-analogy">Аналогия: заказчик, который ставит задачу и платит.</div>
+                        </div>
+                        <div class="person-card">
+                            <span class="person-role role-architect">Архитектор</span>
+                            <div class="person-name">Пол Бэрон (RAND)</div>
+                            <div class="person-contrib">Идея передачи данных небольшими фрагментами — пакетами.</div>
+                            <div class="person-impact">Пакетная коммутация</div>
+                            <div class="person-analogy">Аналогия: изобретатель, который придумал «посылку из частей».</div>
+                        </div>
+                        <div class="person-card">
+                            <span class="person-role role-architect">Архитектор</span>
+                            <div class="person-name">Уэсли Кларк</div>
+                            <div class="person-contrib">Идея сети в виде пакетов через маршрутизаторы.</div>
+                            <div class="person-impact">Соавтор архитектуры</div>
+                            <div class="person-analogy">Аналогия: инженер, который нарисовал схему сортировочных центров.</div>
+                        </div>
+                        <div class="person-card">
+                            <span class="person-role role-architect">Архитектор</span>
+                            <div class="person-name">Ларри Робертс (ARPA)</div>
+                            <div class="person-contrib">Отбор идей, решение строить сеть на маршрутизаторах.</div>
+                            <div class="person-impact">Руководитель разработки</div>
+                            <div class="person-analogy">Аналогия: проектный менеджер, который собрал команду и запустил стройку.</div>
+                        </div>
+                        <div class="person-card">
+                            <span class="person-role role-implement">Реализация</span>
+                            <div class="person-name">NPL (Великобритания)</div>
+                            <div class="person-contrib">Первая полностью реализованная пакетная сеть.</div>
+                            <div class="person-impact">Доказательство работоспособности</div>
+                            <div class="person-analogy">Аналогия: первый экспериментальный участок дороги, который доказал, что по ней можно ездить.</div>
+                        </div>
+                        <div class="person-card">
+                            <span class="person-role role-implement">Реализация</span>
+                            <div class="person-name">ARPANET (США)</div>
+                            <div class="person-contrib">Первый рабочий прототип интернета, 29.10.1969.</div>
+                            <div class="person-impact">Первый работающий прототип</div>
+                            <div class="person-analogy">Аналогия: первый автомобиль, который реально поехал, а не остался на чертеже.</div>
+                        </div>
+                        <div class="person-card">
+                            <span class="person-role role-implement">Реализация</span>
+                            <div class="person-name">NSF (США)</div>
+                            <div class="person-contrib">Создание открытой научной сети NSFNET.</div>
+                            <div class="person-impact">Переход от войны к науке</div>
+                            <div class="person-analogy">Аналогия: дорогу, построенную для военных, открыли для гражданских.</div>
+                        </div>
+                        <div class="person-card">
+                            <span class="person-role role-commercial">Коммерция</span>
+                            <div class="person-name">Коммерческие компании</div>
+                            <div class="person-contrib">Первые интернет-провайдеры и опорная сеть.</div>
+                            <div class="person-impact">Рождение интернет-гигантов</div>
+                            <div class="person-analogy">Аналогия: на дороге появились платные участки, заправки и сервисы.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     4. ARPANET И ПЕРВОЕ СООБЩЕНИЕ
+                     ============================================================ -->
+                <section class="reveal" id="sec-arpanet" aria-labelledby="arpanet-title">
+                    <div class="section-title" id="arpanet-title">
+                        <span class="st-icon" aria-hidden="true">🖥️</span>
+                        4. ARPANET и первое сообщение: 29 октября 1969
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="person-card">
+                            <div class="person-name">Эксперимент</div>
+                            <div class="person-contrib">Два института на расстоянии <b>640 км</b> друг от друга — для показательного эффекта. Первое слово — «LOGIN».</div>
+                            <div class="person-impact">Из 5 букв дошли только 2 — «LO»</div>
+                            <div class="person-analogy">Аналогия: первый звонок по телефону — «Алло?» прервалось, но связь заработала.</div>
+                        </div>
+                        <div class="person-card">
+                            <div class="person-name">Результат</div>
+                            <div class="person-contrib">Спустя час, устранив неполадки, эксперимент повторили — и всё получилось. Первый рабочий прототип интернета создан.</div>
+                            <div class="person-impact">4 института-участника</div>
+                            <div class="person-analogy">Аналогия: первый блин комом, но второй — уже нормальный.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     5. NSFNET: ОТ ВОЙНЫ К НАУКЕ
+                     ============================================================ -->
+                <section class="reveal" id="sec-nsfnet" aria-labelledby="nsfnet-title">
+                    <div class="section-title" id="nsfnet-title">
+                        <span class="st-icon" aria-hidden="true">🎓</span>
+                        5. NSFNET: от войны к науке
+                    </div>
+                    <div class="person-card">
+                        <div class="person-name">Проблема закрытости</div>
+                        <div class="person-contrib">ARPANET оставалась военной разработкой: для доступа нужно было заключить контракт с Министерством обороны США. Это делало сеть максимально закрытой.</div>
+                        <div class="person-impact">Научный процесс тормозился</div>
+                        <div class="person-analogy">Аналогия: военный полигон, на который гражданских не пускают.</div>
+                    </div>
+                    <div class="person-card" style="margin-top:10px;">
+                        <div class="person-name">Решение: NSFNET</div>
+                        <div class="person-contrib">Национальный научный фонд США на основе ARPANET создаёт аналогичную некоммерческую сеть, открытую для всех университетов. Со временем NSFNET полностью затмевает ARPANET, и тот закрывается.</div>
+                        <div class="person-impact">Интернет из инструмента войны перетёк в инструмент науки</div>
+                        <div class="person-analogy">Аналогия: полигон превратили в университетский кампус — открытый для студентов и преподавателей.</div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     6. КОММЕРЦИАЛИЗАЦИЯ И TIER 1/2/3
+                     ============================================================ -->
+                <section class="reveal" id="sec-biz" aria-labelledby="biz-title">
+                    <div class="section-title" id="biz-title">
+                        <span class="st-icon" aria-hidden="true">💰</span>
+                        6. Коммерциализация: как появились первые интернет-гиганты
+                    </div>
+                    <div class="section-sub">Аналогия: дорога была военной, потом научной, а потом по ней поехали грузовики с товарами — и появился бизнес.</div>
+                    <div class="tier-stack">
+                        <div class="tier-row tr-1">
+                            <span class="tr-badge">Tier 1</span>
+                            <div class="tr-body"><b>Магистральные провайдеры</b> — верхушка иерархии, крупнейшие узлы доставки трафика по всему миру. Бесплатно обмениваются трафиком между собой.</div>
+                            <span class="tr-analogy">Федеральные трассы</span>
+                        </div>
+                        <div class="tier-row tr-2">
+                            <span class="tr-badge">Tier 2</span>
+                            <div class="tr-body"><b>Провайдеры второго уровня</b> — обслуживают одну или несколько соседних стран, подключаются к Tier 1.</div>
+                            <span class="tr-analogy">Региональные дороги</span>
+                        </div>
+                        <div class="tier-row tr-3">
+                            <span class="tr-badge">Tier 3</span>
+                            <div class="tr-body"><b>Провайдеры третьего уровня</b> — региональные и городские, предоставляют доступ обычным людям и организациям.</div>
+                            <span class="tr-analogy">Городские улицы</span>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px; padding:10px 12px; background:#ecfeff; border-left:3px solid var(--c-accent-biz); border-radius:6px; font-size:11.5px; color:#164e63; line-height:1.45;">
+                        <b>Итог:</b> в конце 1980-х появляются первые коммерческие интернет-провайдеры. От NSFNET удалось полностью отказаться, а вся опорная сеть перешла под управление нескольких коммерческих компаний. С этого момента глобальная сеть становится доступной каждому за определённую плату, а провода окутывают всю планету: под землёй, вдоль железных дорог, по дну морей и океанов.
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     7. УРОКИ ДЛЯ МЕНЕДЖЕРОВ
+                     ============================================================ -->
+                <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                    <div class="section-title" id="lessons-title">
+                        <span class="st-icon" aria-hidden="true">🎓</span>
+                        7. Уроки для менеджеров
+                    </div>
+                    <div class="lessons-grid">
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">1</span>
+                            <span>Технологические прорывы рождаются в условиях конкуренции и конфликтов, а затем находят коммерческое применение.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">2</span>
+                            <span>«Невозможно» — часто лишь позиция одного эксперта; другие могут это воплотить.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">3</span>
+                            <span>Переход от военной разработки к науке и затем к коммерции — типичная траектория технологии.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">4</span>
+                            <span>Иерархия провайдеров (Tier 1 → 2 → 3) — структура телеком-рынка, важная для выбора поставщиков и оценки затрат.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ВИДЕО -->
+                <div class="video-section reveal">
+                    <div class="video-container">
+                        <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: как и почему возник интернет"></iframe>
+                    </div>
+                    <div class="links-hub">
+                        <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                        <button onclick="changeVideo('https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266//')" class="video-btn rt-btn">📜 Лекция 1. Как и почему возник интернет</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            Направление «Менеджмент» | 1 курс | Курс: Как устроен интернет | Блок 1 из 3
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ПРАВАЯ ЧАСТЬ (1/3): СКРИПТ ПРЕПОДАВАТЕЛЯ
+         ============================================================ -->
+    <div class="speaker-notes">
+        <div style="position: sticky; top: 0; background: var(--c-dark); padding: 20px 20px 10px 20px; border-bottom: 1px solid var(--c-dark-3); width: 100%; z-index: 100;">
+            <div class="notes-header">
+                <span>🎙️ Скрипт лектора</span>
+                <span class="timer-badge">40 мин</span>
+            </div>
+            <div style="width: 100%; aspect-ratio: 16 / 9; border-radius: var(--r-sm); overflow: hidden; background: #000; box-shadow: var(--sh-md);">
+                <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"  allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+            </div>
+        </div>
+
+        <div class="lecture-text" style="margin-top: 20px;">
+
+            <p>Добрый день, коллеги! Сегодня мы открываем курс «Как устроен интернет». И начнём с вопроса, который кажется простым: почему мы можем мгновенно передавать сообщения из любой точки мира, нажав всего одну клавишу — Enter?</p>
+
+            <div class="action-hint">Обратите внимание студентов на оглавление в начале слайда — можно прыгать по секциям.</div>
+
+            <h3>📌 1. Не просто провода</h3>
+
+            <p>Ответ вовсе не в том, что мы просто протянули провода через всю планету. Интернет стал возможен потому, что постоянный конфликт между людьми и странами заставлял их придумывать такие средства связи, которые имели бы превосходство над всеми другими и делали бы эту связь максимально безопасной. Именно это произошло в конце 1950-х годов в Соединённых Штатах Америки, когда в мире шло то, что сейчас принято называть холодной войной.</p>
+
+            <p>Это было время, когда угроза ядерной войны была настолько велика, что о ней всерьёз задумывались верхушки целых государств. Одним из главных факторов успешного ведения войны всегда была и остаётся возможность быстрого и безопасного обмена информацией между своими. И как ни странно, именно эта деталь на протяжении всей истории была крайне уязвимой.</p>
+
+            <h3>📌 2. Уязвимость связи как двигатель прогресса</h3>
+
+            <p>Сначала сообщения просто перехватывали. Затем их научились расшифровывать. А когда появились электрические устройства вроде телеграфа или первой телефонной сети, появился страх: любое точное попадание в крупный узел такой сети просто изолирует целые территории друг от друга, лишив их связи. Опасаясь подобных ядерных взрывов, Министерство обороны США решило реализовать в стране такую надёжную коммуникационную сеть, которую не смогли бы разрушить даже ядерные удары.</p>
+
+            <p>Придумать идею, которая позволила бы подобное реализовать, была возложена на корпорацию RAND. Это было как раз в то время, когда произошёл значительный скачок вычислительной техники: появились первые компьютеры, но информация из текста превратилась в число. Это позволяло не только обрабатывать информацию с огромной скоростью, но и, например, зашифровывать её совершенно новыми для того времени алгоритмами, которые взламывать пока ещё никто не умел.</p>
+
+            <h3>📌 3. Идея Пола Бэрона: пакеты</h3>
+
+            <p>Очевидно, что замыкать весь потенциал этих машин внутри них самих было бы очень глупо. Поэтому следующим шагом было все эти машины между собой «подружить», чтобы они могли общаться подобно людям. Именно эта идея пришла в голову Полу Бэрону. Она представляет собой передачу небольших фрагментов цифровых данных, называемых пакетами.</p>
+
+            <p>Суть в том, чтобы исходные данные, которые нужно передать с компьютера отправителя, дробились на небольшие порции-пакеты и передавались на другой компьютер независимо друг от друга через промежуточные сетевые узлы, которые в будущем назовут маршрутизаторами. А компьютер получателя постепенно собирал бы у себя эти пакеты вместе, формируя из них то самое передаваемое сообщение. Аналогия: посылка, порезанная на части, каждая едет своим маршрутом — а на месте собирается в целое.</p>
+
+            <div class="action-hint">Подчеркните: Пентагон принял идею, но компании-разработчику поручил создать прототип — и позже вынес однозначную оценку: «реализовать такое невозможно».</div>
+
+            <h3>📌 4. «Невозможно» — и всё же сделано</h3>
+
+            <p>Как всё это реализовать в жизнь, пока непонятно. Но Пентагон принимает идею и поручает компании разработать её прототип. Спустя некоторое время компания ознакамливается с идеей Бэрона и даёт однозначную оценку: реализовать такое невозможно. На этом история интернета могла бы закончиться — как история многих других изобретений, где люди, у которых что-то не получалось, просто опускали руки.</p>
+
+            <p>Но прелесть нашего мира в том, что всегда найдётся тот человек, который рано или поздно ту или иную задумку воплотит. Осталось лишь найти того, кто сделает это с интернетом. Так подумало Министерство обороны США и создало Агентство передовых исследовательских проектов — ARPA. Его задача была отбирать перспективные проекты, предложенные другими компаниями и университетами.</p>
+
+            <h3>📌 5. Ларри Робертс, Уэсли Кларк и рождение ARPANET</h3>
+
+            <p>В 1967 году директор этой организации Ларри Робертс перебирает предложенные ранее идеи по реализации новой сети и наталкивается на идею Уэсли Кларка, который, как и Пол Бэрон, предлагал построить сеть в виде пакетов, передача которых между компьютерами осуществлялась бы через маршрутизаторы.</p>
+
+            <p>Спустя некоторое время Ларри едет на симпозиум, предлагая эту идею в качестве рабочего прототипа. Но каково было его удивление, когда на этом симпозиуме он слышит доклад о точно такой же идее, но которая уже полностью реализована в виде сети NPL в Великобритании. Считали эту идею невозможной — другие воплотили её в жизнь. Уезжая с симпозиума, Ларри твёрдо решил, что именно это теперь предстоит сделать в США. И в США сеть получает название в честь своей организации — ARPANET.</p>
+
+            <h3>📌 6. 29 октября 1969 года: первое сообщение</h3>
+
+            <p>Отправить первое сообщение через эту сеть было решено 29 октября 1969 года. В качестве точек выбраны два института, которые находились на расстоянии 640 километров друг от друга — для более показательного эксперимента. А первое слово для отправки было выбрано «LOGIN» — «логин».</p>
+
+            <p>Дошло ли сообщение? Из пяти отправленных букв дошли только две. Поэтому спустя час, устранив неполадки, эксперимент пришлось повторить ещё раз — и на сей раз всё оказалось успешным. Первый рабочий прототип интернета был создан. Состоял он всего из четырёх институтов, которые принимали участие в разработке. Но уже совсем скоро ARPANET охватывает все Соединённые Штаты, что позволяет учёным многих университетов вести совместные исследовательские работы удалённо, что сильно ускоряет весь научный процесс.</p>
+
+            <h3>📌 7. От войны к науке: NSFNET</h3>
+
+            <p>Но сеть эта по-прежнему оставалась военной разработкой. И чтобы получить к ней доступ, нужно было заключить контракт с Министерством обороны США, что делало эту сеть максимально закрытой. Поэтому Национальный научный фонд США на основе ARPANET решает создать аналогичную некоммерческую сеть, которая будет открытой для всех университетов. Сеть получает название NSFNET и со временем полностью затмевает собой ARPANET, заставляет его полностью закрыться ввиду бесперспективного развития.</p>
+
+            <p>Так интернет постепенно из инструмента войны плавно перетёк в инструмент науки.</p>
+
+            <h3>📌 8. Как появились первые интернет-гиганты</h3>
+
+            <p>И хоть NSFNET всё ещё был некоммерческим продуктом, к этой сети начало проявлять внимание всё больше и больше коммерческих компаний, желая принимать в её развитии активное участие. Понимая всю её перспективность, компании начинают вкладывать туда свои деньги, заставляя тем самым правительство всё больше и больше уходить в сторону, освобождая дорогу для коммерциализации интернета.</p>
+
+            <p>Реализовать это удалось в конце 1980-х годов, когда начали появляться первые коммерческие интернет-провайдеры. От NSFNET удалось полностью отказаться, а вся опорная сеть интернета перешла под управление нескольких коммерческих компаний, которые взяли на себя роль крупнейших узлов по доставке интернет-трафика по всему миру.</p>
+
+            <p>В дальнейшем эти компании станут крупнейшими магистральными провайдерами — верхушкой в иерархии всех провайдеров. Они бесплатно обмениваются между собой трафиком и позволяют подключаться к себе провайдерам второго уровня, обслуживающим одну или несколько соседних стран. Те, в свою очередь, позволяют подключаться к себе провайдерам третьего уровня — региональным или городским, предоставляющим доступ к обычным людям и организациям. Аналогия: федеральные трассы → региональные дороги → городские улицы.</p>
+
+            <p>С этого момента глобальная сеть становится доступной каждому за определённую плату, а провода начинают окутывать всю планету: их протягивают под землёй, вдоль железных дорог, по дну морей и океанов.</p>
+
+            <h3>📌 9. Итоги блока</h3>
+
+            <p>Запомните главное: интернет — не просто «протянутые провода», а результат конкуренции и конфликтов, в которых рождались технологии с превосходством над другими и максимальной безопасностью. Путь был таким: холодная война → идея пакетов Пола Бэрона → ARPANET (1969, первое сообщение «LO») → NSFNET (наука) → коммерциализация и первые интернет-гиганты (конец 1980-х).</p>
+
+            <p>На следующем блоке мы разберём, как всё это работает технически: от MAC- и IP-адресации до TCP, UDP и Ethernet. Спасибо за внимание!</p>
+
+        </div>
+
+        <!-- ============================================================
+             СЛОВАРЬ АББРЕВИАТУР
+             ============================================================ -->
+        <section class="notes-section" aria-labelledby="glossary-title">
+            <div class="notes-section-title" id="glossary-title">
+                <span aria-hidden="true">📖</span> Словарь аббревиатур
+            </div>
+            <table class="notes-table">
+                <thead>
+                    <tr>
+                        <th style="width: 16%;">Аббр.</th>
+                        <th style="width: 34%;">Расшифровка</th>
+                        <th>Пояснение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="abbr">ARPA</td><td>Advanced Research Projects Agency</td><td class="explain">Агентство передовых исследовательских проектов при Минобороны США</td></tr>
+                    <tr><td class="abbr">ARPANET</td><td>Advanced Research Projects Agency Network</td><td class="explain">Первая пакетная сеть по заказу Минобороны США; первый рабочий прототип интернета (1969)</td></tr>
+                    <tr><td class="abbr">RAND</td><td>RAND Corporation</td><td class="explain">Аналитический центр, которому поручили придумать идею сети, устойчивой к ядерным ударам</td></tr>
+                    <tr><td class="abbr">NPL</td><td>National Physical Laboratory</td><td class="explain">Национальная физическая лаборатория Великобритании, где идея пакетной сети была полностью реализована раньше американской</td></tr>
+                    <tr><td class="abbr">NSF</td><td>National Science Foundation</td><td class="explain">Национальный научный фонд США — создал открытую некоммерческую сеть NSFNET для всех университетов</td></tr>
+                    <tr><td class="abbr">NSFNET</td><td>National Science Foundation Network</td><td class="explain">Научная сеть на основе ARPANET, открытая для всех университетов; со временем затмила ARPANET</td></tr>
+                    <tr><td class="abbr">Tier 1/2/3</td><td>Уровни интернет-провайдеров</td><td class="explain">Магистральные (верхушка иерархии), второго уровня (страны/регионы) и третьего уровня (городские и региональные)</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ============================================================
+             ИСТОЧНИКИ
+             ============================================================ -->
+        <section class="notes-section" aria-labelledby="sources-title">
+            <div class="notes-section-title" id="sources-title">
+                <span aria-hidden="true">📚</span> Источники и литература
+            </div>
+            <div class="notes-sources">
+                <div class="src-group">📜 История интернета</div>
+                <ol>
+                    <li>Пол Бэрон. On Distributed Communications. — RAND Corporation, 1964.</li>
+                    <li>История ARPANET и первого сообщения 29 октября 1969 года. — Материалы конференции по истории вычислительной техники.</li>
+                    <li>Дж. Наунтон. A Brief History of the Future: The Origins of the Internet. — 1999.</li>
+                </ol>
+                <div class="src-group">🏛️ Организации и стандарты</div>
+                <ol start="4">
+                    <li>Документы ARPA и NSF по развитию пакетных сетей. — Архивы Национального научного фонда США.</li>
+                    <li>Материалы IEEE по стандартизации сетевых технологий.</li>
+                </ol>
+                <div class="src-group">📖 Дополнительно</div>
+                <ol start="6">
+                    <li>К. Хафнер, М. Лайон. Where Wizards Stay Up Late: The Origins of the Internet. — 1996.</li>
+                    <li>Материалы по истории коммерциализации интернета и первых провайдеров.</li>
+                </ol>
+            </div>
+        </section>
+    </div>
+
+    <!-- СКРИПТ -->
+    <script>
+        function changeVideo(embedUrl) {
+            document.getElementById('lecture-player').src = embedUrl;
+        }
+    </script>
+
+    <!-- ============================================================
+         НАВИГАЦИЯ МЕЖДУ ЛЕКЦИЯМИ
+         ============================================================ -->
+    <nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 6; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

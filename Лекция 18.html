@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 18 из 18. ИИ. Часть 5. Риски, этика, стратегия</title>
+    <style>
+        :root {
+            --c-bg:#fff;--c-surface:#f8fafc;--c-border:#e2e8f0;--c-border-strong:#cbd5e0;
+            --c-text:#0f172a;--c-text-2:#334155;--c-text-3:#64748b;--c-text-muted:#94a3b8;
+            --c-primary:#2563eb;--c-primary-soft:#eff6ff;
+            --c-risk:#dc2626;--c-risk-soft:#fef2f2;
+            --c-ethics:#7c3aed;--c-ethics-soft:#f5f3ff;
+            --c-strategy:#059669;--c-strategy-soft:#ecfdf5;
+            --c-practice:#b45309;--c-practice-soft:#fef3c7;
+            --c-role:#0891b2;--c-role-soft:#ecfeff;
+            --c-dark:#0f172a;--c-dark-2:#1e293b;--c-dark-3:#334155;
+            --c-dark-text:#e2e8f0;--c-dark-text-2:#94a3b8;--c-dark-accent:#60a5fa;
+            --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+            --sh-md:0 4px 12px rgba(15,23,42,.08);
+            --sh-lg:0 12px 28px rgba(15,23,42,.12);
+            --sh-focus:0 0 0 3px rgba(37,99,235,.35);
+            --f-sans:'Segoe UI',Tahoma,sans-serif;
+            --f-mono:'JetBrains Mono',Consolas,monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%}
+        body{font-family:var(--f-sans);display:flex;height:100vh;overflow:hidden;background:var(--c-bg);color:var(--c-text);padding-bottom:80px!important}
+        :focus-visible{outline:none;box-shadow:var(--sh-focus);border-radius:var(--r-sm)}
+        .student-view{width:66.66%;height:100vh;background:var(--c-bg);padding:32px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--c-border);overflow-y:auto;scroll-behavior:smooth}
+        .speaker-notes{width:33.34%;height:100%;background:var(--c-dark);color:var(--c-dark-text);padding:28px;overflow-y:auto}
+        .slide-header{font-size:26px;color:var(--c-text);font-weight:800;line-height:1.25;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid var(--c-primary);position:relative}
+        .slide-header::after{content:'';position:absolute;left:0;bottom:-3px;width:80px;height:3px;background:var(--c-risk);border-radius:3px}
+        .slide-body{flex-grow:1;display:flex;flex-direction:column;gap:22px;padding:4px 0}
+        .slide-footer{font-size:12px;color:var(--c-text-muted);text-align:right;margin-top:16px}
+        .toc{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md)}
+        .toc a{font-size:11px;font-weight:700;color:var(--c-text-2);text-decoration:none;padding:4px 9px;border-radius:var(--r-pill);background:var(--c-bg);border:1px solid var(--c-border);transition:all .15s}
+        .toc a:hover{background:var(--c-primary-soft);border-color:var(--c-primary);color:var(--c-primary)}
+        .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+        .kpi{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;text-align:center;transition:all .18s}
+        .kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .kpi .kpi-val{font-size:19px;font-weight:800;color:var(--c-text);letter-spacing:-.02em;line-height:1.1}
+        .kpi .kpi-lbl{font-size:10px;color:var(--c-text-3);margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+        .kpi.k-risk .kpi-val{color:var(--c-risk)}
+        .kpi.k-ethics .kpi-val{color:var(--c-ethics)}
+        .kpi.k-strategy .kpi-val{color:var(--c-strategy)}
+        .kpi.k-practice .kpi-val{color:var(--c-practice)}
+        .kpi.k-role .kpi-val{color:var(--c-role)}
+        .section-title{font-size:15px;font-weight:800;color:var(--c-text);margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em;scroll-margin-top:12px}
+        .section-title .st-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-sm);font-size:14px}
+        /* 5 рисков */
+        .risk-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+        .risk-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;position:relative;transition:all .18s}
+        .risk-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--c-border-strong)}
+        .risk-card::before{content:'';position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 3px 3px 0;background:var(--c-risk)}
+        .risk-card .rc-icon{font-size:20px;margin-bottom:6px}
+        .risk-card .rc-name{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:4px;line-height:1.2}
+        .risk-card .rc-desc{font-size:10.5px;color:var(--c-text-2);line-height:1.4}
+        .risk-card .rc-meta{margin-top:7px;padding-top:7px;border-top:1px dashed var(--c-border);font-size:10px;color:var(--c-text-3);font-weight:600}
+        /* 4 принципа этики */
+        .ethics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+        .ethics-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 14px;position:relative;transition:all .18s;border-left:3px solid var(--c-ethics)}
+        .ethics-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
+        .ethics-card .ec-icon{font-size:20px;margin-bottom:6px}
+        .ethics-card .ec-name{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:3px}
+        .ethics-card .ec-sub{font-size:10px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+        .ethics-card .ec-desc{font-size:10.5px;color:var(--c-text-2);line-height:1.4}
+        /* 3 этапа стратегии */
+        .strat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .strat-card{background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:1px solid #6ee7b7;border-radius:var(--r-md);padding:14px 16px;position:relative}
+        .strat-card .sc-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--c-strategy);color:#fff;font-size:11px;font-weight:800;margin-bottom:8px}
+        .strat-card .sc-name{font-size:13px;font-weight:800;color:var(--c-text);margin-bottom:4px}
+        .strat-card .sc-desc{font-size:11px;color:#064e3b;line-height:1.45}
+        .strat-card .sc-time{margin-top:7px;padding-top:7px;border-top:1px dashed #6ee7b7;font-size:10px;color:#065f46;font-weight:700}
+        /* Практикум */
+        .practice-box{background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border:1px solid #fcd34d;border-radius:var(--r-lg);padding:16px 18px}
+        .practice-box .section-title{color:#92400e;margin-bottom:10px}
+        .practice-box .section-title .st-icon{background:#fef3c7;color:var(--c-practice)}
+        .practice-case{background:#fff;border:1px solid #fde68a;border-radius:var(--r-md);padding:12px 14px;margin-bottom:10px}
+        .practice-case .pc-title{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:8px;padding-bottom:6px;border-bottom:1px dashed #fde68a}
+        .practice-case .pc-row{display:flex;justify-content:space-between;font-size:11.5px;color:var(--c-text-2);padding:5px 0;border-bottom:1px dashed #fde68a}
+        .practice-case .pc-row:last-child{border-bottom:none}
+        .practice-case .pc-row b{color:var(--c-text);font-family:var(--f-mono)}
+        .practice-case .pc-row.pc-total{padding-top:7px;border-top:1.5px solid #fde68a;border-bottom:none;margin-top:3px;font-weight:800}
+        .practice-case .pc-row.pc-total b{color:var(--c-practice)}
+        .practice-case .pc-row.pc-profit b{color:var(--c-strategy)}
+        .practice-verdict{margin-top:10px;padding:8px 10px;background:#fff;border-left:3px solid var(--c-practice);border-radius:4px;font-size:11px;color:#78350f;line-height:1.4;font-weight:600}
+        /* Чек-лист рисков */
+        .checklist{background:#fff;border:1px solid #fde68a;border-radius:var(--r-md);padding:12px 14px;margin-top:10px}
+        .checklist .ck-title{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:6px}
+        .checklist .ck-item{display:flex;gap:6px;font-size:11px;color:var(--c-text-2);line-height:1.4;padding:3px 0}
+        .checklist .ck-mark{flex:0 0 auto;color:var(--c-risk);font-weight:800}
+        /* Роли */
+        .role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+        .role-card{background:#fff;border:1px solid #fde68a;border-radius:var(--r-md);padding:11px 13px;border-left:3px solid var(--c-role)}
+        .role-card .rc-name{font-size:12px;font-weight:800;color:var(--c-text);margin-bottom:3px}
+        .role-card .rc-desc{font-size:10.5px;color:var(--c-text-2);line-height:1.4}
+        /* Уроки */
+        .lessons-box{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:1px solid #bbf7d0;border-radius:var(--r-lg);padding:16px 18px}
+        .lessons-box .section-title{color:#166534;margin-bottom:10px}
+        .lessons-box .section-title .st-icon{background:#dcfce7;color:#15803d}
+        .lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+        .lesson{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#14532d}
+        .lesson .lesson-num{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#15803d;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        /* Видео */
+        .video-section{display:flex;flex-direction:column;align-items:center;gap:12px}
+        .video-container{width:100%;max-width:580px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000;aspect-ratio:16/9}
+        .links-hub{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+        .video-btn{text-decoration:none;padding:9px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;transition:all .18s;cursor:pointer;border:none;font-family:inherit}
+        .video-btn:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .rt-btn{background:#00a877}.rt-btn:hover{background:#008f65}
+        .stop-btn{background:#dc143c}.stop-btn:hover{background:#b01030}
+        /* Правая панель */
+        .notes-header{font-size:16px;color:var(--c-dark-accent);font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c-dark-3);padding-bottom:10px}
+        .timer-badge{background:#dc2626;color:#fff;padding:3px 9px;border-radius:var(--r-pill);font-size:11px;font-family:var(--f-mono);font-weight:700}
+        .lecture-text{font-size:14px;line-height:1.68;color:var(--c-dark-text);text-align:justify}
+        .lecture-text p{margin-bottom:14px}
+        .lecture-text h3{color:var(--c-dark-accent);font-size:14.5px;margin:20px 0 10px;border-bottom:1px solid var(--c-dark-3);padding-bottom:6px;font-weight:800}
+        .lecture-text strong{color:#f1f5f9}
+        .action-hint{color:#fcd34d;font-style:italic;background:var(--c-dark-2);padding:11px 14px;border-radius:var(--r-sm);border-left:3px solid #fcd34d;margin:16px 0;font-size:12.5px;line-height:1.5}
+        .notes-section{margin-top:26px;background:var(--c-dark-2);border:1px solid var(--c-dark-3);border-radius:var(--r-md);padding:16px}
+        .notes-section-title{font-size:13.5px;font-weight:800;color:var(--c-dark-accent);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--c-dark-3);display:flex;align-items:center;gap:8px}
+        .notes-table{width:100%;border-collapse:collapse;font-size:11.5px}
+        .notes-table th{text-align:left;padding:7px 8px;font-weight:700;color:var(--c-dark-text-2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--c-dark-3)}
+        .notes-table td{padding:7px 8px;border-bottom:1px solid rgba(51,65,85,.6);color:var(--c-dark-text);vertical-align:top;line-height:1.4}
+        .notes-table tr:last-child td{border-bottom:none}
+        .notes-table tr:hover td{background:rgba(96,165,250,.06)}
+        .notes-table .abbr{font-weight:800;color:#93c5fd;font-family:var(--f-mono);font-size:11px;white-space:nowrap}
+        .notes-table .explain{color:var(--c-dark-text-2)}
+        .notes-sources{font-size:11.5px;line-height:1.55;color:var(--c-dark-text)}
+        .notes-sources .src-group{font-weight:800;color:#86efac;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+        .notes-sources .src-group:first-child{margin-top:0}
+        .notes-sources ol{margin:0 0 4px 16px;padding:0}
+        .notes-sources li{margin-bottom:5px;color:var(--c-dark-text-2)}
+        /* Навигация */
+        .lecture-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+        .lecture-nav .nav-progress{position:absolute;top:0;left:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);transition:width .3s;border-radius:0 3px 3px 0}
+        .lecture-nav .nav-btn-arrow{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--c-dark-text);font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled){background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.6);color:#fff;transform:translateY(-2px)}
+        .lecture-nav .nav-btn-arrow:disabled{opacity:.35;cursor:not-allowed}
+        .lecture-nav .nav-btn-arrow .arrow-icon{font-size:16px}
+        .lecture-nav .nav-btn-arrow .arrow-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+        .lecture-nav .nav-btn-arrow .arrow-label small{font-size:9px;font-weight:400;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title{font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lecture-nav .nav-center{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 20px;color:var(--c-dark-text-2);font-size:11px;border-left:1px solid rgba(255,255,255,.1);border-right:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-counter{font-size:15px;font-weight:900;color:#f1f5f9}
+        .lecture-nav .nav-counter span{color:#64748b;font-size:12px;font-weight:600}
+        .lecture-nav .nav-index-link{color:#60a5fa;text-decoration:none;font-size:11px;font-weight:700}
+        .lecture-nav .nav-index-link:hover{color:#93c5fd;text-decoration:underline}
+        .lecture-nav .nav-jump{display:flex;gap:4px;margin-left:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-jump-btn{padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--c-dark-text-2);font-size:10px;font-weight:800;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-jump-btn:hover{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5);color:#fff}
+        .lecture-nav .nav-jump-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:transparent;color:#fff}
+        .reveal{animation:fadeUp .5s ease both}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+        @media(max-width:1200px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.risk-grid{grid-template-columns:repeat(3,1fr)}.ethics-grid{grid-template-columns:repeat(2,1fr)}.strat-grid{grid-template-columns:1fr}.role-grid{grid-template-columns:1fr}}
+        @media(max-width:900px){.lecture-nav{padding:10px 12px;gap:8px}.lecture-nav .nav-btn-arrow{padding:8px 12px}.lecture-nav .nav-btn-arrow .arrow-label .arrow-title{max-width:90px;font-size:11px}.lecture-nav .nav-center{padding:0 10px}.lecture-nav .nav-jump{display:none}.kpi-strip{grid-template-columns:repeat(2,1fr)}.lessons-grid{grid-template-columns:1fr}.risk-grid{grid-template-columns:1fr}.ethics-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+
+<div class="student-view">
+    <div>
+        <h1 class="slide-header">Часть 5. Риски, этика, стратегия и практикум</h1>
+        <div class="slide-body">
+
+            <nav class="toc reveal" aria-label="Содержание лекции">
+                <a href="#sec-risks">1. Пять рисков</a>
+                <a href="#sec-ethics">2. Этика</a>
+                <a href="#sec-strategy">3. Стратегия</a>
+                <a href="#sec-practice">4. Практикум</a>
+                <a href="#sec-lessons">5. Уроки</a>
+            </nav>
+
+            <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры">
+                <div class="kpi k-risk" role="listitem"><div class="kpi-val">5</div><div class="kpi-lbl">рисков ИИ</div></div>
+                <div class="kpi k-ethics" role="listitem"><div class="kpi-val">4</div><div class="kpi-lbl">принципа этики</div></div>
+                <div class="kpi k-strategy" role="listitem"><div class="kpi-val">3</div><div class="kpi-lbl">этапа стратегии</div></div>
+                <div class="kpi k-practice" role="listitem"><div class="kpi-val">1</div><div class="kpi-lbl">практикум</div></div>
+                <div class="kpi k-risk" role="listitem"><div class="kpi-val">5</div><div class="kpi-lbl">пунктов чек-листа</div></div>
+                <div class="kpi k-role" role="listitem"><div class="kpi-val">3</div><div class="kpi-lbl">роли в команде</div></div>
+            </div>
+
+            <section class="reveal" id="sec-risks" aria-labelledby="risks-title">
+                <div class="section-title" id="risks-title"><span class="st-icon" aria-hidden="true">⚠️</span>1. Пять рисков ИИ: что может пойти не так</div>
+                <div class="risk-grid">
+                    <div class="risk-card">
+                        <div class="rc-icon" aria-hidden="true">🌀</div>
+                        <div class="rc-name">Галлюцинации</div>
+                        <div class="rc-desc">Модель уверенно выдаёт неверные факты. Опасна в финансах, медицине, юриспруденции.</div>
+                        <div class="rc-meta">Нужен человек в контуре</div>
+                    </div>
+                    <div class="risk-card">
+                        <div class="rc-icon" aria-hidden="true">⚖️</div>
+                        <div class="rc-name">Предвзятость</div>
+                        <div class="rc-desc">Bias в данных переносится в модель. Дискриминация по полу, возрасту, региону.</div>
+                        <div class="rc-meta">Аудит данных и моделей</div>
+                    </div>
+                    <div class="risk-card">
+                        <div class="rc-icon" aria-hidden="true">🔓</div>
+                        <div class="rc-name">Утечка данных</div>
+                        <div class="rc-desc">Персональные данные клиентов попадают в модель или в облако. Нарушение законов.</div>
+                        <div class="rc-meta">Приватность и шифрование</div>
+                    </div>
+                    <div class="risk-card">
+                        <div class="rc-icon" aria-hidden="true">📜</div>
+                        <div class="rc-name">Регулирование</div>
+                        <div class="rc-desc">AI Act в ЕС, законы в РФ. Несоответствие = штрафы и запрет на рынке.</div>
+                        <div class="rc-meta">Юридическая проверка</div>
+                    </div>
+                    <div class="risk-card">
+                        <div class="rc-icon" aria-hidden="true">💔</div>
+                        <div class="rc-name">Репутация</div>
+                        <div class="rc-desc">Публичный провал ИИ разрушает доверие клиентов и партнёров. Теряется бизнес.</div>
+                        <div class="rc-meta">Пилот и коммуникация</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal" id="sec-ethics" aria-labelledby="ethics-title">
+                <div class="section-title" id="ethics-title"><span class="st-icon" aria-hidden="true">🧭</span>2. Четыре принципа ответственного ИИ</div>
+                <div class="ethics-grid">
+                    <div class="ethics-card">
+                        <div class="ec-icon" aria-hidden="true">🔍</div>
+                        <div class="ec-name">Прозрачность</div>
+                        <div class="ec-sub">Explainable AI</div>
+                        <div class="ec-desc">Понятно, как модель приняла решение. Не «чёрный ящик». Важно для регуляторов и клиентов.</div>
+                    </div>
+                    <div class="ethics-card">
+                        <div class="ec-icon" aria-hidden="true">🤝</div>
+                        <div class="ec-name">Справедливость</div>
+                        <div class="ec-sub">Fairness</div>
+                        <div class="ec-desc">Модель не дискриминирует по полу, возрасту, региону. Проверка bias в данных и результатах.</div>
+                    </div>
+                    <div class="ethics-card">
+                        <div class="ec-icon" aria-hidden="true">📋</div>
+                        <div class="ec-name">Подотчётность</div>
+                        <div class="ec-sub">Accountability</div>
+                        <div class="ec-desc">Есть человек или роль, который отвечает за решение модели. Не «модель виновата».</div>
+                    </div>
+                    <div class="ethics-card">
+                        <div class="ec-icon" aria-hidden="true">👤</div>
+                        <div class="ec-name">Человек в контуре</div>
+                        <div class="ec-sub">Human-in-the-loop</div>
+                        <div class="ec-desc">Финальное решение принимает человек. Особенно в критичных задачах: деньги, здоровье, право.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal" id="sec-strategy" aria-labelledby="strategy-title">
+                <div class="section-title" id="strategy-title"><span class="st-icon" aria-hidden="true">🗺️</span>3. Стратегия внедрения: три этапа</div>
+                <div class="strat-grid">
+                    <div class="strat-card">
+                        <div class="sc-num" aria-hidden="true">1</div>
+                        <div class="sc-name">Пилот</div>
+                        <div class="sc-desc">Один процесс. Один измеримый KPI. Один владелец. Проверяем гипотезу на малом объёме. Не масштабируем, пока не доказали эффект.</div>
+                        <div class="sc-time">1–3 месяца</div>
+                    </div>
+                    <div class="strat-card">
+                        <div class="sc-num" aria-hidden="true">2</div>
+                        <div class="sc-name">Масштабирование</div>
+                        <div class="sc-desc">Тиражирование успешного пилота на смежные процессы и подразделения. Интеграция в ИТ-ландшафт. Обучение персонала.</div>
+                        <div class="sc-time">3–12 месяцев</div>
+                    </div>
+                    <div class="strat-card">
+                        <div class="sc-num" aria-hidden="true">3</div>
+                        <div class="sc-name">Трансформация</div>
+                        <div class="sc-desc">ИИ встроен в бизнес-модель. Новые продукты. Новые процессы. Управление рисками и этикой на постоянной основе.</div>
+                        <div class="sc-time">1–3 года</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal" id="sec-practice" aria-labelledby="practice-title">
+                <div class="section-title" id="practice-title"><span class="st-icon" aria-hidden="true">🧮</span>4. Практикум: «Внедрить ИИ в поддержку клиентов»</div>
+                <div class="practice-box">
+                    <div class="section-title" style="margin-bottom:10px;">
+                        <span class="st-icon" aria-hidden="true">📊</span>
+                        Кейс: TCO и ROI проекта
+                    </div>
+                    <div class="practice-case">
+                        <div class="pc-title">Исходные данные</div>
+                        <div class="pc-row"><span>Обращений в день</span><b>1 000</b></div>
+                        <div class="pc-row"><span>Операторов сейчас</span><b>10</b></div>
+                        <div class="pc-row"><span>Стоимость оператора в месяц</span><b>80 000</b></div>
+                        <div class="pc-row"><span>Доля типовых обращений</span><b>60%</b></div>
+                    </div>
+                    <div class="practice-case">
+                        <div class="pc-title">TCO проекта в год</div>
+                        <div class="pc-row"><span>Данные и разметка</span><b>600 000</b></div>
+                        <div class="pc-row"><span>Обучение и настройка</span><b>400 000</b></div>
+                        <div class="pc-row"><span>Инфраструктура</span><b>300 000</b></div>
+                        <div class="pc-row"><span>Люди на поддержке</span><b>500 000</b></div>
+                        <div class="pc-row pc-total"><span>Итого TCO в год</span><b>1 800 000</b></div>
+                    </div>
+                    <div class="practice-case">
+                        <div class="pc-title">Эффект</div>
+                        <div class="pc-row"><span>Сокращение операторов (60%)</span><b>6 из 10</b></div>
+                        <div class="pc-row"><span>Экономия на зарплатах</span><b>5 760 000 / год</b></div>
+                        <div class="pc-row pc-profit"><span>ROI в первый год</span><b>+3 960 000</b></div>
+                    </div>
+                    <div class="practice-verdict">Вывод: проект окупается в первый год. Экономия превышает TCO в 3,2 раза. Но перед запуском — обязательный чек-лист рисков.</div>
+                    <div class="checklist">
+                        <div class="ck-title">Чек-лист рисков перед запуском</div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Есть ли «человек в контуре» для проверки ответов бота?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Проверены ли данные на bias по клиентам?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Соответствует ли решение закону о персональных данных?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Есть ли план на случай «галлюцинации» бота?</span></div>
+                        <div class="ck-item"><span class="ck-mark" aria-hidden="true">✓</span><span>Назначен ли ответственный за этику и риски?</span></div>
+                    </div>
+                    <div class="role-grid">
+                        <div class="role-card">
+                            <div class="rc-name">CDO</div>
+                            <div class="rc-desc">Chief Data Officer. Отвечает за данные и ИИ-стратегию.</div>
+                        </div>
+                        <div class="role-card">
+                            <div class="rc-name">AI-продукт-менеджер</div>
+                            <div class="rc-desc">Ставит задачи, измеряет эффект, ведёт пилот.</div>
+                        </div>
+                        <div class="role-card">
+                            <div class="rc-name">ML-инженер</div>
+                            <div class="rc-desc">Строит модель, обучает, поддерживает.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                <div class="section-title" id="lessons-title"><span class="st-icon" aria-hidden="true">🎓</span>5. Уроки для менеджеров</div>
+                <div class="lessons-grid">
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">1</span><span>ИИ — управленческий вызов, а не технический. Менеджер отвечает за риски и этику, а не только ИТ-отдел.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">2</span><span>Пять рисков ИИ — карта опасностей. Начинайте с галлюцинаций и предвзятости — они самые частые.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">3</span><span>Четыре принципа этики — не «красивые слова», а конкретные практики: аудит данных, человек в контуре, ответственный за риски.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">4</span><span>Три этапа стратегии — пилот, масштабирование, трансформация. Не перескакивайте через пилот.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">5</span><span>Практикум показывает: TCO и ROI считаются до запуска. А чек-лист рисков — до пилота, а не после провала.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">6</span><span>Начинайте с малого, считайте деньги, управляйте рисками. ИИ — не «магия», а управленческая дисциплина.</span></div>
+                </div>
+            </section>
+
+            <div class="video-section reveal">
+                    <div class="video-container">
+                        <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: как и почему возник интернет"></iframe>
+                    </div>
+                    <div class="links-hub">
+                        <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                        <button onclick="changeVideo('https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266//')" class="video-btn rt-btn">📜 Лекция 1. Как и почему возник интернет</button>
+                    </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="slide-footer">Менеджмент · 1 курс · Искусственный интеллект · Часть 5 из 5 (финал)</div>
+</div>
+
+<div class="speaker-notes">
+    <div style="position:sticky;top:0;background:var(--c-dark);padding:20px 20px 10px 20px;border-bottom:1px solid var(--c-dark-3);width:100%;z-index:100;">
+        <div class="notes-header"><span>🎙️ Скрипт преподавателя</span><span class="timer-badge">30 мин</span></div>
+        <div style="width:100%;aspect-ratio:16/9;border-radius:var(--r-sm);overflow:hidden;background:#000;box-shadow:var(--sh-md);">
+            <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true" allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+        </div>
+    </div>
+    <div class="lecture-text" style="margin-top:20px;">
+
+        <p>Коллеги, мы добрались до финальной, пятой части нашего курса «Искусственный интеллект для экономистов-менеджеров». В первой части мы разобрали историю. Во второй — как работает ИИ. В третьей — где он приносит деньги. В четвёртой — как считать TCO и ROI. Теперь — три финальные темы. Пять рисков ИИ. Четыре принципа этики. Три этапа стратегии. И практикум по внедрению ИИ в поддержку клиентов.</p>
+
+        <div class="action-hint">Обратите внимание студентов на блок 1 «Пять рисков ИИ».</div>
+
+        <h3>📌 1. Пять рисков ИИ: что может пойти не так</h3>
+
+        <p>Обратите внимание на первый блок нашего слайда. Пять карточек. Пять рисков искусственного интеллекта. Каждая карточка имеет красную левую полосу.</p>
+
+        <p>Первый риск — галлюцинации. Модель уверенно выдаёт неверные факты. Опасна в финансах, медицине, юриспруденции. Нужен человек в контуре — тот, кто проверит результат.</p>
+
+        <p>Второй риск — предвзятость. По-английски это звучит как bias. В русской транслитерации — байас. Предвзятость в данных переносится в модель. Дискриминация по полу, возрасту, региону. Нужен аудит данных и моделей.</p>
+
+        <p>Третий риск — утечка данных. Персональные данные клиентов попадают в модель или в облако. Нарушение законов. Нужна приватность и шифрование.</p>
+
+        <p>Четвёртый риск — регулирование. AI Act в Европейском союзе, законы в Российской Федерации. Несоответствие равно штрафы и запрет на рынке. Нужна юридическая проверка.</p>
+
+        <p>Пятый риск — репутация. Публичный провал искусственного интеллекта разрушает доверие клиентов и партнёров. Теряется бизнес. Нужен пилот и грамотная коммуникация.</p>
+
+        <div class="action-hint">Перейдите к блоку 2 «Четыре принципа ответственного ИИ».</div>
+
+        <h3>📌 2. Четыре принципа ответственного ИИ</h3>
+
+        <p>Обратите внимание на второй блок нашего слайда. Четыре карточки с фиолетовыми полосами. Четыре принципа этики.</p>
+
+        <p>Первый принцип — прозрачность. По-английски это звучит как Explainable AI. В русской транслитерации — Эксплейнабл ЭйАй. Понятно, как модель приняла решение. Не чёрный ящик. Важно для регуляторов и клиентов.</p>
+
+        <p>Второй принцип — справедливость. По-английски это звучит как Fairness. В русской транслитерации — Фэйрнесс. Модель не дискриминирует по полу, возрасту, региону. Проверка bias в данных и результатах.</p>
+
+        <p>Третий принцип — подотчётность. По-английски это звучит как Accountability. В русской транслитерации — Экаунтабилити. Есть человек или роль, который отвечает за решение модели. Не «модель виновата».</p>
+
+        <p>Четвёртый принцип — человек в контуре. По-английски это звучит как Human-in-the-loop. В русской транслитерации — Хьюман ин зе луп. Финальное решение принимает человек. Особенно в критичных задачах: деньги, здоровье, право.</p>
+
+        <div class="action-hint">Перейдите к блоку 3 «Стратегия внедрения: три этапа».</div>
+
+        <h3>📌 3. Стратегия внедрения: три этапа</h3>
+
+        <p>Обратите внимание на третий блок нашего слайда. Три карточки с зелёными полосами. Три этапа стратегии.</p>
+
+        <p>Первый этап — пилот. Один процесс. Один измеримый KPI. Один владелец. Проверяем гипотезу на малом объёме. Не масштабируем, пока не доказали эффект. Срок — от одного до трёх месяцев.</p>
+
+        <p>Второй этап — масштабирование. Тиражирование успешного пилота на смежные процессы и подразделения. Интеграция в ИТ-ландшафт. Обучение персонала. Срок — от трёх до двенадцати месяцев.</p>
+
+        <p>Третий этап — трансформация. ИИ встроен в бизнес-модель. Новые продукты. Новые процессы. Управление рисками и этикой на постоянной основе. Срок — от одного до трёх лет.</p>
+
+        <div class="action-hint">Перейдите к блоку 4 «Практикум: внедрить ИИ в поддержку клиентов».</div>
+
+        <h3>📌 4. Практикум: «Внедрить ИИ в поддержку клиентов»</h3>
+
+        <p>Обратите внимание на четвёртый блок нашего слайда. Жёлтый блок с практическим кейсом. Тот же кейс, что в части 4 — чат-бот поддержки. Но теперь с акцентом на риски.</p>
+
+        <p>Исходные данные. Тысяча обращений в день. Десять операторов. Восемьдесят тысяч рублей в месяц. Шестьдесят процентов типовых обращений. TCO в год — один миллион восемьсот тысяч рублей. Экономия на зарплатах — пять миллионов семьсот шестьдесят тысяч рублей в год. ROI в первый год — плюс три миллиона девятьсот шестьдесят тысяч рублей. Проект окупается в первый год. Экономия превышает TCO в три и две десятых раза.</p>
+
+        <p>Но перед запуском — обязательный чек-лист рисков. Пять пунктов. Есть ли человек в контуре для проверки ответов бота. Проверены ли данные на bias по клиентам. Соответствует ли решение закону о персональных данных. Есть ли план на случай галлюцинации бота. Назначен ли ответственный за этику и риски.</p>
+
+        <p>И три роли в команде. CDO — Chief Data Officer, директор по данным. Отвечает за данные и ИИ-стратегию. AI-продукт-менеджер. Ставит задачи, измеряет эффект, ведёт пилот. ML-инженер. Строит модель, обучает, поддерживает.</p>
+
+        <p>Почему практикум важен. Потому что он соединяет всё, что мы разобрали в четырёх частях. Историю. Технологию. Бизнес. Экономику. И добавляет риски. Это финальный уровень зрелости менеджера. Не «внедрить ИИ». А «внедрить ИИ правильно».</p>
+
+        <div class="action-hint">Перейдите к блоку 5 «Уроки для менеджеров».</div>
+
+        <h3>📌 5. Уроки для менеджеров</h3>
+
+        <p>Обратите внимание на зелёный блок уроков. Шесть карточек.</p>
+
+        <p>Первый урок. Искусственный интеллект — управленческий вызов, а не технический. Менеджер отвечает за риски и этику, а не только информационный отдел. Второй урок. Пять рисков искусственного интеллекта — карта опасностей. Начинайте с галлюцинаций и предвзятости. Они самые частые. Третий урок. Четыре принципа этики — не красивые слова, а конкретные практики. Аудит данных. Человек в контуре. Ответственный за риски. Четвёртый урок. Три этапа стратегии — пилот, масштабирование, трансформация. Не перескакивайте через пилот. Пятый урок. Практикум показывает. TCO и ROI считаются до запуска. А чек-лист рисков — до пилота, а не после провала. Шестой урок. Начинайте с малого, считайте деньги, управляйте рисками. Искусственный интеллект — не магия, а управленческая дисциплина.</p>
+
+        <p>На этом мы завершаем курс «Искусственный интеллект для экономистов-менеджеров». Мы прошли путь от Тьюринга до ChatGPT. От машинного обучения до больших языковых моделей. От зон применения до экономики проектов. И от рисков до стратегии внедрения. Эти знания — фундамент для принятия обоснованных управленческих решений в эпоху искусственного интеллекта. Спасибо за внимание! Курс завершён. Я готов ответить на ваши вопросы.</p>
+
+    </div>
+
+    <section class="notes-section" aria-labelledby="glossary-title">
+        <div class="notes-section-title" id="glossary-title"><span aria-hidden="true">📖</span>Словарь терминов</div>
+        <table class="notes-table">
+            <thead><tr><th style="width:22%">Термин</th><th style="width:32%">Расшифровка</th><th>Пояснение</th></tr></thead>
+            <tbody>
+                <tr><td class="abbr">Bias</td><td>Предвзятость</td><td class="explain">Систематическая ошибка в данных или модели, приводящая к дискриминации</td></tr>
+                <tr><td class="abbr">Explainable AI</td><td>Объяснимый ИИ</td><td class="explain">Модель, решения которой можно объяснить человеку</td></tr>
+                <tr><td class="abbr">Fairness</td><td>Справедливость</td><td class="explain">Отсутствие дискриминации в решениях модели</td></tr>
+                <tr><td class="abbr">Accountability</td><td>Подотчётность</td><td class="explain">Наличие ответственного за решения модели</td></tr>
+                <tr><td class="abbr">Human-in-the-loop</td><td>Человек в контуре</td><td class="explain">Финальное решение принимает человек, а не модель</td></tr>
+                <tr><td class="abbr">AI Act</td><td>Закон об ИИ</td><td class="explain">Регулирование ИИ в Европейском союзе</td></tr>
+                <tr><td class="abbr">CDO</td><td>Chief Data Officer</td><td class="explain">Директор по данным, отвечает за данные и ИИ-стратегию</td></tr>
+                <tr><td class="abbr">AI Product Manager</td><td>AI-продукт-менеджер</td><td class="explain">Ставит задачи, измеряет эффект, ведёт пилот</td></tr>
+                <tr><td class="abbr">ML Engineer</td><td>ML-инженер</td><td class="explain">Строит модель, обучает, поддерживает</td></tr>
+                <tr><td class="abbr">Pilot</td><td>Пилот</td><td class="explain">Пробный запуск на ограниченном объёме</td></tr>
+                <tr><td class="abbr">Scaling</td><td>Масштабирование</td><td class="explain">Тиражирование успешного пилота</td></tr>
+                <tr><td class="abbr">Transformation</td><td>Трансформация</td><td class="explain">ИИ встроен в бизнес-модель</td></tr>
+                <tr><td class="abbr">TCO</td><td>Total Cost of Ownership</td><td class="explain">Совокупная стоимость владения</td></tr>
+                <tr><td class="abbr">ROI</td><td>Return on Investment</td><td class="explain">Возврат инвестиций</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="notes-section" aria-labelledby="sources-title">
+        <div class="notes-section-title" id="sources-title"><span aria-hidden="true">📚</span>Источники и литература</div>
+        <div class="notes-sources">
+            <div class="src-group">⚖️ Этика и регулирование ИИ</div>
+            <ol>
+                <li>Материалы Европейской комиссии по AI Act.</li>
+                <li>Принципы ответственного ИИ от OECD.</li>
+                <li>Руководство ЮНЕСКО по этике ИИ.</li>
+            </ol>
+            <div class="src-group">🗺️ Стратегия внедрения</div>
+            <ol start="4">
+                <li>Эндрю Нг. «AI Transformation Playbook».</li>
+                <li>Материалы McKinsey по стратегии внедрения ИИ.</li>
+            </ol>
+            <div class="src-group">🛡️ Риски и безопасность</div>
+            <ol start="6">
+                <li>Материалы Gartner по управлению рисками ИИ.</li>
+                <li>Руководство NIST по управлению рисками ИИ.</li>
+            </ol>
+        </div>
+    </section>
+</div>
+
+<script>
+    function changeVideo(embedUrl) {
+        document.getElementById('lecture-player').src = embedUrl;
+    }
+</script>
+<nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 18; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

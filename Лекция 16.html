@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 16 из 18. ИИ. Часть 3. ИИ в бизнесе</title>
+    <style>
+        :root {
+            --c-bg:#fff;--c-surface:#f8fafc;--c-border:#e2e8f0;--c-border-strong:#cbd5e0;
+            --c-text:#0f172a;--c-text-2:#334155;--c-text-3:#64748b;--c-text-muted:#94a3b8;
+            --c-primary:#2563eb;--c-primary-soft:#eff6ff;
+            --c-forecast:#0891b2;--c-forecast-soft:#ecfeff;
+            --c-personal:#7c3aed;--c-personal-soft:#f5f3ff;
+            --c-auto:#059669;--c-auto-soft:#ecfdf5;
+            --c-analyze:#2563eb;--c-analyze-soft:#eff6ff;
+            --c-gen:#d97706;--c-gen-soft:#fffbeb;
+            --c-industry:#dc2626;--c-industry-soft:#fef2f2;
+            --c-tool:#db2777;--c-tool-soft:#fdf2f8;
+            --c-dark:#0f172a;--c-dark-2:#1e293b;--c-dark-3:#334155;
+            --c-dark-text:#e2e8f0;--c-dark-text-2:#94a3b8;--c-dark-accent:#60a5fa;
+            --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+            --sh-md:0 4px 12px rgba(15,23,42,.08);
+            --sh-lg:0 12px 28px rgba(15,23,42,.12);
+            --sh-focus:0 0 0 3px rgba(37,99,235,.35);
+            --f-sans:'Segoe UI',Tahoma,sans-serif;
+            --f-mono:'JetBrains Mono',Consolas,monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%}
+        body{font-family:var(--f-sans);display:flex;height:100vh;overflow:hidden;background:var(--c-bg);color:var(--c-text);padding-bottom:80px!important}
+        :focus-visible{outline:none;box-shadow:var(--sh-focus);border-radius:var(--r-sm)}
+        .student-view{width:66.66%;height:100vh;background:var(--c-bg);padding:32px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--c-border);overflow-y:auto;scroll-behavior:smooth}
+        .speaker-notes{width:33.34%;height:100%;background:var(--c-dark);color:var(--c-dark-text);padding:28px;overflow-y:auto}
+        .slide-header{font-size:26px;color:var(--c-text);font-weight:800;line-height:1.25;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid var(--c-primary);position:relative}
+        .slide-header::after{content:'';position:absolute;left:0;bottom:-3px;width:80px;height:3px;background:var(--c-auto);border-radius:3px}
+        .slide-body{flex-grow:1;display:flex;flex-direction:column;gap:22px;padding:4px 0}
+        .slide-footer{font-size:12px;color:var(--c-text-muted);text-align:right;margin-top:16px}
+        .toc{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md)}
+        .toc a{font-size:11px;font-weight:700;color:var(--c-text-2);text-decoration:none;padding:4px 9px;border-radius:var(--r-pill);background:var(--c-bg);border:1px solid var(--c-border);transition:all .15s}
+        .toc a:hover{background:var(--c-primary-soft);border-color:var(--c-primary);color:var(--c-primary)}
+        .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+        .kpi{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;text-align:center;transition:all .18s}
+        .kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .kpi .kpi-val{font-size:19px;font-weight:800;color:var(--c-text);letter-spacing:-.02em;line-height:1.1}
+        .kpi .kpi-lbl{font-size:10px;color:var(--c-text-3);margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+        .kpi.k-forecast .kpi-val{color:var(--c-forecast)}
+        .kpi.k-personal .kpi-val{color:var(--c-personal)}
+        .kpi.k-auto .kpi-val{color:var(--c-auto)}
+        .kpi.k-analyze .kpi-val{color:var(--c-analyze)}
+        .kpi.k-gen .kpi-val{color:var(--c-gen)}
+        .kpi.k-tool .kpi-val{color:var(--c-tool)}
+        .section-title{font-size:15px;font-weight:800;color:var(--c-text);margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em;scroll-margin-top:12px}
+        .section-title .st-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-sm);font-size:14px}
+        /* 5 зон применения */
+        .zone-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+        .zone-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;position:relative;transition:all .18s}
+        .zone-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--c-border-strong)}
+        .zone-card::before{content:'';position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 3px 3px 0}
+        .zone-card.zc-forecast::before{background:var(--c-forecast)}
+        .zone-card.zc-personal::before{background:var(--c-personal)}
+        .zone-card.zc-auto::before{background:var(--c-auto)}
+        .zone-card.zc-analyze::before{background:var(--c-analyze)}
+        .zone-card.zc-gen::before{background:var(--c-gen)}
+        .zone-card .zc-icon{font-size:20px;margin-bottom:6px}
+        .zone-card .zc-name{font-size:12.5px;font-weight:800;color:var(--c-text);margin-bottom:4px;line-height:1.2}
+        .zone-card .zc-desc{font-size:10.5px;color:var(--c-text-2);line-height:1.4}
+        .zone-card .zc-meta{margin-top:7px;padding-top:7px;border-top:1px dashed var(--c-border);font-size:9.5px;color:var(--c-text-3);font-weight:600}
+        /* 5 отраслей — таблица */
+        .comp-table{width:100%;border-collapse:collapse;font-size:12px}
+        .comp-table th{background:var(--c-dark);color:#fff;padding:9px 11px;text-align:left;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+        .comp-table td{padding:8px 11px;border-bottom:1px solid var(--c-border);color:var(--c-text-2);vertical-align:top;line-height:1.45}
+        .comp-table tr:nth-child(even) td{background:var(--c-surface)}
+        .comp-table tr:hover td{background:var(--c-primary-soft)}
+        .comp-table .ct-crit{font-weight:700;color:var(--c-text)}
+        .comp-table .ct-badge{display:inline-block;padding:2px 8px;border-radius:var(--r-pill);font-weight:800;font-size:9.5px;color:#fff;text-transform:uppercase;letter-spacing:.04em;background:var(--c-industry)}
+        /* Инструменты */
+        .tool-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .tool-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 16px;position:relative;transition:all .18s}
+        .tool-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
+        .tool-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0;background:var(--c-tool)}
+        .tool-card .tc-icon{font-size:18px;margin-bottom:6px}
+        .tool-card .tc-name{font-size:13px;font-weight:800;color:var(--c-text);margin-bottom:3px}
+        .tool-card .tc-sub{font-size:10px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+        .tool-card .tc-desc{font-size:11px;color:var(--c-text-2);line-height:1.45}
+        .tool-card .tc-meta{margin-top:7px;padding-top:7px;border-top:1px dashed var(--c-border);font-size:10px;color:var(--c-text-3);font-weight:600}
+        /* Уроки */
+        .lessons-box{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:1px solid #bbf7d0;border-radius:var(--r-lg);padding:16px 18px}
+        .lessons-box .section-title{color:#166534;margin-bottom:10px}
+        .lessons-box .section-title .st-icon{background:#dcfce7;color:#15803d}
+        .lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+        .lesson{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#14532d}
+        .lesson .lesson-num{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#15803d;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        /* Видео */
+        .video-section{display:flex;flex-direction:column;align-items:center;gap:12px}
+        .video-container{width:100%;max-width:580px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000;aspect-ratio:16/9}
+        .links-hub{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+        .video-btn{text-decoration:none;padding:9px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;transition:all .18s;cursor:pointer;border:none;font-family:inherit}
+        .video-btn:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .rt-btn{background:#00a877}.rt-btn:hover{background:#008f65}
+        .stop-btn{background:#dc143c}.stop-btn:hover{background:#b01030}
+        /* Правая панель */
+        .notes-header{font-size:16px;color:var(--c-dark-accent);font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c-dark-3);padding-bottom:10px}
+        .timer-badge{background:#dc2626;color:#fff;padding:3px 9px;border-radius:var(--r-pill);font-size:11px;font-family:var(--f-mono);font-weight:700}
+        .lecture-text{font-size:14px;line-height:1.68;color:var(--c-dark-text);text-align:justify}
+        .lecture-text p{margin-bottom:14px}
+        .lecture-text h3{color:var(--c-dark-accent);font-size:14.5px;margin:20px 0 10px;border-bottom:1px solid var(--c-dark-3);padding-bottom:6px;font-weight:800}
+        .lecture-text strong{color:#f1f5f9}
+        .action-hint{color:#fcd34d;font-style:italic;background:var(--c-dark-2);padding:11px 14px;border-radius:var(--r-sm);border-left:3px solid #fcd34d;margin:16px 0;font-size:12.5px;line-height:1.5}
+        .notes-section{margin-top:26px;background:var(--c-dark-2);border:1px solid var(--c-dark-3);border-radius:var(--r-md);padding:16px}
+        .notes-section-title{font-size:13.5px;font-weight:800;color:var(--c-dark-accent);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--c-dark-3);display:flex;align-items:center;gap:8px}
+        .notes-table{width:100%;border-collapse:collapse;font-size:11.5px}
+        .notes-table th{text-align:left;padding:7px 8px;font-weight:700;color:var(--c-dark-text-2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--c-dark-3)}
+        .notes-table td{padding:7px 8px;border-bottom:1px solid rgba(51,65,85,.6);color:var(--c-dark-text);vertical-align:top;line-height:1.4}
+        .notes-table tr:last-child td{border-bottom:none}
+        .notes-table tr:hover td{background:rgba(96,165,250,.06)}
+        .notes-table .abbr{font-weight:800;color:#93c5fd;font-family:var(--f-mono);font-size:11px;white-space:nowrap}
+        .notes-table .explain{color:var(--c-dark-text-2)}
+        .notes-sources{font-size:11.5px;line-height:1.55;color:var(--c-dark-text)}
+        .notes-sources .src-group{font-weight:800;color:#86efac;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+        .notes-sources .src-group:first-child{margin-top:0}
+        .notes-sources ol{margin:0 0 4px 16px;padding:0}
+        .notes-sources li{margin-bottom:5px;color:var(--c-dark-text-2)}
+        /* Навигация */
+        .lecture-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+        .lecture-nav .nav-progress{position:absolute;top:0;left:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);transition:width .3s;border-radius:0 3px 3px 0}
+        .lecture-nav .nav-btn-arrow{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--c-dark-text);font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled){background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.6);color:#fff;transform:translateY(-2px)}
+        .lecture-nav .nav-btn-arrow:disabled{opacity:.35;cursor:not-allowed}
+        .lecture-nav .nav-btn-arrow .arrow-icon{font-size:16px}
+        .lecture-nav .nav-btn-arrow .arrow-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+        .lecture-nav .nav-btn-arrow .arrow-label small{font-size:9px;font-weight:400;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title{font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lecture-nav .nav-center{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 20px;color:var(--c-dark-text-2);font-size:11px;border-left:1px solid rgba(255,255,255,.1);border-right:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-counter{font-size:15px;font-weight:900;color:#f1f5f9}
+        .lecture-nav .nav-counter span{color:#64748b;font-size:12px;font-weight:600}
+        .lecture-nav .nav-index-link{color:#60a5fa;text-decoration:none;font-size:11px;font-weight:700}
+        .lecture-nav .nav-index-link:hover{color:#93c5fd;text-decoration:underline}
+        .lecture-nav .nav-jump{display:flex;gap:4px;margin-left:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-jump-btn{padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--c-dark-text-2);font-size:10px;font-weight:800;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-jump-btn:hover{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5);color:#fff}
+        .lecture-nav .nav-jump-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:transparent;color:#fff}
+        .reveal{animation:fadeUp .5s ease both}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+        @media(max-width:1200px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.zone-grid{grid-template-columns:repeat(3,1fr)}.tool-grid{grid-template-columns:1fr}}
+        @media(max-width:900px){.lecture-nav{padding:10px 12px;gap:8px}.lecture-nav .nav-btn-arrow{padding:8px 12px}.lecture-nav .nav-btn-arrow .arrow-label .arrow-title{max-width:90px;font-size:11px}.lecture-nav .nav-center{padding:0 10px}.lecture-nav .nav-jump{display:none}.kpi-strip{grid-template-columns:repeat(2,1fr)}.lessons-grid{grid-template-columns:1fr}.zone-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+
+<div class="student-view">
+    <div>
+        <h1 class="slide-header">Часть 3. ИИ в бизнесе: где он реально приносит деньги</h1>
+        <div class="slide-body">
+
+            <nav class="toc reveal" aria-label="Содержание лекции">
+                <a href="#sec-zones">1. Пять зон</a>
+                <a href="#sec-industries">2. Пять отраслей</a>
+                <a href="#sec-tools">3. Инструменты</a>
+                <a href="#sec-lessons">4. Уроки</a>
+            </nav>
+
+            <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры">
+                <div class="kpi k-forecast" role="listitem"><div class="kpi-val">5</div><div class="kpi-lbl">зон применения</div></div>
+                <div class="kpi k-personal" role="listitem"><div class="kpi-val">5</div><div class="kpi-lbl">отраслей</div></div>
+                <div class="kpi k-tool" role="listitem"><div class="kpi-val">3</div><div class="kpi-lbl">класса инструментов</div></div>
+                <div class="kpi k-auto" role="listitem"><div class="kpi-val">1</div><div class="kpi-lbl">пилот, а не всё сразу</div></div>
+                <div class="kpi k-analyze" role="listitem"><div class="kpi-val">3–6</div><div class="kpi-lbl">месяцев до ROI</div></div>
+                <div class="kpi k-gen" role="listitem"><div class="kpi-val">20–30%</div><div class="kpi-lbl">экономии затрат</div></div>
+            </div>
+
+            <section class="reveal" id="sec-zones" aria-labelledby="zones-title">
+                <div class="section-title" id="zones-title"><span class="st-icon" aria-hidden="true">🎯</span>1. Пять зон применения: где ИИ даёт измеримый эффект</div>
+                <div class="zone-grid">
+                    <div class="zone-card zc-forecast">
+                        <div class="zc-icon" aria-hidden="true">📈</div>
+                        <div class="zc-name">Прогнозирование</div>
+                        <div class="zc-desc">Спрос, отток клиентов, риски, дефолты. Модель предсказывает будущее на основе истории.</div>
+                        <div class="zc-meta">Точность до 90%</div>
+                    </div>
+                    <div class="zone-card zc-personal">
+                        <div class="zc-icon" aria-hidden="true">🎯</div>
+                        <div class="zc-name">Персонализация</div>
+                        <div class="zc-desc">Рекомендации, динамические цены, персональные предложения для каждого клиента.</div>
+                        <div class="zc-meta">Рост конверсии 15–30%</div>
+                    </div>
+                    <div class="zone-card zc-auto">
+                        <div class="zc-icon" aria-hidden="true">⚙️</div>
+                        <div class="zc-name">Автоматизация</div>
+                        <div class="zc-desc">Роботы-процессы, обработка документов, чат-боты поддержки, OCR-распознавание.</div>
+                        <div class="zc-meta">Экономия 30–50% времени</div>
+                    </div>
+                    <div class="zone-card zc-analyze">
+                        <div class="zc-icon" aria-hidden="true">🔍</div>
+                        <div class="zc-name">Анализ</div>
+                        <div class="zc-desc">Тексты, изображения, голос, видео. Извлечение смысла из неструктурированных данных.</div>
+                        <div class="zc-meta">Обработка млн документов</div>
+                    </div>
+                    <div class="zone-card zc-gen">
+                        <div class="zc-icon" aria-hidden="true">✍️</div>
+                        <div class="zc-name">Генерация</div>
+                        <div class="zc-desc">Контент, код, отчёты, креативы, письма. Создание нового из шаблонов и данных.</div>
+                        <div class="zc-meta">Ускорение в 3–5 раз</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal" id="sec-industries" aria-labelledby="industries-title">
+                <div class="section-title" id="industries-title"><span class="st-icon" aria-hidden="true">🏭</span>2. Пять отраслей: где ИИ уже работает</div>
+                <table class="comp-table">
+                    <thead>
+                        <tr>
+                            <th>Отрасль</th>
+                            <th>Задача</th>
+                            <th>Эффект</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="ct-badge">Ритейл</span></td>
+                            <td>Прогноз спроса, динамические цены, рекомендации товаров, оптимизация запасов</td>
+                            <td>Снижение издержек на 15–25%, рост выручки на 10–20%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ct-badge">Банки</span></td>
+                            <td>Скоринг, фрод-детекция, чат-боты поддержки, антифрод в реальном времени</td>
+                            <td>Снижение потерь от мошенничества на 30–50%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ct-badge">Производство</span></td>
+                            <td>Предиктивное обслуживание, контроль качества, оптимизация цепочек поставок</td>
+                            <td>Снижение простоев на 20–40%, экономия на ремонте 15–30%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ct-badge">Маркетинг</span></td>
+                            <td>Сегментация, таргетинг, генерация креативов, A/B-тестирование на лету</td>
+                            <td>Рост CTR в 2–3 раза, снижение стоимости лида на 20–40%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ct-badge">HR</span></td>
+                            <td>Скрининг резюме, оценка кандидатов, прогноз текучести, чат-боты онбординга</td>
+                            <td>Ускорение найма на 30–50%, снижение текучести на 10–20%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="reveal" id="sec-tools" aria-labelledby="tools-title">
+                <div class="section-title" id="tools-title"><span class="st-icon" aria-hidden="true">🛠️</span>3. Инструменты для менеджера: три класса</div>
+                <div class="tool-grid">
+                    <div class="tool-card">
+                        <div class="tc-icon" aria-hidden="true">💬</div>
+                        <div class="tc-name">LLM-ассистенты</div>
+                        <div class="tc-sub">ChatGPT, Copilot, YandexGPT, GigaChat</div>
+                        <div class="tc-desc">Для написания текстов, генерации идей, анализа документов, помощи в коде. Доступны без программирования.</div>
+                        <div class="tc-meta">Старт: в первый же день</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tc-icon" aria-hidden="true">📊</div>
+                        <div class="tc-name">BI + AI</div>
+                        <div class="tc-sub">Power BI, Tableau, Qlik</div>
+                        <div class="tc-desc">Встроенный ИИ для прогнозов и аномалий в дашбордах. Менеджер видит не только «что было», но и «что будет».</div>
+                        <div class="tc-meta">Срок внедрения: 1–3 месяца</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tc-icon" aria-hidden="true">🤖</div>
+                        <div class="tc-name">ML-платформы</div>
+                        <div class="tc-sub">DataRobot, H2O, Yandex DataSphere</div>
+                        <div class="tc-desc">Для обучения собственных моделей на данных компании. Требуют команды ML-инженеров или аналитиков.</div>
+                        <div class="tc-meta">Срок внедрения: 3–6 месяцев</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                <div class="section-title" id="lessons-title"><span class="st-icon" aria-hidden="true">🎓</span>4. Уроки для менеджеров</div>
+                <div class="lessons-grid">
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">1</span><span>ИИ окупается там, где есть данные и повторяемые процессы. Без данных — нет ИИ.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">2</span><span>Начинайте с пилота на одном процессе, а не с «внедрения ИИ везде». Пилот за 1–3 месяца.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">3</span><span>Пять зон применения — карта возможностей. Выбирайте ту, где у вас есть данные и владелец процесса.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">4</span><span>Пять отраслей — карта эффектов. Смотрите на измеримые метрики, а не на «магию ИИ».</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">5</span><span>Три класса инструментов — от простых к сложным. Не начинайте с ML-платформы, если можно решить задачу ChatGPT.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">6</span><span>Менеджер не пишет код, но выбирает зону, отрасль и инструмент. Это управленческое решение, а не техническое.</span></div>
+                </div>
+            </section>
+
+             <div class="video-section reveal">
+                    <div class="video-container">
+                        <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: как и почему возник интернет"></iframe>
+                    </div>
+                    <div class="links-hub">
+                        <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                        <button onclick="changeVideo('https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266//')" class="video-btn rt-btn">📜 Лекция 1. Как и почему возник интернет</button>
+                    </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="slide-footer">Менеджмент · 1 курс · Искусственный интеллект · Часть 3 из 5</div>
+</div>
+
+<div class="speaker-notes">
+    <div style="position:sticky;top:0;background:var(--c-dark);padding:20px 20px 10px 20px;border-bottom:1px solid var(--c-dark-3);width:100%;z-index:100;">
+        <div class="notes-header"><span>🎙️ Скрипт преподавателя</span><span class="timer-badge">25 мин</span></div>
+        <div style="width:100%;aspect-ratio:16/9;border-radius:var(--r-sm);overflow:hidden;background:#000;box-shadow:var(--sh-md);">
+            <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true" allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+        </div>
+    </div>
+    <div class="lecture-text" style="margin-top:20px;">
+
+        <p>Коллеги, в первой части мы разобрали историю искусственного интеллекта. От Тьюринга до ЧатДжиПиТи. Во второй части — как работает искусственный интеллект. Машинное обучение. Нейросети. Большие языковые модели. Теперь настало время для третьей части. Самой практической. Мы разберём, где искусственный интеллект реально приносит деньги. Пять зон применения. Пять отраслей. Три класса инструментов. И шесть управленческих уроков.</p>
+
+        <div class="action-hint">Обратите внимание студентов на блок 1 «Пять зон применения».</div>
+
+        <h3>📌 1. Пять зон применения: где ИИ даёт измеримый эффект</h3>
+
+        <p>Обратите внимание на первый блок нашего слайда. Пять карточек. Пять зон применения искусственного интеллекта. Каждая зона имеет свой цвет и свою метрику эффекта.</p>
+
+        <p>Первая зона — прогнозирование. Модель предсказывает будущее на основе истории. Спрос на товары. Отток клиентов. Риски дефолтов по кредитам. Точность прогнозов может достигать девяноста процентов. Для менеджера это означает, что можно планировать закупки, бюджеты и ресурсы с высокой точностью.</p>
+
+        <p>Вторая зона — персонализация. Модель подбирает индивидуальные рекомендации, цены и предложения для каждого клиента. Рост конверсии — от пятнадцати до тридцати процентов. Для менеджера это означает, что один и тот же клиент получает именно то, что ему нужно. А не усреднённое предложение.</p>
+
+        <p>Третья зона — автоматизация. Роботы-процессы. Обработка документов. Чат-боты поддержки. Оптическое распознавание символов. Экономия времени — от тридцати до пятидесяти процентов. Для менеджера это означает, что сотрудники занимаются содержательной работой. А рутину делает машина.</p>
+
+        <p>Четвёртая зона — анализ. Модель извлекает смысл из неструктурированных данных. Текстов. Изображений. Голоса. Видео. Обрабатывает миллионы документов за минуты. Для менеджера это означает, что можно найти закономерности там, где человек их просто не увидит.</p>
+
+        <p>Пятая зона — генерация. Модель создаёт новый контент. Тексты. Код. Отчёты. Креативы. Письма. Ускорение в три-пять раз. Для менеджера это означает, что рутинные задачи по созданию контента делаются в разы быстрее.</p>
+
+        <div class="action-hint">Перейдите к блоку 2 «Пять отраслей».</div>
+
+        <h3>📌 2. Пять отраслей: где ИИ уже работает</h3>
+
+        <p>Обратите внимание на второй блок нашего слайда. Это таблица с пятью отраслями. Ритейл. Банки. Производство. Маркетинг. HR. В каждой отрасли — своя задача и свой измеримый эффект.</p>
+
+        <p>Ритейл. Прогноз спроса, динамические цены, рекомендации товаров, оптимизация запасов. Снижение издержек на пятнадцать-двадцать пять процентов. Рост выручки на десять-двадцать процентов.</p>
+
+        <p>Банки. Скоринг, фрод-детекция, чат-боты поддержки, антифрод в реальном времени. Снижение потерь от мошенничества на тридцать-пятьдесят процентов.</p>
+
+        <p>Производство. Предиктивное обслуживание, контроль качества, оптимизация цепочек поставок. Снижение простоев на двадцать-сорок процентов. Экономия на ремонте пятнадцать-тридцать процентов.</p>
+
+        <p>Маркетинг. Сегментация, таргетинг, генерация креативов, A/B-тестирование на лету. Рост кликабельности в два-три раза. Снижение стоимости лида на двадцать-сорок процентов.</p>
+
+        <p>HR. Скрининг резюме, оценка кандидатов, прогноз текучести, чат-боты онбординга. Ускорение найма на тридцать-пятьдесят процентов. Снижение текучести на десять-двадцать процентов.</p>
+
+        <p>Почему это важно для менеджера. Потому что каждая отрасль имеет свои проверенные сценарии. И не нужно изобретать заново. Можно взять готовый кейс и адаптировать под свою компанию.</p>
+
+        <div class="action-hint">Перейдите к блоку 3 «Инструменты для менеджера».</div>
+
+        <h3>📌 3. Инструменты для менеджера: три класса</h3>
+
+        <p>Обратите внимание на третий блок нашего слайда. Три карточки. Три класса инструментов. Каждый класс — свой уровень сложности.</p>
+
+        <p>Первый класс — эл-эл-эм-ассистенты. Это ЧатДжиПиТи, Копайлот, ЯндексДжиПиТи, ГигаЧат. По-английски это звучит как ChatGPT, Copilot, YandexGPT, GigaChat. Они нужны для написания текстов, генерации идей, анализа документов, помощи в коде. Доступны без программирования. Старт — в первый же день.</p>
+
+        <p>Второй класс — BI + искусственный интеллект. По-английски это звучит как BI + AI. Это Пауэр БиАй, Табло, Клик. По-английски — Power BI, Tableau, Qlik. Встроенный искусственный интеллект для прогнозов и аномалий в дашбордах. Менеджер видит не только «что было», но и «что будет». Срок внедрения — от одного до трёх месяцев.</p>
+
+        <p>Третий класс — эм-эл-платформы. Это ДейтаРобот, Аш два О, Яндекс ДейтаСфер. По-английски — DataRobot, H2O, Yandex DataSphere. Для обучения собственных моделей на данных компании. Требуют команды эм-эл-инженеров или аналитиков. Срок внедрения — от трёх до шести месяцев.</p>
+
+        <p>Почему это важно для менеджера. Потому что не нужно начинать с самого сложного. Если задачу можно решить через ЧатДжиПиТи — не нужна эм-эл-платформа. Начинайте с простого. Усложняйте по мере роста задач.</p>
+
+        <div class="action-hint">Перейдите к блоку 4 «Уроки для менеджеров».</div>
+
+        <h3>📌 4. Уроки для менеджеров</h3>
+
+        <p>Обратите внимание на зелёный блок уроков. Шесть карточек.</p>
+
+        <p>Первый урок. Искусственный интеллект окупается там, где есть данные и повторяемые процессы. Без данных — нет искусственного интеллекта. Второй урок. Начинайте с пилота на одном процессе. А не с внедрения искусственного интеллекта везде. Пилот за один-три месяца. Третий урок. Пять зон применения — карта возможностей. Выбирайте ту, где у вас есть данные и владелец процесса. Четвёртый урок. Пять отраслей — карта эффектов. Смотрите на измеримые метрики, а не на магию искусственного интеллекта. Пятый урок. Три класса инструментов — от простых к сложным. Не начинайте с эм-эл-платформы, если можно решить задачу через ЧатДжиПиТи. Шестой урок. Менеджер не пишет код, но выбирает зону, отрасль и инструмент. Это управленческое решение, а не техническое.</p>
+
+        <p>В следующей части мы разберём экономику искусственного интеллекта. Совокупную стоимость владения. Возврат инвестиций. И чек-лист оценки проектов. Спасибо за внимание!</p>
+
+    </div>
+
+    <section class="notes-section" aria-labelledby="glossary-title">
+        <div class="notes-section-title" id="glossary-title"><span aria-hidden="true">📖</span>Словарь терминов</div>
+        <table class="notes-table">
+            <thead><tr><th style="width:22%">Термин</th><th style="width:32%">Расшифровка</th><th>Пояснение</th></tr></thead>
+            <tbody>
+                <tr><td class="abbr">LLM</td><td>Large Language Model</td><td class="explain">Большая языковая модель: ChatGPT, YandexGPT, GigaChat</td></tr>
+                <tr><td class="abbr">BI</td><td>Business Intelligence</td><td class="explain">Бизнес-аналитика: дашборды, отчёты, визуализация данных</td></tr>
+                <tr><td class="abbr">Power BI</td><td>Power BI</td><td class="explain">BI-платформа Microsoft со встроенным ИИ</td></tr>
+                <tr><td class="abbr">Tableau</td><td>Tableau</td><td class="explain">BI-платформа для визуализации данных</td></tr>
+                <tr><td class="abbr">Qlik</td><td>Qlik</td><td class="explain">BI-платформа с ассоциативной аналитикой</td></tr>
+                <tr><td class="abbr">ML</td><td>Machine Learning</td><td class="explain">Машинное обучение</td></tr>
+                <tr><td class="abbr">ML-платформа</td><td>ML Platform</td><td class="explain">Платформа для обучения моделей (DataRobot, H2O)</td></tr>
+                <tr><td class="abbr">DataRobot</td><td>DataRobot</td><td class="explain">Платформа автоматизированного машинного обучения</td></tr>
+                <tr><td class="abbr">H2O</td><td>H2O.ai</td><td class="explain">Открытая ML-платформа</td></tr>
+                <tr><td class="abbr">OCR</td><td>Optical Character Recognition</td><td class="explain">Оптическое распознавание символов</td></tr>
+                <tr><td class="abbr">RPA</td><td>Robotic Process Automation</td><td class="explain">Роботизированная автоматизация процессов</td></tr>
+                <tr><td class="abbr">ROI</td><td>Return on Investment</td><td class="explain">Возврат инвестиций</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="notes-section" aria-labelledby="sources-title">
+        <div class="notes-section-title" id="sources-title"><span aria-hidden="true">📚</span>Источники и литература</div>
+        <div class="notes-sources">
+            <div class="src-group">📖 ИИ в бизнесе</div>
+            <ol>
+                <li>Томас Дэвенпорт. «The AI Advantage».</li>
+                <li>Эндрю Нг. «AI Transformation Playbook».</li>
+                <li>Материалы McKinsey Global Institute по ИИ в отраслях.</li>
+            </ol>
+            <div class="src-group">🛠️ Инструменты</div>
+            <ol start="4">
+                <li>Документация Microsoft Power BI.</li>
+                <li>Документация OpenAI (ChatGPT) и YandexGPT.</li>
+                <li>Материалы DataRobot, H2O.ai.</li>
+            </ol>
+            <div class="src-group">📊 Кейсы по отраслям</div>
+            <ol start="7">
+                <li>Кейсы McKinsey по ритейлу, банкам, производству.</li>
+                <li>Материалы Gartner по ИИ в маркетинге и HR.</li>
+            </ol>
+        </div>
+    </section>
+</div>
+
+<script>
+    function changeVideo(embedUrl) {
+        document.getElementById('lecture-player').src = embedUrl;
+    }
+</script>
+
+<nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 16; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

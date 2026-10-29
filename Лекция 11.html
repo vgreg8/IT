@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 11 из 18. Офисный софт. Часть 3. Word</title>
+    <style>
+        :root {
+            --c-bg:#fff;--c-surface:#f8fafc;--c-border:#e2e8f0;--c-border-strong:#cbd5e0;
+            --c-text:#0f172a;--c-text-2:#334155;--c-text-3:#64748b;--c-text-muted:#94a3b8;
+            --c-primary:#2563eb;--c-primary-soft:#eff6ff;
+            --c-styles:#0891b2;--c-styles-soft:#ecfeff;
+            --c-review:#7c3aed;--c-review-soft:#f5f3ff;
+            --c-inspect:#dc2626;--c-inspect-soft:#fef2f2;
+            --c-merge:#059669;--c-merge-soft:#ecfdf5;
+            --c-dark:#0f172a;--c-dark-2:#1e293b;--c-dark-3:#334155;
+            --c-dark-text:#e2e8f0;--c-dark-text-2:#94a3b8;--c-dark-accent:#60a5fa;
+            --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+            --sh-md:0 4px 12px rgba(15,23,42,.08);
+            --sh-lg:0 12px 28px rgba(15,23,42,.12);
+            --sh-focus:0 0 0 3px rgba(37,99,235,.35);
+            --f-sans:'Segoe UI',Tahoma,sans-serif;
+            --f-mono:'JetBrains Mono',Consolas,monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%}
+        body{font-family:var(--f-sans);display:flex;height:100vh;overflow:hidden;background:var(--c-bg);color:var(--c-text);padding-bottom:80px!important}
+        :focus-visible{outline:none;box-shadow:var(--sh-focus);border-radius:var(--r-sm)}
+        .student-view{width:66.66%;height:100vh;background:var(--c-bg);padding:32px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--c-border);overflow-y:auto;scroll-behavior:smooth}
+        .speaker-notes{width:33.34%;height:100%;background:var(--c-dark);color:var(--c-dark-text);padding:28px;overflow-y:auto}
+        .slide-header{font-size:26px;color:var(--c-text);font-weight:800;line-height:1.25;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid var(--c-primary);position:relative}
+        .slide-header::after{content:'';position:absolute;left:0;bottom:-3px;width:80px;height:3px;background:var(--c-review);border-radius:3px}
+        .slide-body{flex-grow:1;display:flex;flex-direction:column;gap:22px;padding:4px 0}
+        .slide-footer{font-size:12px;color:var(--c-text-muted);text-align:right;margin-top:16px}
+        .toc{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md)}
+        .toc a{font-size:11px;font-weight:700;color:var(--c-text-2);text-decoration:none;padding:4px 9px;border-radius:var(--r-pill);background:var(--c-bg);border:1px solid var(--c-border);transition:all .15s}
+        .toc a:hover{background:var(--c-primary-soft);border-color:var(--c-primary);color:var(--c-primary)}
+        .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+        .kpi{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;text-align:center;transition:all .18s}
+        .kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .kpi .kpi-val{font-size:19px;font-weight:800;color:var(--c-text);letter-spacing:-.02em;line-height:1.1}
+        .kpi .kpi-lbl{font-size:10px;color:var(--c-text-3);margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+        .kpi.k-styles .kpi-val{color:var(--c-styles)}
+        .kpi.k-review .kpi-val{color:var(--c-review)}
+        .kpi.k-inspect .kpi-val{color:var(--c-inspect)}
+        .kpi.k-merge .kpi-val{color:var(--c-merge)}
+        .section-title{font-size:15px;font-weight:800;color:var(--c-text);margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em;scroll-margin-top:12px}
+        .section-title .st-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-sm);font-size:14px}
+        .func-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+        .func-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 16px;position:relative;transition:all .18s}
+        .func-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--c-border-strong)}
+        .func-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0}
+        .func-card.fc-styles::before{background:var(--c-styles)}
+        .func-card.fc-review::before{background:var(--c-review)}
+        .func-card.fc-inspect::before{background:var(--c-inspect)}
+        .func-card.fc-merge::before{background:var(--c-merge)}
+        .func-card .fc-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+        .func-card .fc-icon{font-size:18px}
+        .func-card .fc-name{font-size:14px;font-weight:800;color:var(--c-text)}
+        .func-card .fc-sub{font-size:10.5px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+        .func-card .fc-body{font-size:12px;color:var(--c-text-2);line-height:1.5}
+        .func-card .fc-body b{color:var(--c-text)}
+        .func-card .fc-meta{margin-top:8px;padding-top:8px;border-top:1px dashed var(--c-border);font-size:10.5px;color:var(--c-text-3);font-weight:600}
+        .func-card .fc-analogy{margin-top:7px;padding:7px 9px;background:#fffbeb;border-left:3px solid var(--c-merge);border-radius:4px;font-size:10.5px;color:#92400e;line-height:1.4;font-style:italic}
+        .comp-table{width:100%;border-collapse:collapse;font-size:12px}
+        .comp-table th{background:var(--c-dark);color:#fff;padding:10px 12px;text-align:left;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+        .comp-table td{padding:9px 12px;border-bottom:1px solid var(--c-border);color:var(--c-text-2);vertical-align:top;line-height:1.45}
+        .comp-table tr:nth-child(even) td{background:var(--c-surface)}
+        .comp-table tr:hover td{background:var(--c-primary-soft)}
+        .comp-table .ct-crit{font-weight:700;color:var(--c-text)}
+        .saving-box{background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:1px solid #6ee7b7;border-radius:var(--r-lg);padding:16px 18px}
+        .saving-box .section-title{color:#065f46;margin-bottom:10px}
+        .saving-box .section-title .st-icon{background:#d1fae5;color:#047857}
+        .saving-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+        .saving-item{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#064e3b}
+        .saving-item .saving-mark{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#047857;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        .lessons-box{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:1px solid #bbf7d0;border-radius:var(--r-lg);padding:16px 18px}
+        .lessons-box .section-title{color:#166534;margin-bottom:10px}
+        .lessons-box .section-title .st-icon{background:#dcfce7;color:#15803d}
+        .lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+        .lesson{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#14532d}
+        .lesson .lesson-num{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#15803d;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        .video-section{display:flex;flex-direction:column;align-items:center;gap:12px}
+        .video-container{width:100%;max-width:580px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000;aspect-ratio:16/9}
+        .links-hub{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+        .video-btn{text-decoration:none;padding:9px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;transition:all .18s;cursor:pointer;border:none;font-family:inherit}
+        .video-btn:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .rt-btn{background:#00a877}.rt-btn:hover{background:#008f65}
+        .stop-btn{background:#dc143c}.stop-btn:hover{background:#b01030}
+        .notes-header{font-size:16px;color:var(--c-dark-accent);font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c-dark-3);padding-bottom:10px}
+        .timer-badge{background:#dc2626;color:#fff;padding:3px 9px;border-radius:var(--r-pill);font-size:11px;font-family:var(--f-mono);font-weight:700}
+        .lecture-text{font-size:14px;line-height:1.68;color:var(--c-dark-text);text-align:justify}
+        .lecture-text p{margin-bottom:14px}
+        .lecture-text h3{color:var(--c-dark-accent);font-size:14.5px;margin:20px 0 10px;border-bottom:1px solid var(--c-dark-3);padding-bottom:6px;font-weight:800}
+        .lecture-text strong{color:#f1f5f9}
+        .action-hint{color:#fcd34d;font-style:italic;background:var(--c-dark-2);padding:11px 14px;border-radius:var(--r-sm);border-left:3px solid #fcd34d;margin:16px 0;font-size:12.5px;line-height:1.5}
+        .notes-section{margin-top:26px;background:var(--c-dark-2);border:1px solid var(--c-dark-3);border-radius:var(--r-md);padding:16px}
+        .notes-section-title{font-size:13.5px;font-weight:800;color:var(--c-dark-accent);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--c-dark-3);display:flex;align-items:center;gap:8px}
+        .notes-table{width:100%;border-collapse:collapse;font-size:11.5px}
+        .notes-table th{text-align:left;padding:7px 8px;font-weight:700;color:var(--c-dark-text-2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--c-dark-3)}
+        .notes-table td{padding:7px 8px;border-bottom:1px solid rgba(51,65,85,.6);color:var(--c-dark-text);vertical-align:top;line-height:1.4}
+        .notes-table tr:last-child td{border-bottom:none}
+        .notes-table tr:hover td{background:rgba(96,165,250,.06)}
+        .notes-table .abbr{font-weight:800;color:#93c5fd;font-family:var(--f-mono);font-size:11px;white-space:nowrap}
+        .notes-table .explain{color:var(--c-dark-text-2)}
+        .notes-sources{font-size:11.5px;line-height:1.55;color:var(--c-dark-text)}
+        .notes-sources .src-group{font-weight:800;color:#86efac;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+        .notes-sources .src-group:first-child{margin-top:0}
+        .notes-sources ol{margin:0 0 4px 16px;padding:0}
+        .notes-sources li{margin-bottom:5px;color:var(--c-dark-text-2)}
+        .lecture-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+        .lecture-nav .nav-progress{position:absolute;top:0;left:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);transition:width .3s;border-radius:0 3px 3px 0}
+        .lecture-nav .nav-btn-arrow{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--c-dark-text);font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled){background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.6);color:#fff;transform:translateY(-2px)}
+        .lecture-nav .nav-btn-arrow:disabled{opacity:.35;cursor:not-allowed}
+        .lecture-nav .nav-btn-arrow .arrow-icon{font-size:16px}
+        .lecture-nav .nav-btn-arrow .arrow-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+        .lecture-nav .nav-btn-arrow .arrow-label small{font-size:9px;font-weight:400;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title{font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lecture-nav .nav-center{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 20px;color:var(--c-dark-text-2);font-size:11px;border-left:1px solid rgba(255,255,255,.1);border-right:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-counter{font-size:15px;font-weight:900;color:#f1f5f9}
+        .lecture-nav .nav-counter span{color:#64748b;font-size:12px;font-weight:600}
+        .lecture-nav .nav-index-link{color:#60a5fa;text-decoration:none;font-size:11px;font-weight:700}
+        .lecture-nav .nav-index-link:hover{color:#93c5fd;text-decoration:underline}
+        .lecture-nav .nav-jump{display:flex;gap:4px;margin-left:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-jump-btn{padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--c-dark-text-2);font-size:10px;font-weight:800;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-jump-btn:hover{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5);color:#fff}
+        .lecture-nav .nav-jump-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:transparent;color:#fff}
+        .reveal{animation:fadeUp .5s ease both}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+        @media(max-width:1200px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.func-grid{grid-template-columns:1fr}}
+        @media(max-width:900px){.lecture-nav{padding:10px 12px;gap:8px}.lecture-nav .nav-btn-arrow{padding:8px 12px}.lecture-nav .nav-btn-arrow .arrow-label .arrow-title{max-width:90px;font-size:11px}.lecture-nav .nav-center{padding:0 10px}.lecture-nav .nav-jump{display:none}.kpi-strip{grid-template-columns:repeat(2,1fr)}.lessons-grid{grid-template-columns:1fr}.saving-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+
+<div class="student-view">
+    <div>
+        <h1 class="slide-header">Часть 3. Word как инструмент деловых коммуникаций</h1>
+        <div class="slide-body">
+
+            <nav class="toc reveal" aria-label="Содержание лекции">
+                <a href="#sec-funcs">1. Четыре функции</a>
+                <a href="#sec-table">2. Сравнение</a>
+                <a href="#sec-saving">3. Экономия</a>
+                <a href="#sec-lessons">4. Уроки</a>
+            </nav>
+
+            <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры">
+                <div class="kpi k-styles" role="listitem"><div class="kpi-val">4</div><div class="kpi-lbl">функции Word</div></div>
+                <div class="kpi k-styles" role="listitem"><div class="kpi-val">40%</div><div class="kpi-lbl">экономия времени на вёрстке</div></div>
+                <div class="kpi k-review" role="listitem"><div class="kpi-val">100%</div><div class="kpi-lbl">прозрачность правок</div></div>
+                <div class="kpi k-inspect" role="listitem"><div class="kpi-val">0</div><div class="kpi-lbl">утечек метаданных</div></div>
+                <div class="kpi k-merge" role="listitem"><div class="kpi-val">2 мин</div><div class="kpi-lbl">вместо 2 недель</div></div>
+                <div class="kpi k-merge" role="listitem"><div class="kpi-val">5000</div><div class="kpi-lbl">писем за один запуск</div></div>
+            </div>
+
+            <section class="reveal" id="sec-funcs" aria-labelledby="funcs-title">
+                <div class="section-title" id="funcs-title"><span class="st-icon" aria-hidden="true">📄</span>1. Четыре функции Word для менеджера</div>
+                <div class="func-grid">
+                    <div class="func-card fc-styles">
+                        <div class="fc-head">
+                            <span class="fc-icon" aria-hidden="true">📋</span>
+                            <div>
+                                <div class="fc-name">Стили и шаблоны</div>
+                                <div class="fc-sub">стандартизация</div>
+                            </div>
+                        </div>
+                        <div class="fc-body">Один раз настроенный корпоративный шаблон гарантирует, что <b>любой документ компании будет выглядеть строго по брендбуку</b>. Автооглавления и многоуровневые списки собираются за один клик. Экономия до 40% времени сотрудников на ручную вёрстку.</div>
+                        <div class="fc-analogy">Аналогия: корпоративная форма — все носят одну, но с разными бейджами.</div>
+                        <div class="fc-meta">Экспресс-стили, шаблоны, автооглавления</div>
+                    </div>
+                    <div class="func-card fc-review">
+                        <div class="fc-head">
+                            <span class="fc-icon" aria-hidden="true">🤝</span>
+                            <div>
+                                <div class="fc-name">Рецензирование</div>
+                                <div class="fc-sub">режим исправлений</div>
+                            </div>
+                        </div>
+                        <div class="fc-body">Проект договора последовательно проходит через юристов, финансового директора, топ-менеджмент и контрагента. <b>Режим отслеживания правок</b> позволяет всем отделам одновременно вносить изменения в один файл с прозрачной историей: кто, когда и какую правку внёс.</div>
+                        <div class="fc-analogy">Аналогия: общий документ с цветными пометками — видно, кто что исправил.</div>
+                        <div class="fc-meta">Прозрачная история согласования, исключение юр. ошибок</div>
+                    </div>
+                    <div class="func-card fc-inspect">
+                        <div class="fc-head">
+                            <span class="fc-icon" aria-hidden="true">🔒</span>
+                            <div>
+                                <div class="fc-name">Инспектор документов</div>
+                                <div class="fc-sub">очистка метаданных</div>
+                            </div>
+                        </div>
+                        <div class="fc-body">Внутри файла .docx сохраняются <b>скрытые метаданные</b>: история правок, удалённые абзацы, внутренние комментарии юристов и даже первоначальные скидки. Инспектор документов удаляет всё это перед отправкой клиенту.</div>
+                        <div class="fc-analogy">Аналогия: вычистить черновик перед публикацией — чтобы никто не увидел зачёркнутое.</div>
+                        <div class="fc-meta">Защита от утечки коммерческой тайны</div>
+                    </div>
+                    <div class="func-card fc-merge">
+                        <div class="fc-head">
+                            <span class="fc-icon" aria-hidden="true">⚡</span>
+                            <div>
+                                <div class="fc-name">Слияние (Mail Merge)</div>
+                                <div class="fc-sub">массовая персонализация</div>
+                            </div>
+                        </div>
+                        <div class="fc-body">Связывание текстового шаблона Word с таблицей базы данных из Excel. Офисный пакет <b>сам сопоставит поля, сгенерирует и отправит 5000 уникальных документов за 2 минуты</b>. Вместо 2 недель ручной работы стажёров — один запуск.</div>
+                        <div class="fc-analogy">Аналогия: конвейер — шаблон один, а на выходе каждое письмо с именем клиента.</div>
+                        <div class="fc-meta">Автоматизация рутины: 2 минуты вместо 2 недель</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal" id="sec-table" aria-labelledby="table-title">
+                <div class="section-title" id="table-title"><span class="st-icon" aria-hidden="true">📊</span>2. Сравнение функций: задача и эффект</div>
+                <table class="comp-table">
+                    <thead>
+                        <tr>
+                            <th>Функция Word</th>
+                            <th>Управленческая задача</th>
+                            <th>Экономическая эффективность</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ct-crit">Стили и шаблоны</td>
+                            <td>Создание единых регламентов, приказов, брендбуков компании</td>
+                            <td>Экономия до 40% времени сотрудников на ручную вёрстку</td>
+                        </tr>
+                        <tr>
+                            <td class="ct-crit">Режим исправления правок</td>
+                            <td>Контроль изменений при аудите договоров несколькими отделами</td>
+                            <td>Исключение юридических ошибок, прозрачная история согласования</td>
+                        </tr>
+                        <tr>
+                            <td class="ct-crit">Инспектор документов</td>
+                            <td>Удаление скрытых авторов, версий правок и внутренних скидок</td>
+                            <td>Защита от утечки конфиденциальной информации конкурентам</td>
+                        </tr>
+                        <tr>
+                            <td class="ct-crit">Инструмент «Слияние»</td>
+                            <td>Массовое создание уникальных писем, актов или уведомлений</td>
+                            <td>Автоматизация рутины: 2 минуты вместо 2 недель ручного ввода</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="reveal" id="sec-saving" aria-labelledby="saving-title">
+                <div class="section-title" id="saving-title"><span class="st-icon" aria-hidden="true">💰</span>3. Экономия от внедрения функций Word</div>
+                <div class="saving-box">
+                    <div class="section-title" style="margin-bottom:10px;">
+                        <span class="st-icon" aria-hidden="true">📊</span>
+                        Где менеджер получает прямой эффект
+                    </div>
+                    <div class="saving-grid">
+                        <div class="saving-item"><span class="saving-mark" aria-hidden="true">1</span><span><b>Время:</b> стили и шаблоны экономят до 40% рабочего времени на вёрстке.</span></div>
+                        <div class="saving-item"><span class="saving-mark" aria-hidden="true">2</span><span><b>Деньги:</b> слияние заменяет 2 недели работы стажёров одной кнопкой.</span></div>
+                        <div class="saving-item"><span class="saving-mark" aria-hidden="true">3</span><span><b>Безопасность:</b> инспектор документов предотвращает утечку коммерческой тайны.</span></div>
+                        <div class="saving-item"><span class="saving-mark" aria-hidden="true">4</span><span><b>Юридические риски:</b> рецензирование исключает ошибки при согласовании договоров.</span></div>
+                    </div>
+                    <p style="margin-top:12px;font-size:12px;color:#064e3b;line-height:1.5;font-weight:600;">
+                        Управленческий вывод: Word — не «пишущая машинка», а инструмент управления регламентами и коммуникациями. Каждая функция решает конкретную бизнес-задачу и экономит деньги.
+                    </p>
+                </div>
+            </section>
+
+            <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                <div class="section-title" id="lessons-title"><span class="st-icon" aria-hidden="true">🎓</span>4. Уроки для менеджеров</div>
+                <div class="lessons-grid">
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">1</span><span>Word — не «пишущая машинка», а инструмент стандартизации корпоративных документов.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">2</span><span>Корпоративный шаблон + стили = единый брендбук и экономия до 40% времени.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">3</span><span>Рецензирование — обязательный инструмент при согласовании договоров. Без него — хаос и юр. ошибки.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">4</span><span>Инспектор документов — обязательный шаг перед отправкой файла клиенту. Иначе — утечка стратегии.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">5</span><span>Слияние — самый быстрый способ автоматизировать массовую персонализацию писем и договоров.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">6</span><span>Глубокое владение Word — это не «умение печатать», а способ экономить деньги и защищать бизнес.</span></div>
+                </div>
+            </section>
+
+            <div class="video-section reveal">
+                    <div class="video-container">
+                        <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: как и почему возник интернет"></iframe>
+                    </div>
+                    <div class="links-hub">
+                        <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                        <button onclick="changeVideo('https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266//')" class="video-btn rt-btn">📜 Лекция 1. Как и почему возник интернет</button>
+                    </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="slide-footer">Менеджмент · 1 курс · Офисный софт · Часть 3 из 5</div>
+</div>
+
+<div class="speaker-notes">
+    <div style="position:sticky;top:0;background:var(--c-dark);padding:20px 20px 10px 20px;border-bottom:1px solid var(--c-dark-3);width:100%;z-index:100;">
+        <div class="notes-header"><span>🎙️ Скрипт преподавателя</span><span class="timer-badge">25 мин</span></div>
+        <div style="width:100%;aspect-ratio:16/9;border-radius:var(--r-sm);overflow:hidden;background:#000;box-shadow:var(--sh-md);">
+             <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"  allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+        </div>
+    </div>
+    <div class="lecture-text" style="margin-top:20px;">
+
+        <p>Коллеги, мы переходим к третьей части нашей лекции. Сейчас мы разберём текстовый процессор Майкрософт Ворд. В быту его часто воспринимают поверхностно: как цифровую пишущую машинку, в которой просто набивают текст. Но для менеджера Ворд — это основной инструмент создания внутренних нормативных документов, корпоративных стандартов и внешних коммерческих коммуникаций.</p>
+
+        <div class="action-hint">Обратите внимание студентов на блок 1 «Четыре функции Word для менеджера».</div>
+
+        <h3>📌 1. Стили и шаблоны: стандартизация документов</h3>
+
+        <p>Посмотрите на первую карточку блока. Эффективное управление крупной компанией невозможно без жёсткой стандартизации. Вы будете создавать должностные инструкции, приказы, регламенты и уставы компании. Если ваши сотрудники будут оформлять их вручную, каждый на свой вкус, двигая отступы пробелами, компания погрузится в хаос. А ИТ-отдел будет тратить до сорока процентов времени на исправление вёрстки.</p>
+
+        <p>Профессиональный менеджер обязан внедрять в компании экспресс-стили и шаблоны документов. Один раз настроенный корпоративный шаблон Ворд гарантирует, что любой документ компании будет выглядеть строго по брендбуку. А автооглавления и многоуровневые списки соберутся автоматически за один клик. Аналогия проста. Это корпоративная форма: все носят одну, но с разными бейджами.</p>
+
+        <div class="action-hint">Перейдите ко второй и третьей карточкам — «Рецензирование» и «Инспектор документов».</div>
+
+        <h3>📌 2. Рецензирование и безопасность метаданных</h3>
+
+        <p>Обратите внимание на вторую карточку. Второй важнейший аспект работы управленца — это согласование договоров и контрактов. Проект договора последовательно проходит через несколько инстанций: его смотрят юристы, затем финансовый директор, затем топ-менеджмент и, наконец, противоположная сторона сделки. Чтобы этот процесс не превратился в кошмар с бесконечным переименованием файлов, менеджер обязан использовать встроенный режим рецензирования или отслеживания правок. Он позволяет нескольким отделам одновременно оставлять комментарии и вносить изменения в один файл, сохраняя прозрачную историю: кто, когда и какую правку внёс.</p>
+
+        <p>Однако здесь кроется серьёзный риск для бизнеса, о котором знают единицы. Когда вы отправляете готовый документ клиенту или конкурентам в формате докс, внутри файла сохраняются скрытые метаданные. Там лежит полная история правок, удалённые абзацы текста, внутренние комментарии юристов и даже первоначальные скрытые скидки, которые вы обсуждали внутри команды. Если клиент откроет этот файл и посмотрит историю изменений, он увидит вашу внутреннюю кухню и стратегические уступки. Это разрушит вашу позицию на переговорах. Как менеджеры, вы обязаны внедрить регламент: перед отправкой любого документа во внешнюю среду использовать инструмент «Инспектор документов» для полной очистки файла от скрытых метаданных и личной информации.</p>
+
+        <div class="action-hint">Перейдите к четвёртой карточке — «Слияние (Mail Merge)».</div>
+
+        <h3>📌 3. Слияние документов: ликвидация офисной рутины</h3>
+
+        <p>Обратите внимание на четвёртую карточку. И наконец, четвёртый инструмент, который доказывает экономическую эффективность автоматизации — это функция «Слияние» или Мейл Мёрдж. Представьте стандартный бизнес-кейс: вашей компании нужно отправить пяти тысячам клиентов официальные уведомления, персонализированные коммерческие предложения или закрывающие акты. В каждом документе должны стоять уникальные данные: имя клиента, его адрес, сумма задолженности или размер персональной скидки.</p>
+
+        <p>Неграмотный руководитель посадит за эту задачу трёх стажёров, которые будут две недели вручную копировать данные из базы и вставлять их в шаблоны Ворд, совершая кучу опечаток. Эффективный менеджер свяжет текстовый шаблон Ворд с готовой таблицей базы данных, например из Эксель, с помощью функции «Слияние». Операционная система и офисный пакет сами сопоставят поля, сгенерируют и отправят на печать или по электронной почте все пять тысяч уникальных документов за две минуты. Это наглядный пример того, как глубокое владение информационными инструментами превращает рутину в автоматизированный бизнес-процесс, экономя деньги и ресурсы компании.</p>
+
+        <div class="action-hint">Перейдите к блокам 2 «Сравнение», 3 «Экономия» и 4 «Уроки для менеджеров».</div>
+
+        <h3>📌 4. Экономия и уроки</h3>
+
+        <p>Обратите внимание на таблицу сравнения и зелёный блок экономии. Четыре функции Ворд решают четыре разные бизнес-задачи. Стили экономят до сорока процентов времени на вёрстке. Рецензирование исключает юридические ошибки при согласовании договоров. Инспектор документов предотвращает утечку коммерческой тайны. Слияние заменяет две недели работы стажёров одной кнопкой.</p>
+
+        <p>Запомните главное. Ворд — это не пишущая машинка. Это инструмент управления регламентами и коммуникациями. Глубокое владение Ворд — это не умение печатать, а способ экономить деньги и защищать бизнес. В следующей части мы разберём Эксель как основу финансово-экономического моделирования. Спасибо за внимание!</p>
+
+    </div>
+
+    <section class="notes-section" aria-labelledby="glossary-title">
+        <div class="notes-section-title" id="glossary-title"><span aria-hidden="true">📖</span>Словарь терминов</div>
+        <table class="notes-table">
+            <thead><tr><th style="width:22%">Термин</th><th style="width:32%">Расшифровка</th><th>Пояснение</th></tr></thead>
+            <tbody>
+                <tr><td class="abbr">Word</td><td>Microsoft Word</td><td class="explain">Текстовый процессор Microsoft</td></tr>
+                <tr><td class="abbr">DOCX</td><td>Office Open XML Document</td><td class="explain">Формат файла Microsoft Word с 2007 года</td></tr>
+                <tr><td class="abbr">Mail Merge</td><td>Слияние</td><td class="explain">Функция массовой персонализации документов из базы данных</td></tr>
+                <tr><td class="abbr">Стили</td><td>Styles</td><td class="explain">Наборы форматирования для заголовков, текста, списков</td></tr>
+                <tr><td class="abbr">Шаблон</td><td>Template</td><td class="explain">Готовый файл с предустановленным форматированием</td></tr>
+                <tr><td class="abbr">Рецензирование</td><td>Track Changes</td><td class="explain">Режим отслеживания правок в документе</td></tr>
+                <tr><td class="abbr">Инспектор</td><td>Document Inspector</td><td class="explain">Инструмент очистки скрытых метаданных</td></tr>
+                <tr><td class="abbr">Метаданные</td><td>Metadata</td><td class="explain">Скрытая информация о файле: автор, история правок, комментарии</td></tr>
+                <tr><td class="abbr">Брендбук</td><td>Brand Book</td><td class="explain">Корпоративный стандарт оформления документов и бренда</td></tr>
+                <tr><td class="abbr">Регламент</td><td>Regulation</td><td class="explain">Внутренний документ, устанавливающий правила работы</td></tr>
+                <tr><td class="abbr">KPI</td><td>Key Performance Indicator</td><td class="explain">Ключевой показатель эффективности</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="notes-section" aria-labelledby="sources-title">
+        <div class="notes-section-title" id="sources-title"><span aria-hidden="true">📚</span>Источники и литература</div>
+        <div class="notes-sources">
+            <div class="src-group">📖 Документация Microsoft</div>
+            <ol>
+                <li>Документация Microsoft Word для бизнеса.</li>
+                <li>Руководство по стилям и шаблонам Word.</li>
+                <li>Инструкция по инспектору документов (Document Inspector).</li>
+            </ol>
+            <div class="src-group">🤝 Рецензирование и безопасность</div>
+            <ol start="4">
+                <li>Материалы Microsoft по режиму рецензирования (Track Changes).</li>
+                <li>Руководство по защите метаданных в офисных файлах.</li>
+            </ol>
+            <div class="src-group">⚡ Слияние и автоматизация</div>
+            <ol start="6">
+                <li>Документация Microsoft по Mail Merge.</li>
+                <li>Материалы по автоматизации офисных процессов.</li>
+            </ol>
+        </div>
+    </section>
+</div>
+
+<script>
+    function changeVideo(embedUrl) {
+        document.getElementById('lecture-player').src = embedUrl;
+    }
+</script>
+
+<nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 11; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

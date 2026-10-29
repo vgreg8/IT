@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 5 из 18 · ОС · Инструментарий</title>
+    <style>
+        :root {
+            --c-bg:#fff;--c-surface:#f8fafc;--c-border:#e2e8f0;--c-border-strong:#cbd5e0;
+            --c-text:#0f172a;--c-text-2:#334155;--c-text-3:#64748b;--c-text-muted:#94a3b8;
+            --c-primary:#2563eb;--c-primary-soft:#eff6ff;
+            --c-ad:#0891b2;--c-ad-soft:#ecfeff;
+            --c-lic:#dc2626;--c-lic-soft:#fef2f2;
+            --c-rights:#059669;--c-rights-soft:#ecfdf5;
+            --c-mdm:#7c3aed;--c-mdm-soft:#f5f3ff;
+            --c-risk:#b91c1c;--c-risk-soft:#fee2e2;
+            --c-dark:#0f172a;--c-dark-2:#1e293b;--c-dark-3:#334155;
+            --c-dark-text:#e2e8f0;--c-dark-text-2:#94a3b8;--c-dark-accent:#60a5fa;
+            --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+            --sh-md:0 4px 12px rgba(15,23,42,.08);
+            --sh-lg:0 12px 28px rgba(15,23,42,.12);
+            --sh-focus:0 0 0 3px rgba(37,99,235,.35);
+            --f-sans:'Segoe UI',Tahoma,sans-serif;
+            --f-mono:'JetBrains Mono',Consolas,monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%}
+        body{font-family:var(--f-sans);display:flex;height:100vh;overflow:hidden;background:var(--c-bg);color:var(--c-text);padding-bottom:80px!important}
+        :focus-visible{outline:none;box-shadow:var(--sh-focus);border-radius:var(--r-sm)}
+        .student-view{width:66.66%;height:100vh;background:var(--c-bg);padding:32px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--c-border);overflow-y:auto;scroll-behavior:smooth}
+        .speaker-notes{width:33.34%;height:100%;background:var(--c-dark);color:var(--c-dark-text);padding:28px;overflow-y:auto}
+        .slide-header{font-size:26px;color:var(--c-text);font-weight:800;line-height:1.25;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid var(--c-primary);position:relative}
+        .slide-header::after{content:'';position:absolute;left:0;bottom:-3px;width:80px;height:3px;background:var(--c-mdm);border-radius:3px}
+        .slide-body{flex-grow:1;display:flex;flex-direction:column;gap:22px;padding:4px 0}
+        .slide-footer{font-size:12px;color:var(--c-text-muted);text-align:right;margin-top:16px}
+        .toc{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md)}
+        .toc a{font-size:11px;font-weight:700;color:var(--c-text-2);text-decoration:none;padding:4px 9px;border-radius:var(--r-pill);background:var(--c-bg);border:1px solid var(--c-border);transition:all .15s}
+        .toc a:hover{background:var(--c-primary-soft);border-color:var(--c-primary);color:var(--c-primary)}
+        .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+        .kpi{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 10px;text-align:center;transition:all .18s}
+        .kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .kpi .kpi-val{font-size:19px;font-weight:800;color:var(--c-text);letter-spacing:-.02em;line-height:1.1}
+        .kpi .kpi-lbl{font-size:10px;color:var(--c-text-3);margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+        .kpi.k-ad .kpi-val{color:var(--c-ad)}
+        .kpi.k-lic .kpi-val{color:var(--c-lic)}
+        .kpi.k-rights .kpi-val{color:var(--c-rights)}
+        .kpi.k-mdm .kpi-val{color:var(--c-mdm)}
+        .section-title{font-size:15px;font-weight:800;color:var(--c-text);margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em;scroll-margin-top:12px}
+        .section-title .st-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-sm);font-size:14px}
+        /* Карточки инфраструктуры */
+        .infra-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+        .infra-card{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 16px;position:relative;transition:all .18s}
+        .infra-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--c-border-strong)}
+        .infra-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 3px 3px 0}
+        .infra-card.ic-ad::before{background:var(--c-ad)}
+        .infra-card.ic-lic::before{background:var(--c-lic)}
+        .infra-card.ic-rights::before{background:var(--c-rights)}
+        .infra-card.ic-mdm::before{background:var(--c-mdm)}
+        .infra-card .ic-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+        .infra-card .ic-icon{font-size:18px}
+        .infra-card .ic-name{font-size:14px;font-weight:800;color:var(--c-text)}
+        .infra-card .ic-sub{font-size:10.5px;color:var(--c-text-3);font-family:var(--f-mono);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+        .infra-card .ic-body{font-size:12px;color:var(--c-text-2);line-height:1.5}
+        .infra-card .ic-body b{color:var(--c-text)}
+        .infra-card .ic-meta{margin-top:8px;padding-top:8px;border-top:1px dashed var(--c-border);font-size:10.5px;color:var(--c-text-3);font-weight:600}
+        .infra-card .ic-analogy{margin-top:7px;padding:7px 9px;background:#fffbeb;border-left:3px solid var(--c-mdm);border-radius:4px;font-size:10.5px;color:#92400e;line-height:1.4;font-style:italic}
+        /* Блок рисков */
+        .risk-box{background:linear-gradient(135deg,#fef2f2 0%,#fee2e2 100%);border:1px solid #fecaca;border-radius:var(--r-lg);padding:16px 18px}
+        .risk-box .section-title{color:#991b1b;margin-bottom:10px}
+        .risk-box .section-title .st-icon{background:#fee2e2;color:var(--c-risk)}
+        .risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+        .risk-item{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#7f1d1d}
+        .risk-item .risk-mark{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:var(--c-risk);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        /* Уроки */
+        .lessons-box{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:1px solid #bbf7d0;border-radius:var(--r-lg);padding:16px 18px}
+        .lessons-box .section-title{color:#166534;margin-bottom:10px}
+        .lessons-box .section-title .st-icon{background:#dcfce7;color:#15803d}
+        .lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+        .lesson{display:flex;gap:8px;font-size:12px;line-height:1.45;color:#14532d}
+        .lesson .lesson-num{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:#15803d;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        /* Видео */
+        .video-section{display:flex;flex-direction:column;align-items:center;gap:12px}
+        .video-container{width:100%;max-width:580px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);background:#000;aspect-ratio:16/9}
+        .links-hub{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+        .video-btn{text-decoration:none;padding:9px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;transition:all .18s;cursor:pointer;border:none;font-family:inherit}
+        .video-btn:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+        .rt-btn{background:#00a877}.rt-btn:hover{background:#008f65}
+        .stop-btn{background:#dc143c}.stop-btn:hover{background:#b01030}
+        /* Правая панель */
+        .notes-header{font-size:16px;color:var(--c-dark-accent);font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c-dark-3);padding-bottom:10px}
+        .timer-badge{background:#dc2626;color:#fff;padding:3px 9px;border-radius:var(--r-pill);font-size:11px;font-family:var(--f-mono);font-weight:700}
+        .lecture-text{font-size:14px;line-height:1.68;color:var(--c-dark-text);text-align:justify}
+        .lecture-text p{margin-bottom:14px}
+        .lecture-text h3{color:var(--c-dark-accent);font-size:14.5px;margin:20px 0 10px;border-bottom:1px solid var(--c-dark-3);padding-bottom:6px;font-weight:800}
+        .lecture-text strong{color:#f1f5f9}
+        .action-hint{color:#fcd34d;font-style:italic;background:var(--c-dark-2);padding:11px 14px;border-radius:var(--r-sm);border-left:3px solid #fcd34d;margin:16px 0;font-size:12.5px;line-height:1.5}
+        .notes-section{margin-top:26px;background:var(--c-dark-2);border:1px solid var(--c-dark-3);border-radius:var(--r-md);padding:16px}
+        .notes-section-title{font-size:13.5px;font-weight:800;color:var(--c-dark-accent);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--c-dark-3);display:flex;align-items:center;gap:8px}
+        .notes-table{width:100%;border-collapse:collapse;font-size:11.5px}
+        .notes-table th{text-align:left;padding:7px 8px;font-weight:700;color:var(--c-dark-text-2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--c-dark-3)}
+        .notes-table td{padding:7px 8px;border-bottom:1px solid rgba(51,65,85,.6);color:var(--c-dark-text);vertical-align:top;line-height:1.4}
+        .notes-table tr:last-child td{border-bottom:none}
+        .notes-table tr:hover td{background:rgba(96,165,250,.06)}
+        .notes-table .abbr{font-weight:800;color:#93c5fd;font-family:var(--f-mono);font-size:11px;white-space:nowrap}
+        .notes-table .explain{color:var(--c-dark-text-2)}
+        .notes-sources{font-size:11.5px;line-height:1.55;color:var(--c-dark-text)}
+        .notes-sources .src-group{font-weight:800;color:#86efac;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+        .notes-sources .src-group:first-child{margin-top:0}
+        .notes-sources ol{margin:0 0 4px 16px;padding:0}
+        .notes-sources li{margin-bottom:5px;color:var(--c-dark-text-2)}
+        /* Навигация */
+        .lecture-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+        .lecture-nav .nav-progress{position:absolute;top:0;left:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);transition:width .3s;border-radius:0 3px 3px 0}
+        .lecture-nav .nav-btn-arrow{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--c-dark-text);font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled){background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.6);color:#fff;transform:translateY(-2px)}
+        .lecture-nav .nav-btn-arrow:disabled{opacity:.35;cursor:not-allowed}
+        .lecture-nav .nav-btn-arrow .arrow-icon{font-size:16px}
+        .lecture-nav .nav-btn-arrow .arrow-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+        .lecture-nav .nav-btn-arrow .arrow-label small{font-size:9px;font-weight:400;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title{font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lecture-nav .nav-center{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 20px;color:var(--c-dark-text-2);font-size:11px;border-left:1px solid rgba(255,255,255,.1);border-right:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-counter{font-size:15px;font-weight:900;color:#f1f5f9}
+        .lecture-nav .nav-counter span{color:#64748b;font-size:12px;font-weight:600}
+        .lecture-nav .nav-index-link{color:#60a5fa;text-decoration:none;font-size:11px;font-weight:700}
+        .lecture-nav .nav-index-link:hover{color:#93c5fd;text-decoration:underline}
+        .lecture-nav .nav-jump{display:flex;gap:4px;margin-left:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.1)}
+        .lecture-nav .nav-jump-btn{padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--c-dark-text-2);font-size:10px;font-weight:800;text-decoration:none;transition:all .2s;font-family:inherit}
+        .lecture-nav .nav-jump-btn:hover{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5);color:#fff}
+        .lecture-nav .nav-jump-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:transparent;color:#fff}
+        .reveal{animation:fadeUp .5s ease both}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+        @media(max-width:1200px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.infra-grid{grid-template-columns:1fr}}
+        @media(max-width:900px){.lecture-nav{padding:10px 12px;gap:8px}.lecture-nav .nav-btn-arrow{padding:8px 12px}.lecture-nav .nav-btn-arrow .arrow-label .arrow-title{max-width:90px;font-size:11px}.lecture-nav .nav-center{padding:0 10px}.lecture-nav .nav-jump{display:none}.kpi-strip{grid-template-columns:repeat(2,1fr)}.lessons-grid{grid-template-columns:1fr}.risk-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+
+<div class="student-view">
+    <div>
+        <h1 class="slide-header">Часть 5. Инструментарий менеджера: инфраструктура, риски, безопасность</h1>
+        <div class="slide-body">
+
+            <nav class="toc reveal" aria-label="Содержание лекции">
+                <a href="#sec-ad">1. Active Directory</a>
+                <a href="#sec-lic">2. Лицензии</a>
+                <a href="#sec-rights">3. Права доступа</a>
+                <a href="#sec-mdm">4. MDM</a>
+                <a href="#sec-lessons">5. Уроки</a>
+            </nav>
+
+            <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры">
+                <div class="kpi k-ad" role="listitem"><div class="kpi-val">500</div><div class="kpi-lbl">сотрудников в компании</div></div>
+                <div class="kpi k-ad" role="listitem"><div class="kpi-val">1 клик</div><div class="kpi-lbl">блокировка учётной записи</div></div>
+                <div class="kpi k-lic" role="listitem"><div class="kpi-val">100%</div><div class="kpi-lbl">лицензионная чистота</div></div>
+                <div class="kpi k-rights" role="listitem"><div class="kpi-val">2</div><div class="kpi-lbl">типа учётных записей</div></div>
+                <div class="kpi k-mdm" role="listitem"><div class="kpi-val">MDM</div><div class="kpi-lbl">удалённое стирание данных</div></div>
+                <div class="kpi k-rights" role="listitem"><div class="kpi-val">6</div><div class="kpi-lbl">уроков для менеджера</div></div>
+            </div>
+
+            <!-- 1. ACTIVE DIRECTORY -->
+            <section class="reveal" id="sec-ad" aria-labelledby="ad-title">
+                <div class="section-title" id="ad-title"><span class="st-icon" aria-hidden="true">🗄️</span>1. Active Directory: централизованное управление пользователями</div>
+                <div class="infra-card ic-ad">
+                    <div class="ic-head">
+                        <span class="ic-icon" aria-hidden="true">🗄️</span>
+                        <div>
+                            <div class="ic-name">Active Directory</div>
+                            <div class="ic-sub">служба каталогов</div>
+                        </div>
+                    </div>
+                    <div class="ic-body">Позволяет <b>удалённо и централизованно управлять правами</b> всех компьютеров и сотрудников. Из единого центра администрирования можно за одну секунду заблокировать учётную запись уволенного сотрудника или выдать права новому руководителю.</div>
+                    <div class="ic-analogy">Аналогия: единая проходная, где выдают и забирают пропуска всем сотрудникам компании.</div>
+                    <div class="ic-meta">Стандарт корпоративного сектора на Windows</div>
+                </div>
+            </section>
+
+            <!-- 2. ЛИЦЕНЗИИ + РИСКИ -->
+            <section class="reveal" id="sec-lic" aria-labelledby="lic-title">
+                <div class="section-title" id="lic-title"><span class="st-icon" aria-hidden="true">⚖️</span>2. Лицензионная чистота: юридическая защита бизнеса</div>
+                <div class="infra-card ic-lic">
+                    <div class="ic-head">
+                        <span class="ic-icon" aria-hidden="true">⚖️</span>
+                        <div>
+                            <div class="ic-name">Лицензионная чистота</div>
+                            <div class="ic-sub">юридические риски</div>
+                        </div>
+                    </div>
+                    <div class="ic-body">Использование нелицензионных операционных систем в бизнесе — это <b>уголовная и административная ответственность</b> для руководства. При проверках нелицензионное программное обеспечение изымается вместе с компьютерами и серверами. Это мгновенный паралич бизнес-процессов, срыв контрактов и колоссальные убытки.</div>
+                    <div class="ic-analogy">Аналогия: езда без прав — пока не остановили, кажется, что всё нормально, но последствия несоизмеримы.</div>
+                    <div class="ic-meta">Пиратские ОС не получают обновлений безопасности</div>
+                </div>
+                <div class="risk-box" style="margin-top:12px;">
+                    <div class="section-title" style="margin-bottom:10px;">
+                        <span class="st-icon" aria-hidden="true">⚠️</span>
+                        Четыре риска пиратского программного обеспечения
+                    </div>
+                    <div class="risk-grid">
+                        <div class="risk-item"><span class="risk-mark" aria-hidden="true">1</span><span><b>Уголовная ответственность</b> для руководства компании.</span></div>
+                        <div class="risk-item"><span class="risk-mark" aria-hidden="true">2</span><span><b>Конфискация техники</b> — паралич всех бизнес-процессов.</span></div>
+                        <div class="risk-item"><span class="risk-mark" aria-hidden="true">3</span><span><b>Отсутствие обновлений</b> — инфраструктура открыта для хакеров.</span></div>
+                        <div class="risk-item"><span class="risk-mark" aria-hidden="true">4</span><span><b>Репутационный удар</b> — потеря партнёров и клиентов.</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. ПРАВА ДОСТУПА -->
+            <section class="reveal" id="sec-rights" aria-labelledby="rights-title">
+                <div class="section-title" id="rights-title"><span class="st-icon" aria-hidden="true">🛡️</span>3. Разграничение прав доступа: базовый санитарный барьер</div>
+                <div class="infra-card ic-rights">
+                    <div class="ic-head">
+                        <span class="ic-icon" aria-hidden="true">🛡️</span>
+                        <div>
+                            <div class="ic-name">Разграничение прав</div>
+                            <div class="ic-sub">пользователь vs администратор</div>
+                        </div>
+                    </div>
+                    <div class="ic-body">Рядовой сотрудник должен работать <b>исключительно под учётной записью пользователя</b>. Если у сотрудника есть права администратора, любой случайный вирус из вредоносного письма мгновенно получит полный доступ к ядру операционной системы, зашифрует жёсткий диск и распространится по всей локальной сети.</div>
+                    <div class="ic-analogy">Аналогия: ключ от сейфа — только у кассира, а не у каждого сотрудника офиса.</div>
+                    <div class="ic-meta">Ограничение прав — базовый санитарный барьер защиты</div>
+                </div>
+            </section>
+
+            <!-- 4. MDM -->
+            <section class="reveal" id="sec-mdm" aria-labelledby="mdm-title">
+                <div class="section-title" id="mdm-title"><span class="st-icon" aria-hidden="true">📱</span>4. MDM: управление мобильными устройствами</div>
+                <div class="infra-card ic-mdm">
+                    <div class="ic-head">
+                        <span class="ic-icon" aria-hidden="true">📱</span>
+                        <div>
+                            <div class="ic-name">MDM</div>
+                            <div class="ic-sub">Mobile Device Management</div>
+                        </div>
+                    </div>
+                    <div class="ic-body">Ваши менеджеры носят в карманах смартфоны на iOS или Android с корпоративной почтой, CRM и финансовыми доступами. Если сотрудник потеряет телефон или перейдёт к конкурентам, ИТ-отдел может <b>удалённо, в один клик, полностью стереть корпоративные данные</b>, не затрагивая личные фотографии.</div>
+                    <div class="ic-analogy">Аналогия: универсальный пульт, который может «обнулить» только рабочую часть телефона.</div>
+                    <div class="ic-meta">Защита от утечки коммерческой информации</div>
+                </div>
+            </section>
+
+            <!-- 5. УРОКИ -->
+            <section class="lessons-box reveal" id="sec-lessons" aria-labelledby="lessons-title">
+                <div class="section-title" id="lessons-title"><span class="st-icon" aria-hidden="true">🎓</span>5. Уроки для менеджеров</div>
+                <div class="lessons-grid">
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">1</span><span>Active Directory — единый центр управления правами. Один клик блокирует уволенного сотрудника и закрывает доступ к файлам.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">2</span><span>Лицензионная чистота — не формальность, а условие юридического выживания бизнеса. Пиратское программное обеспечение = конфискация техники.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">3</span><span>Права администратора у рядового сотрудника — прямой путь к шифрованию всей сети вирусом.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">4</span><span>MDM защищает коммерческую тайну при потере смартфона: удалённое стирание корпоративных данных без личных фото.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">5</span><span>Менеджер не переустанавливает драйверы, но обязан понимать TCO, AD, MDM и лицензионные риски.</span></div>
+                    <div class="lesson"><span class="lesson-num" aria-hidden="true">6</span><span>Архитектура ОС — зеркало архитектуры управления предприятием: права, роли, доступы, аудит.</span></div>
+                </div>
+            </section>
+
+            <div class="video-section reveal">
+                <div class="video-container">
+                    <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: инструментарий менеджера"></iframe>
+                </div>
+                <div class="links-hub">
+                    <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                    <button onclick="changeVideo('https://rutube.ru/play/embed/3c8915d0112f3cec545956526ab60933/')" class="video-btn rt-btn">📹 Ролик 1. Корпоративная безопасность ИТ</button>
+                    <button onclick="changeVideo('https://rutube.ru/play/embed/0b4ad83a667c80b9fa630c8591984329/')" class="video-btn rt-btn">📜 Ролик 2. Основы Active Directory и MDM</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="slide-footer">Менеджмент · 1 курс · Операционные системы · Часть 4 из 5</div>
+</div>
+
+<div class="speaker-notes">
+    <div style="position:sticky;top:0;background:var(--c-dark);padding:20px 20px 10px 20px;border-bottom:1px solid var(--c-dark-3);width:100%;z-index:100;">
+        <div class="notes-header"><span>🎙️ Скрипт преподавателя</span><span class="timer-badge">15 мин</span></div>
+        <div style="width:100%;aspect-ratio:16/9;border-radius:var(--r-sm);overflow:hidden;background:#000;box-shadow:var(--sh-md);">
+           <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"  allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+        </div>
+    </div>
+    <div class="lecture-text" style="margin-top:20px;">
+        <p>Коллеги, мы переходим к финальной и самой практической части нашего курса. Операционные системы как инструмент менеджера. В первых трёх частях мы говорили о теории. Истории. Классификации. Стратегическом выборе ИТ-платформ. Теперь давайте разберём, с какими ежедневными управленческими вызовами на базе операционных систем вы столкнётесь в реальном бизнесе.</p>
+        <div class="action-hint">Обратите внимание студентов на блок 1 «Active Directory».</div>
+        <h3>📌 1. ИТ-инфраструктура и управление пользователями</h3>
+        <p>Первый вызов — это организация эффективной ИТ-инфраструктуры и централизованное управление сотрудниками. Представьте, что в вашей компании работает не пять человек, а пятьсот. Каждый день кто-то приходит на работу, кто-то увольняется, кто-то переходит в другой отдел. Если ИТ-отдел будет вручную подходить к каждому компьютеру на базе Виндоус, чтобы завести новую учётную запись или настроить доступ к папке «Бухгалтерия», бизнес просто встанет.</p>
+        <p>Для решения этой задачи в экосистеме Виндоус существует важнейшая концепция службы каталогов. Чаще всего она реализуется через технологию Эй-Ди, что расшифровывается как Active Directory. В русской транслитерации — Актив Дайрэктори. Как менеджеры, вы должны понимать её суть. Она позволяет удалённо и централизованно управлять правами доступа всех компьютеров и сотрудников в компании. Из единого центра администрирования можно за одну секунду заблокировать учётную запись уволенного сотрудника, закрыв ему доступ ко всем коммерческим файлам. Или выдать права на просмотр отчётов новому руководителю. Аналогия проста. Это единая проходная, где выдают и забирают пропуска всем сотрудникам компании.</p>
+        <div class="action-hint">Перейдите к блоку 2 «Лицензионная чистота» и блоку рисков.</div>
+        <h3>📌 2. Лицензионная чистота и юридические риски</h3>
+        <p>Второй критически важный аспект — это лицензионная чистота. В быту многие привыкли использовать пиратские версии операционной системы или скачивать активаторы из интернета. Запомните раз и навсегда. В корпоративном секторе это абсолютно недопустимо. Использование нелицензионных операционных систем в бизнесе — это огромные юридические, финансовые и репутационные риски.</p>
+        <p>Обратите внимание на блок рисков под карточкой лицензий. Четыре пункта. Первый — прямая уголовная и административная ответственность для руководства компании. Второй — при проверках правоохранительными органами нелицензионное программное обеспечение изымается вместе с компьютерами и серверами. Представьте, что у вашей компании конфисковали все рабочие станции на неопределённый срок. Это мгновенный паралич всех бизнес-процессов, срыв контрактов и колоссальные убытки. Третий — пиратские операционные системы не получают официальных обновлений безопасности. Это делает инфраструктуру компании лёгкой добычей для киберпреступников. Четвёртый — репутационный удар. Потеря партнёров и клиентов.</p>
+        <div class="action-hint">Перейдите к блоку 3 «Разграничение прав доступа».</div>
+        <h3>📌 3. Кибербезопасность и разграничение прав доступа</h3>
+        <p>Третий вызов — защита коммерческой тайны и персональных данных клиентов, за которые компания отвечает по закону. И здесь безопасность начинается с базовой настройки операционной системы. А именно — с разграничения прав доступа внутри операционной системы.</p>
+        <p>Главная ошибка неквалифицированного руководителя — разрешить системным администраторам выдать всем сотрудникам права администратора на их рабочих компьютерах под предлогом того, чтобы им было удобно устанавливать любые программки. Запомните правило. Рядовой сотрудник должен работать исключительно под учётной записью пользователя. Если у сотрудника есть права администратора, то любой случайный вирус, запущенный из вредоносного письма, мгновенно получит полный доступ к ядру операционной системы. Зашифрует жёсткий диск. И распространится по всей локальной сети компании. Ограничение прав в операционной системе — это базовый санитарный барьер защиты вашего бизнеса. Аналогия проста. Ключ от сейфа — только у кассира. А не у каждого сотрудника офиса.</p>
+        <div class="action-hint">Перейдите к блоку 4 «MDM».</div>
+        <h3>📌 4. MDM: управление мобильными устройствами</h3>
+        <p>В современную мобильную эпоху этот барьер расширяется до концепции Эм-Ди-Эм. Что расшифровывается как Mobile Device Management. В русской транслитерации — Мобайл Дивайс Менеджмент. Системы удалённого управления мобильными устройствами. Ваши менеджеры носят в карманах смартфоны на ай-о-эс или Андроид. Где установлена корпоративная почта, системы управления взаимоотношениями с клиентами, или сокращённо цэ-эр-эм, с базой клиентов и финансовые доступы. Что произойдёт, если сотрудник потеряет телефон или перейдёт работать к конкурентам. С помощью встроенных в мобильные операционные системы механизмов Эм-Ди-Эм, ИТ-отдел вашей компании может удалённо, в один клик, полностью стереть все корпоративные данные со смартфона сотрудника. Не затрагивая его личные фотографии. И предотвратить утечку коммерческой информации.</p>
+        <div class="action-hint">Перейдите к блоку 5 «Уроки для менеджеров».</div>
+        <h3>📌 5. Главный управленческий вывод лекции</h3>
+        <p>Обратите внимание на пятый блок нашего слайда. Шесть карточек с номерами и формулировками.</p>
+        <p>Подведём финальный итог нашей сегодняшней большой темы. Менеджер не должен досконально знать архитектуру ядра операционной системы или уметь переустанавливать драйверы вручную. Но современный руководитель обязан чётко понимать ИТ-рыночные концепции.</p>
+        <p>Вы должны понимать, как выбор операционной системы влияет на экономический бюджет компании через совокупную стоимость владения. Как централизованно управлять инфраструктурой пользователей через Актив Дайрэктори. Как защищать коммерческую тайну через ограничение прав доступа в операционной системе и инструменты Эм-Ди-Эм. И почему лицензионная чистота — это залог юридического выживания вашего бизнеса. Архитектура операционной системы — это идеальное зеркало для архитектуры эффективного управления предприятием.</p>
+        <p>В следующей части мы разберём, как операционная система управляет процессами, памятью и файловой системой. Это внутренняя механика, которую менеджер должен понимать, чтобы правильно ставить задачи ИТ-отделу и оценивать ресурсы. Спасибо за внимание!</p>
+    </div>
+
+    <section class="notes-section" aria-labelledby="glossary-title">
+        <div class="notes-section-title" id="glossary-title"><span aria-hidden="true">📖</span>Словарь аббревиатур</div>
+        <table class="notes-table">
+            <thead><tr><th style="width:22%">Аббр.</th><th style="width:32%">Расшифровка</th><th>Пояснение</th></tr></thead>
+            <tbody>
+                <tr><td class="abbr">AD</td><td>Active Directory</td><td class="explain">Служба каталогов Microsoft для централизованного управления пользователями</td></tr>
+                <tr><td class="abbr">MDM</td><td>Mobile Device Management</td><td class="explain">Система удалённого управления мобильными устройствами</td></tr>
+                <tr><td class="abbr">TCO</td><td>Total Cost of Ownership</td><td class="explain">Совокупная стоимость владения: лицензии + обучение + поддержка + простои</td></tr>
+                <tr><td class="abbr">ОС</td><td>Операционная система</td><td class="explain">Комплекс программ для управления ресурсами компьютера</td></tr>
+                <tr><td class="abbr">ПК</td><td>Персональный компьютер</td><td class="explain">Настольный или портативный компьютер</td></tr>
+                <tr><td class="abbr">CRM</td><td>Customer Relationship Management</td><td class="explain">Система управления взаимоотношениями с клиентами</td></tr>
+                <tr><td class="abbr">ERP</td><td>Enterprise Resource Planning</td><td class="explain">Система планирования ресурсов предприятия</td></tr>
+                <tr><td class="abbr">iOS</td><td>iPhone Operating System</td><td class="explain">Мобильная ОС Apple</td></tr>
+                <tr><td class="abbr">Android</td><td>Android Operating System</td><td class="explain">Мобильная ОС Google</td></tr>
+                <tr><td class="abbr">ИТ</td><td>Информационные технологии</td><td class="explain">Область управления данными и вычислительными системами</td></tr>
+                <tr><td class="abbr">B2B</td><td>Business to Business</td><td class="explain">Продажи компаниям, а не конечным потребителям</td></tr>
+                <tr><td class="abbr">Windows</td><td>Windows Operating System</td><td class="explain">ОС Microsoft для персональных компьютеров</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="notes-section" aria-labelledby="sources-title">
+        <div class="notes-section-title" id="sources-title"><span aria-hidden="true">📚</span>Источники и литература</div>
+        <div class="notes-sources">
+            <div class="src-group">📖 Учебники и монографии</div>
+            <ol>
+                <li>Э. Таненбаум. Современные операционные системы. — 4-е изд.</li>
+                <li>У. Столлингс. Операционные системы. — 9-е изд.</li>
+            </ol>
+            <div class="src-group">🏛️ Корпоративная инфраструктура</div>
+            <ol start="3">
+                <li>Документация Microsoft по Active Directory.</li>
+                <li>Материалы по MDM: VMware Workspace ONE, Microsoft Intune.</li>
+                <li>Обзоры Gartner по управлению корпоративной инфраструктурой.</li>
+            </ol>
+            <div class="src-group">⚖️ Лицензирование и право</div>
+            <ol start="6">
+                <li>Гражданский кодекс РФ, часть 4 (права на программное обеспечение).</li>
+                <li>Статья 146 Уголовного кодекса РФ (нарушение авторских прав).</li>
+                <li>Материалы Microsoft по лицензированию Windows в бизнесе.</li>
+            </ol>
+        </div>
+    </section>
+</div>
+
+<script>function changeVideo(url){document.getElementById('lecture-player').src=url;}</script>
+
+<nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 5; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>

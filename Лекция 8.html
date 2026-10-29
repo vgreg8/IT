@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 8 из 18. Как работает браузер и веб (прикладной уровень)</title>
+    <style>
+        /* ============================================================
+           ДИЗАЙН-ТОКЕНЫ (единая система с Блоками 1–2)
+           ============================================================ */
+        :root {
+            --c-bg: #ffffff;
+            --c-surface: #f8fafc;
+            --c-surface-2: #f1f5f9;
+            --c-border: #e2e8f0;
+            --c-border-strong: #cbd5e0;
+            --c-text: #0f172a;
+            --c-text-2: #334155;
+            --c-text-3: #64748b;
+            --c-text-muted: #94a3b8;
+            --c-primary: #2563eb;
+            --c-primary-2: #1d4ed8;
+            --c-primary-soft: #eff6ff;
+            --c-accent-html: #dc2626;
+            --c-accent-html-soft: #fef2f2;
+            --c-accent-url: #d97706;
+            --c-accent-url-soft: #fffbeb;
+            --c-accent-http: #059669;
+            --c-accent-http-soft: #ecfdf5;
+            --c-accent-tls: #7c3aed;
+            --c-accent-tls-soft: #f5f3ff;
+            --c-accent-cookie: #0891b2;
+            --c-accent-cookie-soft: #ecfeff;
+            --c-accent-ws: #db2777;
+            --c-accent-ws-soft: #fdf2f8;
+            --c-dark: #0f172a;
+            --c-dark-2: #1e293b;
+            --c-dark-3: #334155;
+            --c-dark-text: #e2e8f0;
+            --c-dark-text-2: #94a3b8;
+            --c-dark-accent: #60a5fa;
+
+            --r-sm: 8px;
+            --r-md: 12px;
+            --r-lg: 16px;
+            --r-xl: 20px;
+            --r-pill: 999px;
+
+            --sh-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+            --sh-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+            --sh-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+            --sh-lg: 0 12px 28px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.06);
+            --sh-focus: 0 0 0 3px rgba(37, 99, 235, 0.35);
+
+            --f-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --f-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+            --sp-1: 4px;
+            --sp-2: 8px;
+            --sp-3: 12px;
+            --sp-4: 16px;
+            --sp-5: 20px;
+            --sp-6: 24px;
+            --sp-8: 32px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            font-family: var(--f-sans);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--c-bg);
+            color: var(--c-text);
+            padding-bottom: 80px !important;
+        }
+
+        :focus-visible {
+            outline: none;
+            box-shadow: var(--sh-focus);
+            border-radius: var(--r-sm);
+        }
+
+        /* ============================================================
+           ПАНЕЛИ
+           ============================================================ */
+        .student-view {
+            width: 66.66%;
+            height: 100vh;
+            background: var(--c-bg);
+            padding: 32px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid var(--c-border);
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        .speaker-notes {
+            width: 33.34%;
+            height: 100%;
+            background: var(--c-dark);
+            color: var(--c-dark-text);
+            padding: 28px;
+            overflow-y: auto;
+        }
+
+        .slide-header {
+            font-size: 26px;
+            color: var(--c-text);
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 3px solid var(--c-primary);
+            position: relative;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -3px;
+            width: 80px;
+            height: 3px;
+            background: var(--c-accent-ws);
+            border-radius: 3px;
+        }
+
+        .slide-body { flex-grow: 1; display: flex; flex-direction: column; gap: 22px; padding: 4px 0; }
+        .slide-footer { font-size: 12px; color: var(--c-text-muted); text-align: right; margin-top: 16px; letter-spacing: 0.01em; }
+
+        /* ============================================================
+           KPI-СТРИП
+           ============================================================ */
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+        .kpi {
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            padding: 12px 10px;
+            text-align: center;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .kpi:hover { transform: translateY(-2px); box-shadow: var(--sh-md); border-color: var(--c-border-strong); }
+        .kpi .kpi-val { font-size: 19px; font-weight: 800; color: var(--c-text); letter-spacing: -0.02em; line-height: 1.1; }
+        .kpi .kpi-lbl { font-size: 10px; color: var(--c-text-3); margin-top: 4px; line-height: 1.3; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+        .kpi.k-html .kpi-val { color: var(--c-accent-html); }
+        .kpi.k-url .kpi-val { color: var(--c-accent-url); }
+        .kpi.k-http .kpi-val { color: var(--c-accent-http); }
+        .kpi.k-tls .kpi-val { color: var(--c-accent-tls); }
+        .kpi.k-cookie .kpi-val { color: var(--c-accent-cookie); }
+        .kpi.k-ws .kpi-val { color: var(--c-accent-ws); }
+
+        /* ============================================================
+           СЕКЦИИ
+           ============================================================ */
+        .section-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--c-text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.01em;
+        }
+        .section-title .st-icon {
+            width: 26px; height: 26px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--c-primary-soft);
+            color: var(--c-primary);
+            border-radius: var(--r-sm);
+            font-size: 14px;
+        }
+
+        /* ============================================================
+           СТЕК «БРАУЗЕР → HTTP → TLS → СЕРВЕР»
+           ============================================================ */
+        .stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-radius: var(--r-lg);
+            overflow: hidden;
+            border: 1px solid var(--c-border);
+        }
+        .stack-layer {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            background: var(--c-bg);
+            transition: background .18s ease, transform .18s ease;
+        }
+        .stack-layer:hover { background: var(--c-surface); transform: translateX(3px); }
+        .stack-layer + .stack-layer { border-top: 1px dashed var(--c-border); }
+        .stack-layer .sl-num {
+            flex: 0 0 auto;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 12px; color: #fff;
+        }
+        .stack-layer .sl-body { flex: 1; min-width: 0; }
+        .stack-layer .sl-body strong { display: block; font-size: 13.5px; color: var(--c-text); margin-bottom: 2px; }
+        .stack-layer .sl-body span { font-size: 12px; color: var(--c-text-2); line-height: 1.4; display: block; }
+        .stack-layer .sl-tag {
+            flex: 0 0 auto;
+            font-size: 10px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.05em; padding: 3px 9px;
+            border-radius: var(--r-pill);
+            font-family: var(--f-mono);
+        }
+        .sl-html { background: var(--c-accent-html-soft); }
+        .sl-html .sl-num { background: var(--c-accent-html); }
+        .sl-html .sl-tag { background: var(--c-accent-html); color: #fff; }
+        .sl-url { background: var(--c-accent-url-soft); }
+        .sl-url .sl-num { background: var(--c-accent-url); }
+        .sl-url .sl-tag { background: var(--c-accent-url); color: #fff; }
+        .sl-http { background: var(--c-accent-http-soft); }
+        .sl-http .sl-num { background: var(--c-accent-http); }
+        .sl-http .sl-tag { background: var(--c-accent-http); color: #fff; }
+        .sl-tls { background: var(--c-accent-tls-soft); }
+        .sl-tls .sl-num { background: var(--c-accent-tls); }
+        .sl-tls .sl-tag { background: var(--c-accent-tls); color: #fff; }
+        .sl-cookie { background: var(--c-accent-cookie-soft); }
+        .sl-cookie .sl-num { background: var(--c-accent-cookie); }
+        .sl-cookie .sl-tag { background: var(--c-accent-cookie); color: #fff; }
+
+        /* ============================================================
+           КАРТОЧНАЯ СЕТКА ТЕМ
+           ============================================================ */
+        .proto-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .proto-card {
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            padding: 14px 16px;
+            position: relative;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .proto-card:hover { transform: translateY(-3px); box-shadow: var(--sh-md); border-color: var(--c-border-strong); }
+        .proto-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 14px; bottom: 14px;
+            width: 4px;
+            border-radius: 0 3px 3px 0;
+        }
+        .proto-card.p-html::before { background: var(--c-accent-html); }
+        .proto-card.p-url::before { background: var(--c-accent-url); }
+        .proto-card.p-http::before { background: var(--c-accent-http); }
+        .proto-card.p-tls::before { background: var(--c-accent-tls); }
+        .proto-card.p-cookie::before { background: var(--c-accent-cookie); }
+        .proto-card.p-ws::before { background: var(--c-accent-ws); }
+        .proto-card .pc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+        .proto-card .pc-icon { font-size: 18px; }
+        .proto-card .pc-name { font-size: 14px; font-weight: 800; color: var(--c-text); letter-spacing: -0.01em; }
+        .proto-card .pc-sub { font-size: 10.5px; color: var(--c-text-3); font-family: var(--f-mono); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .proto-card .pc-body { font-size: 12px; color: var(--c-text-2); line-height: 1.5; }
+        .proto-card .pc-body b { color: var(--c-text); }
+        .proto-card .pc-meta { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--c-border); font-size: 10.5px; color: var(--c-text-3); font-weight: 600; }
+
+        /* ============================================================
+           ШАГОВЫЙ ФЛОУ HTTPS HANDSHAKE
+           ============================================================ */
+        .flow {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            position: relative;
+        }
+        .flow-step {
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            padding: 12px 10px 10px;
+            text-align: center;
+            position: relative;
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .flow-step:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+        .flow-step + .flow-step::before {
+            content: '→';
+            position: absolute;
+            left: -10px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--c-text-muted);
+            font-weight: 800;
+            font-size: 13px;
+        }
+        .flow-step .fs-num {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            margin: 0 auto 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800; color: #fff;
+        }
+        .flow-step .fs-name { font-size: 12px; font-weight: 800; color: var(--c-text); margin-bottom: 2px; }
+        .flow-step .fs-desc { font-size: 10.5px; color: var(--c-text-3); line-height: 1.35; }
+        .flow-tls .fs-num { background: var(--c-accent-tls); }
+
+        /* ============================================================
+           КОДЫ СОСТОЯНИЙ HTTP
+           ============================================================ */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+        .status-card {
+            border-radius: var(--r-md);
+            padding: 11px 10px;
+            border: 1px solid var(--c-border);
+            background: var(--c-bg);
+            text-align: center;
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .status-card:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+        .status-card .sc-code {
+            font-family: var(--f-mono);
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .status-card .sc-name { font-size: 10.5px; font-weight: 700; color: var(--c-text); margin-bottom: 3px; }
+        .status-card .sc-desc { font-size: 9.5px; color: var(--c-text-3); line-height: 1.3; }
+        .st-1xx .sc-code { color: #0891b2; }
+        .st-2xx .sc-code { color: #059669; }
+        .st-3xx .sc-code { color: #d97706; }
+        .st-4xx .sc-code { color: #dc2626; }
+        .st-5xx .sc-code { color: #7c3aed; }
+        .st-1xx { background: #ecfeff; }
+        .st-2xx { background: #ecfdf5; }
+        .st-3xx { background: #fffbeb; }
+        .st-4xx { background: #fef2f2; }
+        .st-5xx { background: #f5f3ff; }
+
+        /* ============================================================
+           ТАБЛИЦА COOKIES
+           ============================================================ */
+        .addr-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .addr-table th {
+            background: var(--c-dark);
+            color: #fff;
+            padding: 9px 11px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .addr-table td {
+            padding: 8px 11px;
+            border-bottom: 1px solid var(--c-border);
+            color: var(--c-text-2);
+            vertical-align: top;
+            line-height: 1.4;
+        }
+        .addr-table tr:nth-child(even) td { background: var(--c-surface); }
+        .addr-table tr:hover td { background: var(--c-primary-soft); }
+        .addr-table .mono { font-family: var(--f-mono); font-size: 11px; color: var(--c-text); font-weight: 700; }
+        .addr-table .badge {
+            display: inline-block; font-size: 9px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            padding: 2px 7px; border-radius: var(--r-pill);
+        }
+        .badge-sec { background: var(--c-accent-http-soft); color: var(--c-accent-http); }
+        .badge-life { background: var(--c-accent-url-soft); color: var(--c-accent-url); }
+        .badge-scope { background: var(--c-accent-cookie-soft); color: var(--c-accent-cookie); }
+
+        /* ============================================================
+           БЛОК «УРОКИ ДЛЯ МЕНЕДЖЕРОВ»
+           ============================================================ */
+        .lessons-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: var(--r-lg);
+            padding: 16px 18px;
+        }
+        .lessons-box .section-title { color: #166534; margin-bottom: 10px; }
+        .lessons-box .section-title .st-icon { background: #dcfce7; color: #15803d; }
+        .lessons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+        .lesson { display: flex; gap: 8px; font-size: 12px; line-height: 1.45; color: #14532d; }
+        .lesson .lesson-num {
+            flex: 0 0 auto; width: 18px; height: 18px; border-radius: 50%;
+            background: #15803d; color: #fff; font-size: 10px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; margin-top: 1px;
+        }
+
+        /* ============================================================
+           ВИДЕО
+           ============================================================ */
+        .video-section { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .video-container {
+            width: 100%; max-width: 580px;
+            border-radius: var(--r-lg); overflow: hidden;
+            box-shadow: var(--sh-lg); background: #000;
+            aspect-ratio: 16 / 9;
+        }
+        .links-hub { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .video-btn {
+            text-decoration: none; padding: 9px 14px; border-radius: var(--r-sm);
+            font-size: 12px; font-weight: 700; color: white;
+            display: flex; align-items: center; gap: 6px;
+            transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+            cursor: pointer; border: none; font-family: inherit;
+        }
+        .video-btn:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+        .rt-btn { background: #00a877; }
+        .rt-btn:hover { background: #008f65; }
+        .stop-btn { background: #dc143c; }
+        .stop-btn:hover { background: #b01030; }
+
+        /* ============================================================
+           ПРАВАЯ ПАНЕЛЬ
+           ============================================================ */
+        .notes-header {
+            font-size: 16px; color: var(--c-dark-accent); font-weight: 800;
+            margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--c-dark-3); padding-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+        .timer-badge {
+            background: #dc2626; color: #fff; padding: 3px 9px; border-radius: var(--r-pill);
+            font-size: 11px; font-family: var(--f-mono); font-weight: 700;
+        }
+        .lecture-text { font-size: 14px; line-height: 1.68; color: var(--c-dark-text); text-align: justify; }
+        .lecture-text p { margin-bottom: 14px; }
+        .lecture-text h3 {
+            color: var(--c-dark-accent); font-size: 14.5px; margin: 20px 0 10px;
+            border-bottom: 1px solid var(--c-dark-3); padding-bottom: 6px;
+            font-weight: 800; letter-spacing: -0.01em;
+        }
+        .lecture-text ul { margin: 8px 0 14px 18px; }
+        .lecture-text li { margin-bottom: 6px; }
+        .lecture-text strong { color: #f1f5f9; }
+        .action-hint {
+            color: #fcd34d; font-style: italic; background: var(--c-dark-2);
+            padding: 11px 14px; border-radius: var(--r-sm);
+            border-left: 3px solid #fcd34d; margin: 16px 0;
+            font-size: 12.5px; line-height: 1.5;
+        }
+
+        .notes-section {
+            margin-top: 26px;
+            background: var(--c-dark-2);
+            border: 1px solid var(--c-dark-3);
+            border-radius: var(--r-md);
+            padding: 16px 16px 14px;
+        }
+        .notes-section-title {
+            font-size: 13.5px; font-weight: 800; color: var(--c-dark-accent);
+            margin-bottom: 12px; padding-bottom: 8px;
+            border-bottom: 1px solid var(--c-dark-3);
+            display: flex; align-items: center; gap: 8px;
+            letter-spacing: -0.01em;
+        }
+        .notes-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+        .notes-table th {
+            text-align: left; padding: 7px 8px; font-weight: 700;
+            color: var(--c-dark-text-2); font-size: 10px;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--c-dark-3);
+        }
+        .notes-table td {
+            padding: 7px 8px; border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+            color: var(--c-dark-text); vertical-align: top; line-height: 1.4;
+        }
+        .notes-table tr:last-child td { border-bottom: none; }
+        .notes-table tr:hover td { background: rgba(96, 165, 250, 0.06); }
+        .notes-table .abbr { font-weight: 800; color: #93c5fd; font-family: var(--f-mono); font-size: 11px; white-space: nowrap; }
+        .notes-table .explain { color: var(--c-dark-text-2); }
+
+        .notes-sources { font-size: 11.5px; line-height: 1.55; color: var(--c-dark-text); }
+        .notes-sources .src-group {
+            font-weight: 800; color: #86efac; font-size: 10.5px;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin: 10px 0 5px;
+        }
+        .notes-sources .src-group:first-child { margin-top: 0; }
+        .notes-sources ol { margin: 0 0 4px 16px; padding: 0; }
+        .notes-sources li { margin-bottom: 5px; color: var(--c-dark-text-2); }
+        .notes-sources a { color: #93c5fd; text-decoration: none; }
+        .notes-sources a:hover { text-decoration: underline; }
+
+        /* ============================================================
+           НАВИГАЦИЯ
+           ============================================================ */
+        .lecture-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 20px; display: flex; align-items: center; justify-content: center;
+            gap: 12px; z-index: 9999; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+            font-family: var(--f-sans);
+        }
+        .lecture-nav .nav-progress {
+            position: absolute; top: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            transition: width .3s ease; border-radius: 0 3px 3px 0;
+        }
+        .lecture-nav .nav-btn-arrow {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: var(--r-md);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--c-dark-text); font-size: 13px; font-weight: 700;
+            text-decoration: none; cursor: pointer;
+            transition: all .2s ease; font-family: inherit;
+        }
+        .lecture-nav .nav-btn-arrow:hover:not(:disabled) {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: rgba(59, 130, 246, 0.6);
+            color: #fff; transform: translateY(-2px);
+        }
+        .lecture-nav .nav-btn-arrow:disabled { opacity: .35; cursor: not-allowed; }
+        .lecture-nav .nav-btn-arrow .arrow-icon { font-size: 16px; line-height: 1; }
+        .lecture-nav .nav-btn-arrow .arrow-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+        .lecture-nav .nav-btn-arrow .arrow-label small { font-size: 9px; font-weight: 400; opacity: .7; text-transform: uppercase; letter-spacing: .5px; }
+        .lecture-nav .nav-btn-arrow .arrow-label .arrow-title { font-size: 12px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lecture-nav .nav-center {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 0 20px; color: var(--c-dark-text-2); font-size: 11px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .lecture-nav .nav-counter { font-size: 15px; font-weight: 900; color: #f1f5f9; letter-spacing: -.3px; }
+        .lecture-nav .nav-counter span { color: #64748b; font-size: 12px; font-weight: 600; }
+        .lecture-nav .nav-index-link { color: #60a5fa; text-decoration: none; font-size: 11px; font-weight: 700; transition: color .2s; }
+        .lecture-nav .nav-index-link:hover { color: #93c5fd; text-decoration: underline; }
+        .lecture-nav .nav-jump { display: flex; gap: 4px; margin-left: 8px; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, 0.1); }
+        .lecture-nav .nav-jump-btn {
+            padding: 6px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1); color: var(--c-dark-text-2);
+            font-size: 10px; font-weight: 800; cursor: pointer; text-decoration: none;
+            transition: all .2s; font-family: inherit;
+        }
+        .lecture-nav .nav-jump-btn:hover { background: rgba(59, 130, 246, 0.25); border-color: rgba(59, 130, 246, 0.5); color: #fff; }
+        .lecture-nav .nav-jump-btn.active { background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-color: transparent; color: #fff; }
+
+        /* ============================================================
+           АНИМАЦИИ + REDUCED MOTION
+           ============================================================ */
+        .reveal { animation: fadeUp .5s ease both; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .001ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ============================================================
+           АДАПТИВНОСТЬ
+           ============================================================ */
+        @media (max-width: 1200px) {
+            .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+            .proto-grid { grid-template-columns: 1fr; }
+            .flow { grid-template-columns: repeat(2, 1fr); gap: 14px 8px; }
+            .flow-step + .flow-step::before { display: none; }
+            .status-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 900px) {
+            .lecture-nav { padding: 10px 12px; gap: 8px; }
+            .lecture-nav .nav-btn-arrow { padding: 8px 12px; }
+            .lecture-nav .nav-btn-arrow .arrow-label .arrow-title { max-width: 90px; font-size: 11px; }
+            .lecture-nav .nav-center { padding: 0 10px; }
+            .lecture-nav .nav-jump { display: none; }
+            .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+            .lessons-grid { grid-template-columns: 1fr; }
+            .flow { grid-template-columns: 1fr; }
+            .status-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+         ЛЕВАЯ ЧАСТЬ (2/3): ЭКРАН ДЛЯ СТУДЕНТОВ
+         ============================================================ -->
+    <div class="student-view">
+        <div>
+            <h1 class="slide-header">
+                Лекция 3. Как работает браузер и веб: прикладной уровень
+            </h1>
+
+            <div class="slide-body">
+
+                <!-- KPI-СТРИП -->
+                <div class="kpi-strip reveal" role="list" aria-label="Ключевые цифры лекции">
+                    <div class="kpi k-html" role="listitem">
+                        <div class="kpi-val">1989</div>
+                        <div class="kpi-lbl">идея гипертекста (CERN)</div>
+                    </div>
+                    <div class="kpi k-html" role="listitem">
+                        <div class="kpi-val">18</div>
+                        <div class="kpi-lbl">тегов в HTML 1.0</div>
+                    </div>
+                    <div class="kpi k-http" role="listitem">
+                        <div class="kpi-val">1992</div>
+                        <div class="kpi-lbl">HTTP/0.9</div>
+                    </div>
+                    <div class="kpi k-tls" role="listitem">
+                        <div class="kpi-val">443</div>
+                        <div class="kpi-lbl">порт HTTPS</div>
+                    </div>
+                    <div class="kpi k-cookie" role="listitem">
+                        <div class="kpi-val">SameSite</div>
+                        <div class="kpi-lbl">защита от CSRF</div>
+                    </div>
+                    <div class="kpi k-ws" role="listitem">
+                        <div class="kpi-val">2011</div>
+                        <div class="kpi-lbl">WebSocket</div>
+                    </div>
+                </div>
+
+                <!-- СТЕК «БРАУЗЕР → HTTP → TLS → СЕРВЕР» -->
+                <section class="reveal" aria-labelledby="stack-title">
+                    <div class="section-title" id="stack-title">
+                        <span class="st-icon" aria-hidden="true">🧱</span>
+                        Путь страницы: от адресной строки до экрана
+                    </div>
+                    <div class="stack">
+                        <div class="stack-layer sl-html">
+                            <div class="sl-num" aria-hidden="true">1</div>
+                            <div class="sl-body">
+                                <strong>HTML: гипертекстовая разметка</strong>
+                                <span>Документ — это текст, обёрнутый в теги. Первая версия (1991) — 18 тегов; W3C стандартизировал язык, чтобы браузеры не создавали хаос.</span>
+                            </div>
+                            <span class="sl-tag">HTML</span>
+                        </div>
+                        <div class="stack-layer sl-url">
+                            <div class="sl-num" aria-hidden="true">2</div>
+                            <div class="sl-body">
+                                <strong>URL: адрес ресурса</strong>
+                                <span>Протокол · домен/адрес · порт · путь · параметры (?ключ=значение) · якорь (#). Нелатинские символы — в percent-encoding.</span>
+                            </div>
+                            <span class="sl-tag">URL</span>
+                        </div>
+                        <div class="stack-layer sl-http">
+                            <div class="sl-num" aria-hidden="true">3</div>
+                            <div class="sl-body">
+                                <strong>HTTP: запрос и ответ</strong>
+                                <span>Методы (GET, POST, HEAD), коды состояний (1xx–5xx), заголовки. HTTP/1.1 — keep-alive и кэширование; HTTP/2 — бинарность и мультиплексирование.</span>
+                            </div>
+                            <span class="sl-tag">HTTP</span>
+                        </div>
+                        <div class="stack-layer sl-tls">
+                            <div class="sl-num" aria-hidden="true">4</div>
+                            <div class="sl-body">
+                                <strong>TLS / HTTPS: шифрование и подлинность</strong>
+                                <span>Шифрование, MAC для целостности, цифровые подписи и сертификаты удостоверяющих центров. Порт 443 вместо 80.</span>
+                            </div>
+                            <span class="sl-tag">TLS</span>
+                        </div>
+                        <div class="stack-layer sl-cookie">
+                            <div class="sl-num" aria-hidden="true">5</div>
+                            <div class="sl-body">
+                                <strong>Cookies: как сайт «помнит» вас</strong>
+                                <span>Сервер передаёт Set-Cookie, браузер возвращает Cookie. Параметры Domain, Path, Expires/Max-Age, Secure, HttpOnly, SameSite.</span>
+                            </div>
+                            <span class="sl-tag">Cookie</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- КАРТОЧНАЯ СЕТКА ТЕМ -->
+                <section class="reveal" aria-labelledby="proto-title">
+                    <div class="section-title" id="proto-title">
+                        <span class="st-icon" aria-hidden="true">🔌</span>
+                        Ключевые понятия: что и зачем
+                    </div>
+                    <div class="proto-grid">
+                        <div class="proto-card p-html">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">📄</span>
+                                <div>
+                                    <div class="pc-name">HTML и первый браузер</div>
+                                    <div class="pc-sub">1989–1990, CERN</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Тим Бернерс-Ли предложил гипертекст: документы, связанные ссылками. Браузер WorldWideWeb (→ Nexus) обрабатывал теги и показывал результат.</div>
+                            <div class="pc-meta">W3C (1994) стандартизировал HTML и CSS</div>
+                        </div>
+                        <div class="proto-card p-url">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🔗</span>
+                                <div>
+                                    <div class="pc-name">URL</div>
+                                    <div class="pc-sub">6 частей адреса</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Протокол, домен/IP, порт, путь, параметры <b>?ключ=значение</b>, якорь <b>#</b>. Кириллица кодируется percent-encoding по байтам UTF-8.</div>
+                            <div class="pc-meta">Только ASCII в исходном стандарте</div>
+                        </div>
+                        <div class="proto-card p-http">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">📨</span>
+                                <div>
+                                    <div class="pc-name">HTTP</div>
+                                    <div class="pc-sub">запрос / ответ</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Запрос: метод + путь + версия + заголовки + тело. Ответ: версия + код состояния + описание + заголовки + тело. Условные и частичные GET.</div>
+                            <div class="pc-meta">RFC 2616 → 7230 → 9110</div>
+                        </div>
+                        <div class="proto-card p-tls">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🔐</span>
+                                <div>
+                                    <div class="pc-name">HTTPS / TLS</div>
+                                    <div class="pc-sub">шифрование + подлинность</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Шифрование (RSA / Diffie-Hellman), MAC для целостности, цифровая подпись и цепочка сертификатов удостоверяющих центров.</div>
+                            <div class="pc-meta">Порт 443; защита от «человека посередине»</div>
+                        </div>
+                        <div class="proto-card p-cookie">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">🍪</span>
+                                <div>
+                                    <div class="pc-name">Cookies и сессии</div>
+                                    <div class="pc-sub">состояние поверх HTTP</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">Set-Cookie от сервера, Cookie от браузера. HttpOnly против XSS, SameSite и CSRF-токены против CSRF, Secure — только по HTTPS.</div>
+                            <div class="pc-meta">LocalStorage / SessionStorage — без сервера</div>
+                        </div>
+                        <div class="proto-card p-ws">
+                            <div class="pc-head">
+                                <span class="pc-icon" aria-hidden="true">⚡</span>
+                                <div>
+                                    <div class="pc-name">WebSocket и CORS</div>
+                                    <div class="pc-sub">реальное время + безопасность</div>
+                                </div>
+                            </div>
+                            <div class="pc-body">WebSocket (2011): постоянное соединение, кадры, ping/pong, маскирование. CORS: Origin, preflight, Access-Control-* — правила межсайтовых запросов.</div>
+                            <div class="pc-meta">HTTP/2 — 2015, QUIC — 2019</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ШАГОВЫЙ ФЛОУ HTTPS HANDSHAKE -->
+                <section class="reveal" aria-labelledby="tls-title">
+                    <div class="section-title" id="tls-title">
+                        <span class="st-icon" aria-hidden="true">🔐</span>
+                        HTTPS handshake: как устанавливается защищённое соединение
+                    </div>
+                    <div class="flow flow-tls" role="list">
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">1</div>
+                            <div class="fs-name">Client Hello</div>
+                            <div class="fs-desc">Клиент предлагает алгоритмы шифрования и хэш-функции</div>
+                        </div>
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">2</div>
+                            <div class="fs-name">Server Hello + сертификат</div>
+                            <div class="fs-desc">Сервер выбирает алгоритмы и присылает сертификат с открытым ключом</div>
+                        </div>
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">3</div>
+                            <div class="fs-name">Проверка цепочки</div>
+                            <div class="fs-desc">Клиент проверяет подписи удостоверяющих центров корневым ключом</div>
+                        </div>
+                        <div class="flow-step" role="listitem">
+                            <div class="fs-num" aria-hidden="true">4</div>
+                            <div class="fs-name">Обмен ключами + MAC</div>
+                            <div class="fs-desc">Стороны договариваются о сессионных ключах и проверяют целостность</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- КОДЫ СОСТОЯНИЙ HTTP -->
+                <section class="reveal" aria-labelledby="status-title">
+                    <div class="section-title" id="status-title">
+                        <span class="st-icon" aria-hidden="true">🚦</span>
+                        Коды состояний HTTP: 5 групп
+                    </div>
+                    <div class="status-grid" role="list">
+                        <div class="status-card st-1xx" role="listitem">
+                            <div class="sc-code">1xx</div>
+                            <div class="sc-name">Информационные</div>
+                            <div class="sc-desc">Запрос принят, обработка продолжается</div>
+                        </div>
+                        <div class="status-card st-2xx" role="listitem">
+                            <div class="sc-code">2xx</div>
+                            <div class="sc-name">Успех</div>
+                            <div class="sc-desc">200 OK, 204 No Content, 206 Partial Content</div>
+                        </div>
+                        <div class="status-card st-3xx" role="listitem">
+                            <div class="sc-code">3xx</div>
+                            <div class="sc-name">Перенаправление</div>
+                            <div class="sc-desc">301 постоянно, 302 временно, 304 Not Modified</div>
+                        </div>
+                        <div class="status-card st-4xx" role="listitem">
+                            <div class="sc-code">4xx</div>
+                            <div class="sc-name">Ошибка клиента</div>
+                            <div class="sc-desc">401 авторизация, 403 запрещено, 404 не найдено</div>
+                        </div>
+                        <div class="status-card st-5xx" role="listitem">
+                            <div class="sc-code">5xx</div>
+                            <div class="sc-name">Ошибка сервера</div>
+                            <div class="sc-desc">500 внутренняя ошибка, 502 bad gateway</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ТАБЛИЦА COOKIES -->
+                <section class="reveal" aria-labelledby="cookie-title">
+                    <div class="section-title" id="cookie-title">
+                        <span class="st-icon" aria-hidden="true">🍪</span>
+                        Параметры cookies: три группы
+                    </div>
+                    <table class="addr-table">
+                        <thead>
+                            <tr>
+                                <th>Параметр</th>
+                                <th>Группа</th>
+                                <th>Что делает</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="mono">Domain</td>
+                                <td><span class="badge badge-scope">Область</span></td>
+                                <td>К какому домену относятся cookies; действует и на поддомены</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">Path</td>
+                                <td><span class="badge badge-scope">Область</span></td>
+                                <td>Путь, по которому доступны cookies (включая подпути)</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">Expires / Max-Age</td>
+                                <td><span class="badge badge-life">Срок жизни</span></td>
+                                <td>Дата удаления или продолжительность жизни в секундах; без них — временные</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">Secure</td>
+                                <td><span class="badge badge-sec">Безопасность</span></td>
+                                <td>Отправлять только по HTTPS</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">HttpOnly</td>
+                                <td><span class="badge badge-sec">Безопасность</span></td>
+                                <td>Недоступны для JavaScript — защита от XSS</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">SameSite</td>
+                                <td><span class="badge badge-sec">Безопасность</span></td>
+                                <td>None / Lax / Strict — защита от CSRF при межсайтовых запросах</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- УРОКИ ДЛЯ МЕНЕДЖЕРОВ -->
+                <section class="lessons-box reveal" aria-labelledby="lessons-title">
+                    <div class="section-title" id="lessons-title">
+                        <span class="st-icon" aria-hidden="true">🎓</span>
+                        Уроки для менеджеров
+                    </div>
+                    <div class="lessons-grid">
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">1</span>
+                            <span>Стандартизация (W3C, IETF, RFC) — условие совместимости; без неё браузеры создают хаос, а бизнес теряет аудиторию.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">2</span>
+                            <span>HTTP/1.1 → HTTP/2 → QUIC — пример эволюции под нагрузкой: скорость загрузки напрямую влияет на конверсию.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">3</span>
+                            <span>HTTPS, HttpOnly, SameSite, CSRF-токены — базовый минимум безопасности; их отсутствие = репутационные и финансовые риски.</span>
+                        </div>
+                        <div class="lesson">
+                            <span class="lesson-num" aria-hidden="true">4</span>
+                            <span>Cookies и сессии — основа персонализации и аналитики; понимание их ограничений важно для legal и маркетинга.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ВИДЕО -->
+                <div class="video-section reveal">
+                    <div class="video-container">
+                        <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: как работает браузер и веб"></iframe>
+                    </div>
+                    <div class="links-hub">
+                        <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
+                        <button onclick="changeVideo('https://rutube.ru/play/embed/f6a72089b1d3670e2455bfa78716fded/')" class="video-btn rt-btn">📜 Лекция 3. Как работает браузер и веб</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            Направление «Менеджмент» | 1 курс | Курс: Как устроен интернет | Блок 3 из 3
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ПРАВАЯ ЧАСТЬ (1/3): СКРИПТ ПРЕПОДАВАТЕЛЯ
+         ============================================================ -->
+    <div class="speaker-notes">
+        <div style="position: sticky; top: 0; background: var(--c-dark); padding: 20px 20px 10px 20px; border-bottom: 1px solid var(--c-dark-3); width: 100%; z-index: 100;">
+            <div class="notes-header">
+                <span>🎙️ Скрипт лектора</span>
+                <span class="timer-badge">50 мин</span>
+            </div>
+            <div style="width: 100%; aspect-ratio: 16 / 9; border-radius: var(--r-sm); overflow: hidden; background: #000; box-shadow: var(--sh-md);">
+              <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"  allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+            </div>
+        </div>
+
+        <div class="lecture-text" style="margin-top: 20px;">
+
+            <p>Добрый день, коллеги! Мы прошли два блока: историю интернета и техническую адресацию. Сегодня — третий, прикладной уровень: как данные превращаются в страницу, которую мы видим в браузере. Это тот слой, с которым менеджер сталкивается ежедневно, даже не задумываясь.</p>
+
+            <div class="action-hint">Обратите внимание студентов на «стек» на слайде — это карта всей лекции: HTML → URL → HTTP → TLS → Cookies.</div>
+
+            <h3>📌 1989: Тим Бернерс-Ли и идея гипертекста</h3>
+
+            <p>В 1989 году в Швейцарии научный сотрудник компании по ядерным исследованиям CERN Тим Бернерс-Ли предлагает проект, который облегчил бы поиск информации для учёных. Идея была в том, чтобы создать электронные документы, связанные между собой ссылками, по которым можно перемещаться как по виртуальной паутине.</p>
+
+            <p>Сам документ в глазах Тима представлял собой текстовую информацию, каждый элемент которой можно отображать специальным образом в зависимости от ключевых слов, которыми этот элемент обёрнут. Иными словами — форматировать текст: делать крупным, мелким, жирным, курсивным, делать его ссылкой на другой документ. Такая обёртка вокруг текста получила название <strong>тег</strong>. Язык, состоящий из этих тегов, получил название <strong>HTML</strong> — язык гипертекстовой разметки. Документы получили расширения .html и .htm. Первая версия языка включала всего 18 тегов, которые позволяли форматировать страницу самым базовым образом.</p>
+
+            <p>Но чтобы вместо голого текста с тегами был виден результат форматирования, нужна специальная программа для просмотра гипертекстовых документов, которая обрабатывала бы теги и отображала текст. Такая программа получила название <strong>браузер</strong>. Появилась она в 1990 году благодаря всё тому же Тиму Бернерс-Ли и называлась WorldWideWeb — позже переименовали в более простое название Nexus. Всё, что мог делать такой браузер, — отображать тексты и некоторые изображения. Но для старта того интернета, который мы знаем сейчас, этого было вполне достаточно.</p>
+
+            <h3>📌 Браузерные войны и стандартизация</h3>
+
+            <p>Нишу по созданию и развитию браузеров быстро подхватывают крупные компании, и каждая из них начинает пытаться занять лидерство и реализовать свой уникальный продукт с собственным набором HTML-тегов. Это означало, что веб-страница, написанная под один браузер, будет некорректно отображаться в другом, что полностью лишит интернет универсальности.</p>
+
+            <p>Чтобы этого избежать, в 1994 году компания CERN и Массачусетский технологический институт подписывают соглашение об основании консорциума <strong>W3C</strong> (World Wide Web Consortium), во главе которого ставят Тима Бернерс-Ли. На сегодняшний день членами консорциума являются более 350 организаций из 28 стран. Их задача — разрабатывать стандарты, которые делали бы интернет удобным, единым и доступным для всех, включая людей с ограниченными возможностями.</p>
+
+            <p>Самое первое, что они сделали, — стандартизировали язык HTML, приведя его к единому набору тегов и атрибутов и не позволив тем самым различным браузерам создать в мировой паутине хаос. Вскоре после языка HTML появился <strong>CSS</strong> — для описания внешнего вида HTML-элементов, что в итоге позволило стилизовать страницы самыми различными способами.</p>
+
+            <p>Первым графическим браузером, получившим большое распространение, стал <strong>Mosaic</strong> в 1993 году. Будучи первооткрывателем новой эпохи браузеров, он имел множество недостатков, но при этом имел открытый исходный код. Благодаря этому в 1994 году компания Netscape разработала свой браузер <strong>Netscape Navigator</strong>, в котором множество недостатков было устранено. Кроме этого, он поддерживал разные операционные системы, что позволило ему быстро стать браузером №1. Правда, успех этот длился недолго.</p>
+
+            <p>Уже в 1995 году компания Microsoft, понимая всю перспективность рынка браузеров, решает занять своё место в этой нише и на основе того же Mosaic разрабатывает свой браузер — <strong>Internet Explorer</strong>. Хоть конкуренция была жёсткой, у Microsoft было явное преимущество: компании принадлежала операционная система Windows. Microsoft не стали ничего придумывать и просто предустанавливали Internet Explorer в свои версии ОС. Это привело к тому, что к концу 2001 года Internet Explorer охватывал уже 96% рынка, что делало его абсолютным монополистом. Однако именно это и сыграло с Microsoft злую шутку: долгие годы они просто перестали развивать свой браузер. Но рынок браузеров только начинал своё восхождение — останавливать браузер в развитии было нельзя.</p>
+
+            <p>Со временем на основе Netscape появляется браузер <strong>Mozilla Firefox</strong>, компания Google создаёт <strong>Chrome</strong>, а Apple — <strong>Safari</strong>. Internet Explorer на фоне них становится явным аутсайдером. В итоге этот медленный, устаревший, бесперспективный проект Microsoft закрывает и выпускает вместо него браузер, работающий на том же движке, что и Chrome.</p>
+
+            <div class="action-hint">Переходим к URL и HTTP — это ядро прикладного уровня.</div>
+
+            <h3>📌 URL: адрес ресурса</h3>
+
+            <p>Программа для просмотра HTML-документов у нас есть. Но где же все эти HTML-документы находятся? На миллионах веб-серверов, к одному из которых мы должны каким-то образом обратиться, чтобы он этот HTML-документ нашему браузеру передал. Из блока про устройство интернета мы знаем, что у каждого сервера есть свой IP-адрес и, как правило, есть свой DNS-адрес. Именно по нему мы и будем передавать запрос на получение веб-страницы. Но чтобы сервер смог понять наш запрос, а наш браузер смог понять его ответ, этот запрос должен быть составлен по каким-то стандартизированным правилам, которые будут понимать обе стороны. Иными словами, нам нужен протокол, с помощью которого браузер с сервером будут общаться.</p>
+
+            <p>Как вы уже догадались, создал этот протокол снова Тим Бернерс-Ли и назвал его <strong>HTTP</strong> — протокол передачи гипертекста. Последнее, что осталось сделать, — придумать формат ссылки, который будет сообщать браузеру, каким протоколом мы хотим воспользоваться и по какому адресу нужно передать наш запрос на получение страницы. Тим Бернерс-Ли справился и с этой задачей. Весь шаблон ссылки можно разбить на шесть основных частей: название протокола, домен либо IP-адрес сервера, порт (через двоеточие), путь к запрашиваемой странице или файлу (разделённые слэшами), параметры после знака вопроса в формате «ключ=значение» и якорь после знака решётки, который заставит браузер отобразить страницу начиная с того HTML-элемента, у которого данный якорь является значением атрибута.</p>
+
+            <p>Главная проблема ссылок заключалась в том, что в них позволялось использовать только латинские буквы, цифры и несколько знаков пунктуации в кодировке ASCII. Это означало, что если мы хотим использовать символы своего алфавита, например кириллицу, их придётся перекодировать в специальный формат. Поэтому решили сделать следующее: все оставшиеся не буквенные знаки оставили в кодировке ASCII, но перед каждым таким символом добавили знак процента. С символами других алфавитов сделали то же самое, только представили их в кодировке UTF-8 и поставили процент не перед каждым символом, а перед каждым байтом.</p>
+
+            <h3>📌 HTTP: запрос, ответ, методы, коды</h3>
+
+            <p>Ссылки у нас есть. Осталось понять, что же сделает браузер после перехода по ним. Для начала он берёт URL из адресной строки, выделяет из него доменный адрес и отправляет запрос DNS-серверу, чтобы по доменному адресу получить IP — ровно то, что мы разбирали в блоке про адресацию. Далее, получив IP, браузер устанавливает соединение с этим сервером на 80-й порт, если используется протокол HTTP. Сам HTTP-запрос на получение той веб-страницы, которую мы указали внутри ссылки в разделе «Путь», либо запрос на получение главной страницы сайта, если мы ничего не указали. Сервер, получив такой запрос, обрабатывает его и в своём ответе посылает HTML-страницу, если она у него действительно есть.</p>
+
+            <p>Впервые этот протокол был опубликован в 1992 году под версией 0.9. Но так как разработка была сырой, потребовалось ещё четыре года, чтобы довести её до версии 1.0. Весь HTTP-пакет можно разделить на три части: тип сообщения, заголовки и тело. Если в версии 0.9 при отправке запроса заполнялся только тип, а при ответе от сервера только тело, то в версии 1.0 тип сообщения передаётся в каждом запросе. Состоит он из метода запроса, пути к запрашиваемой странице и версии протокола. Начиная с версии 1.0 в ответе от сервера тип состоит из версии, кода состояния и его описания.</p>
+
+            <p>Все коды состояния можно разбить на пять групп по их начальной цифре: 1xx — информационные сообщения; 2xx — успешное выполнение (например, 200 OK); 3xx — перенаправление (301 — страница перемещена окончательно, 302 — временно, 304 — не изменено); 4xx — ошибка на стороне клиента (мы послали неверный запрос, например обратились к несуществующей странице — 404); 5xx — ошибка на стороне сервера.</p>
+
+            <p>В типе запроса от клиента есть одно важное поле — <strong>метод</strong>. В версии 0.9 существовал только метод GET — на получение ресурса с веб-сервера; параметры указываются прямо внутри URL. В версии 1.0 добавился метод <strong>POST</strong> — для отправки данных или файлов на сервер в теле запроса (например, создание комментария или регистрация аккаунта). Третий метод, появившийся в версии 1.1, — <strong>HEAD</strong>: это тот же GET, но сервер в ответе не отправляет тело, только заголовки. Используется для проверки существования ресурса или актуализации URL.</p>
+
+            <p>Заголовки HTTP не являются обязательными, но используются постоянно, и многие из них для правильного взаимодействия клиента и сервера очень важны. Самое простое, что браузер сообщает о себе серверу, — заголовок <strong>User-Agent</strong>, в котором содержится информация о браузере и операционной системе. Эта информация может использоваться сервером, например, для выбора версии одной и той же HTML-страницы для разных моделей смартфонов. Другой пример — заголовок <strong>Referer</strong>, который отправляется для статистики того, откуда приходят пользователи.</p>
+
+            <p>В отличие от запроса, кроме успешного кода 200 и различных заголовков, в ответе мы получаем тело, содержащее HTML-страницу, которое отделено от заголовков пустой строкой (управляющими символами возврата каретки и переноса строки). Заголовки ответа тоже могут нести серверную информацию: <strong>Date</strong> — дата создания ответа, <strong>Server</strong> — название веб-сервера вместе с версией. Что касается передаваемого контента, сервер может указывать его тип, размер в байтах, язык, тип сжатия и дату последнего изменения. Клиент, в свою очередь, может заранее указать, какой тип контента он готов получить, в какой кодировке, на каком языке и с каким типом сжатия.</p>
+
+            <p>Очень часто определённый ресурс — веб-страница или файл — очень редко обновляется и лежит на сервере в статичном состоянии. Чтобы не загружать его повторно, мы можем отправить <strong>условный GET</strong> — тот же GET, только со специальным заголовком <strong>If-Modified-Since</strong>, в котором указывается дата. Сервер вернёт контент, только если он был изменён не раньше указанной даты. Если раньше — вернётся ответ с кодом 304, дающий понять, что контент не был изменён. Такие условные заголовки, как правило, существуют парами: кроме If-Modified-Since есть ещё If-Unmodified-Since. Кроме условного GET существует ещё и <strong>частичный GET</strong>, когда мы получаем не весь ресурс целиком, а лишь какую-то часть — например, для докачки файлов. Для этого мы отправляем серверу заголовок <strong>Range</strong> с байтовыми диапазонами файла. Если сервер умеет работать с частичными запросами, мы увидим код 206 и заголовок Content-Range.</p>
+
+            <h3>📌 HTTP/1.1: keep-alive и кэширование</h3>
+
+            <p>Особенность всех запросов HTTP версии 1.0 заключалась в том, что после каждого ответа на запрос соединение закрывалось. И всё бы было ничего, если бы HTML-страницы не содержали множество других ссылок на ресурсы, которые нам точно так же нужно загрузить: стили, скрипты, изображения и так далее. Под каждый такой ресурс нужно заново открывать новое TCP-соединение, что очень сильно замедляет весь процесс загрузки страницы.</p>
+
+            <p>Поэтому спустя всего несколько лет, уже в 1999 году, выходит версия <strong>HTTP/1.1</strong>, в которой была реализована возможность отправлять и получать сразу несколько запросов и ответов в рамках одного соединения. Соединений можно открыть сразу несколько и использовать параллельно для ускорения загрузки. Чтобы клиенты и серверы могли понять, что делать с соединением, они отправляют друг другу заголовок <strong>Connection</strong> со значением close (закрыть) или со значением по умолчанию keep-alive (удерживать). Если соединение нужно продолжать удерживать, добавляется заголовок <strong>Keep-Alive</strong>, в котором можно указать два параметра: timeout — время в секундах, в течение которого хост может бездействовать до закрытия соединения, и max — максимальное число запросов, которое можно отправить до закрытия соединения.</p>
+
+            <p>Ещё одним нововведением этой версии стала обязательная передача клиентом заголовка <strong>Host</strong>, чего не было в предыдущей версии. Кроме этого, было доработано управление кэшированием. Браузеры при получении веб-страницы могут сохранять её у себя и вместо последующих запросов к серверу доставать и показывать её из своего кэша. Причём кэшироваться могут не только HTML-страницы, но и скрипты, стили, изображения. Разумеется, все эти ресурсы со временем могут обновляться, поэтому браузер не может подгружать их из кэша вечно — должна быть конкретная дата, после которой браузер вновь начнёт обращаться за этими ресурсами на сервер. Версия 1.0 указывала сервер в своём ответе в заголовке Expires либо можно было воспользоваться полем Last-Modified. Но начиная с версии 1.1 появился ещё один заголовок — <strong>ETag</strong>: специальный код, сгенерированный на основе содержимого ресурса, который сервер отправляет в своём ответе. Если содержимое ресурса будет изменено в будущем, его ETag не совпадёт. Это снова позволяет использовать условные GET со значениями для заголовков If-None-Match (вернуть, только если ETag не совпал — то есть ресурс изменён) и If-Match (вернуть, только если ETag совпал — то есть ресурс не изменён). То же самое работает и для загрузки фрагментов: использование заголовка If-Range позволяет закачать фрагмент только в том случае, если он не был изменён, а в качестве его значения указывается либо ETag, либо дата из Last-Modified.</p>
+
+            <div class="action-hint">Переходим к HTTPS — это ключевой блок для менеджеров с точки зрения рисков и доверия.</div>
+
+            <h3>📌 HTTPS и TLS: шифрование, целостность, подлинность</h3>
+
+            <p>Хоть злоумышленник теперь и не сможет прочитать наши данные, ему всё равно никто не мешает их перехватывать и подменять. Для того чтобы избавиться от этой уязвимости, в TLS реализована проверка целостности данных на основе некоторого значения — <strong>MAC</strong> (message authentication code), в котором могут быть задействованы передаваемые данные и секретный ключ. Клиент с помощью криптографической хэш-функции получает хэш, который сокращённо называется MAC, от своих данных и передаёт на сервер. Сервер на основе тех же самых данных тоже вычисляет этот MAC и сравнивает его с тем, который пришёл. Если хэши совпали, значит, данные изменены не были.</p>
+
+            <p>Хорошо: прочитать и изменить данные злоумышленник больше не может, хотя бы потому, что у него нет доступа к закрытому ключу. Но он всё ещё может их перехватить и выступить в роли «человека посередине»: клиенту выдавать себя за сервер, а серверу — за клиента. Чтобы закрыть эту уязвимость, в TLS используется система <strong>цифровых подписей</strong>. Цифровая подпись — это, как правило, зашифрованный хэш данных асимметричным алгоритмом шифрования. Только в отличие от классического сценария, где сообщение зашифровывается открытым ключом, а расшифровывается закрытым, здесь наоборот: сообщение зашифровывается закрытым, а расшифровывается открытым. Зачем? Затем, что расшифрованное сообщение открытым ключом гарантирует, что оно было зашифровано закрытым, — а именно это в цифровой подписи нам и нужно проверить. Если расшифрованный хэш совпадёт с тем хэшем данных, которые пришли, значит, данные были зашифрованы тем источником, от которого мы их и ожидали получить.</p>
+
+            <p>Проблема лишь в том, как клиенту быть уверенным, что открытый ключ, которым расшифровывается цифровая подпись, принадлежит серверу, а не «человеку посередине». Чтобы решить эту проблему, были созданы специальные <strong>удостоверяющие центры</strong>, которым обе стороны — и клиент, и сервер — могут доверять. Удостоверяющий центр выдаёт серверу так называемый <strong>сертификат</strong>. Помимо основной информации — кем выдан, кому выдан, уникального серийного номера, используемых алгоритмов, подписи и времени действия — в сертификате содержится открытый ключ этого сервера и сама цифровая подпись, созданная закрытым ключом удостоверяющего центра. Удостоверяющие центры представляют собой целую иерархию, в которой вышестоящий центр подписывает сертификат для нижестоящего. Клиент имеет в своём распоряжении открытый ключ корневых удостоверяющих центров из хранилища сертификатов операционной системы. Поэтому, получив от сервера сертификат, он этим открытым ключом расшифровывает цепочку цифровых подписей удостоверяющих центров. Если всё прошло хорошо, значит, сертификат настоящий и открытый ключ в нём точно принадлежит серверу, а не «человеку посередине».</p>
+
+            <p>Сам TLS состоит из четырёх полей: тип запроса, версия, данные в зашифрованном виде. Может быть использовано четыре типа: установка соединения, оповещение, смена шифра и передача данных. До передачи данных посылается запрос для установки соединения, в результате которого клиент и сервер договариваются о том, какие алгоритмы шифрования и хэш-функции будут использоваться, и обмениваются ключами. Чтобы такое соединение не приходилось устанавливать каждый раз, каждому соединению назначается свой ID, и оно впоследствии может быть восстановлено. После установки соединения все поступающие HTTP-данные разбиваются на фрагменты, для каждого фрагмента вычисляется его MAC, после чего зашифровывается всё, что получилось, и передаётся серверу. Сервер собирает все эти фрагменты, расшифровывает их и получает наш стандартный HTTP. В конце после всей передачи для разрыва соединения отправляется запрос с типом оповещения, в котором мы говорим, что хотим данное соединение закрыть; сервер отвечает таким же запросом, и соединение обрывается.</p>
+
+            <p>Чтобы дать понять серверу, что мы хотим использовать протокол HTTPS, нужно отправлять запросы не на 80-й порт, который обслуживает HTTP, а на <strong>443-й</strong>, который уже по умолчанию ожидает HTTPS.</p>
+
+            <h3>📌 Аутентификация и cookies</h3>
+
+            <p>Ещё одна тема, связанная с HTTP, — аутентификация для контроля доступа к серверу. Перед тем как предоставить нам доступ к какому-либо ресурсу, сервер может запросить у клиента авторизационные данные. Выглядит это так: после стандартного запроса сервер отвечает нам кодом <strong>401</strong>, означающим, что требуется авторизация, а в заголовке WWW-Authenticate передаёт метод авторизации, которым мы должны воспользоваться. Он состоит из двух значений: тип аутентификации и описание защищённой области, в которую мы пытаемся попасть. Мы, в свою очередь, передаём тип идентификации и сами данные в заголовке Authorization. На прокси-сервере, если тот подобное требует, после запроса нам вернётся код <strong>407</strong> и заголовок Proxy-Authenticate с методом аутентификации, а в следующем запросе мы пошлём заголовок Proxy-Authorization. Самый простой распространённый тип — <strong>Basic</strong>: пара значений логин и пароль, закодированная в Base64. Когда-то давно применялся ещё и другой способ базовой аутентификации — прямо через адресную строку: мы могли указать логин и пароль прямо в URL после названия протокола, после чего данные снова отправлялись в заголовке. Но доступ к ресурсу будет запрещён — мы получим код <strong>403</strong>.</p>
+
+            <p>Чтобы нам не приходилось авторизовываться каждый раз при перезагрузке страницы, клиент каким-то образом должен дать понять серверу, что «мы это мы». Для этого нужен некий идентификатор, который мог бы храниться на стороне браузера и проверяться на стороне сервера. Чтобы в браузере что-то хранить, нужно какое-то хранилище данных браузера. Их существует сразу несколько: <strong>LocalStorage</strong> хранит текстовые данные в формате «ключ-значение» на уровне сайта, включая не только домен, но и протокол с портом; данные сохраняются даже после перезагрузки браузера. В <strong>SessionStorage</strong> — только в рамках отдельной вкладки: данные сохраняются при перезагрузке страницы, но будут удалены при её закрытии. Особенность таких хранилищ в том, что все они хранят свои данные локально, без взаимодействия с сервером. Нам же такое взаимодействие необходимо, поэтому используется ещё одно хранилище, предназначенное для хранения так называемых <strong>cookies</strong>.</p>
+
+            <p>Это текстовые данные в формате «ключ-значение», которые сервер генерирует и передаёт в своём ответе в заголовке <strong>Set-Cookie</strong>. Например, после успешной авторизации на сайте соцсети создаётся уникальный идентификатор сессии, который передаётся браузеру через cookies, чтобы тот её сохранил и передавал серверу при каждом следующем запросе, используя заголовок <strong>Cookie</strong>. Сервер получает от браузера эту cookies, сверяет её с тем, что есть у него, и понимает, что этот пользователь на сайте уже авторизован — можно пускать в личный кабинет без повторной авторизации.</p>
+
+            <p>Кроме ключа и значения существует ещё множество дополнительных параметров, которые сервер может передать в этом же заголовке через точку с запятой. Первая группа параметров отвечает за привязку к конкретному адресу сайта: <strong>Domain</strong> указывает домен, к которому относятся cookies (если он указан, cookies будут относиться и к его поддоменам; если нет — берётся основной домен сайта без поддоменов); <strong>Path</strong> — путь, по которому будут доступны cookies, включая все подпути справа. Вторая группа относится к сроку жизни: если никакое время не передаётся, cookies являются временными и удаляются при закрытии браузера (хотя их можно восстановить, если в браузере включено автоматическое восстановление сеанса); чтобы сделать cookies постоянной, передаётся либо параметр <strong>Expires</strong> с датой удаления, либо параметр <strong>Max-Age</strong> с продолжительностью жизни в секундах. Третья группа связана с безопасностью: <strong>Secure</strong> позволяет отправлять cookies только тогда, когда используется HTTPS; <strong>HttpOnly</strong> запрещает получать доступ к таким cookies через JavaScript — это в некоторой степени решает проблемы с XSS-атаками.</p>
+
+            <p>Проще говоря, XSS-атака — это внедрение вредоносного JavaScript-кода на сайт, который будет выполняться для каждого, кто на эту страницу зайдёт. Например, будут считываться cookies пользователей и отправляться по определённому адресу. Внедряется такой код, например, через отправку формы с комментариями или форму поиска — в том случае, если на стороне сервера эти данные никак не проверяются и не экранируются. Так вот, cookies с параметром HttpOnly при поддержке его браузером доступны JavaScript не будут.</p>
+
+            <p>Третий параметр называется <strong>SameSite</strong>. Чтобы понять, зачем он нужен, нужно познакомиться с такой атакой, как <strong>CSRF</strong> (Cross-Site Request Forgery). Самый утрированный пример, в котором разработчики сайта вообще не задумывались о безопасности: пускай у нас есть пользователь, который авторизован на сайте банка в своём личном кабинете — иными словами, у него в браузере есть сессионная cookies, которая привязана к домену банка. Наш пользователь продолжает серфить в интернете и случайно заходит на сайт злоумышленника, который пытается такую атаку провести. На этом сайте есть скрытая форма с методом POST и есть JavaScript, который отправляет её на страницу банка с целью совершить денежный перевод. Этот скрипт будет срабатывать для каждого человека, который на эту страницу попадёт. И в каждом таком запросе вместе с данными на сервер будут передаваться все cookies пользователя, которые относятся к этому сайту банка. Соответственно, сессионная cookies тоже будет отправлена: сервер увидит, что пользователь авторизован, а значит, позволит ему совершить денежный перевод, при этом сам пользователь ничего про этот перевод знать не будет.</p>
+
+            <p>Причём это не обязательно может быть именно скрипт — это может быть обычная картинка через тег img, в атрибуте src которой указана ссылка на совершение какого-то действия на сервере: при попадании на такую страницу браузер попытается загрузить изображение, выполнив запрос по этой ссылке от нашего имени. Одним из решений этой проблемы является создание <strong>CSRF-токена</strong>, который генерируется на сервере, например, при успешной авторизации, и отправляется клиенту на время текущей сессии. Этот токен вкладывается в какие-то данные, и сервер, получив наш запрос, проверяет этот токен среди переданных в форме данных. Если его там нет или он неправильный, такой запрос будет отклонён. А так как злоумышленник доступа к нашему CSRF-токену не имеет, атака не проходит.</p>
+
+            <p>Другим более поздним решением этой проблемы является как раз параметр <strong>SameSite</strong>, который мы можем использовать в cookies. Он не позволяет браузеру отправлять cookies на сервер, если запрос на этот сайт осуществляется с другого сайта. Под сайтом здесь подразумевается не только домен: один и тот же сайт с двумя разными протоколами будет считаться разными сайтами. У этого параметра есть три значения: <strong>None</strong> — как и раньше; <strong>Lax</strong> — используется по умолчанию и тоже не позволяет передавать cookies при межсайтовом запросе, за исключением перехода пользователя по ссылке; <strong>Strict</strong> — полностью запрещает отправку cookies при межсайтовом запросе. Отправка запроса через изображение и формы приводит к тому, что скрипт злоумышленника не получает от сервера никакого ответа, но он точно так же может отправить запрос через JavaScript — fetch или XMLHttpRequest. В этом случае ответ он получить может, но здесь в игру вступает такое понятие, как <strong>CORS</strong>.</p>
+
+            <h3>📌 CORS: правила межсайтовых запросов</h3>
+
+            <p>Проще говоря, CORS — это правила по взаимодействию между доменами. Все межсайтовые GET-запросы могут передавать только простые заголовки из специального списка. В этом случае браузер добавит заголовок <strong>Origin</strong>, в котором укажет источник, с которого отправлялся запрос. Здесь учитываются не только протокол и домен, но и поддомен с портом. Если сервер готов принимать запросы с этого источника, то в ответ он должен передать заголовок <strong>Access-Control-Allow-Origin</strong>, в котором будет записан либо сам источник, либо звёздочка, удовлетворяющая любым источникам. Если браузер не увидит в ответе такого заголовка, то ответ от сервера скрипту будет недоступен, и вместо ответа он получит ошибку.</p>
+
+            <p>Кроме тела ответа, JavaScript может читать и заголовки, переданные сервером, но по умолчанию для чтения доступны только простые из них. Чтобы скрипт имел возможность читать и другие заголовки, сервер сам должен разрешить это сделать, передав заголовок <strong>Access-Control-Expose-Headers</strong>, в котором допустимые для чтения заголовки будут перечислены. Все остальные запросы, которые этим требованиям не удовлетворяют, считаются сложными. Главное отличие здесь состоит в том, что перед тем, как отправить сложный запрос, браузер отправит на сервер сначала <strong>preflight</strong>-запрос для того, чтобы сервер подтвердил, что согласен такой запрос принять. В этом запросе браузер передаст три заголовка: снова Origin, непростые заголовки, которые нужно передать, и название непростого метода, с которым серверу предстоит работать. В ответ сервер снова должен передать три Access-Control-заголовка, в каждом из которых выдаст свои разрешения. Вместе с ними он может послать ещё заголовок <strong>Access-Control-Max-Age</strong>, в котором укажет количество секунд, на которые эти разрешения могут быть закэшированы, чтобы браузеру при повторном запросе не приходилось спрашивать всё по новой. После этого браузер отправит уже тот самый запрос, который мы разбирали для простого случая.</p>
+
+            <p>Что касается cookies для того сайта, на который мы передаём запрос, то они по умолчанию не уходят. Однако скрипт может добавить в своём запросе поле credentials — и cookies отправятся, но сервер снова должен явно подтвердить своим заголовком Access-Control-Allow-Credentials. При этом в заголовке Access-Control-Allow-Origin должен быть указан конкретный источник, а не просто звёздочка. Не так давно было предложено использовать в названиях cookies специальные префиксы: <strong>__Secure-</strong> — cookies будет установлена, только если используется с параметром Secure; для префикса <strong>__Host-</strong> — те же самые правила, только параметр Domain использоваться не должен, а параметр Path должен иметь значение «/».</p>
+
+            <h3>📌 WebSocket: постоянное соединение</h3>
+
+            <p>Несмотря на такой разросшийся функционал интернета, он долгое время представлял из себя некий справочник: мы заходим, отправляем запрос на получение веб-страницы, просматриваем её и закрываем. Для этих целей HTTP в формате «запрос — ответ» подходил идеально. Но со временем интернет превратился в средство непрерывного общения и потребления постоянно обновляющегося контента, из-за чего HTTP-протокол перестал быть таким уж универсальным.</p>
+
+            <p>Самый простой пример — социальная сеть. Когда мы заходим на страницу с нашими диалогами, то через HTTP-протокол запрашиваем у сервера эту страницу со всеми диалогами, получаем от него эти данные и закрываем соединение. Получается, что если какой-то пользователь после этого пошлёт нам сообщение, оно будет добавлено в базу данных на сервере, но сервер не сможет нам об этом сообщить, так как соединение закрыто. То есть узнаем мы об этом сообщении только тогда, когда снова отправим запрос серверу на получение этой страницы с обновлёнными данными — нам нужно каждый раз перезагружать страницу, чтобы видеть обновление. Разумеется, все мы привыкли, что уведомления о новых сообщениях отправляются нам сами, без нашего участия. Такое возможно реализовать через HTTP, используя разные техники вроде long polling, но все они несут в себе существенные ограничения.</p>
+
+            <p>Поэтому в 2011 году до ума был доведён протокол <strong>WebSocket</strong>, который, в отличие от HTTP, позволяет сохранять постоянное соединение между клиентом и сервером. Работает этот протокол тоже через IP на тех же самых портах, что и HTTP, и начинается он с того, что мы снова посылаем серверу стандартный запрос методом GET — целью его договориться с сервером о передаче данных через WebSocket. Для этого мы в заголовке Connection указываем Upgrade, в заголовке Upgrade указываем websocket, передаём 16-байтовый сгенерированный ключ в кодировке Base64 и версию протокола. Сервер, в свою очередь, тоже отвечает нам стандартным HTTP-ответом с полями Upgrade и кодом <strong>101</strong>, информирующим о переключении протоколов. Помимо этого, сервер тоже передаёт нам специальный ключ в заголовке Sec-WebSocket-Accept на основе того ключа, который браузер передал ему. На основе полученного ключа браузер убеждается, что этот ответ на установку WebSocket-соединения точно предназначается ему.</p>
+
+            <p>Все последующие запросы будут передаваться между клиентом и сервером через протокол WebSocket. Данные в этом протоколе передаются небольшими фрагментами, называемыми кадрами. Каждый такой кадр состоит из бинарного заголовка и самих данных. Первый бит показывает наличие фрагментации данных: если там стоит 0 — данные были разбиты на фрагменты и сейчас передаётся один из них; если 1 — либо это последний фрагмент, либо данные состоят всего из одного фрагмента. Следующие три бита используются для расширения протокола WebSocket, о которых клиент и сервер договариваются во время установки соединения через HTTP-запросы: например, через заголовок Sec-WebSocket-Extensions браузер может указать, что поддерживает сжатие данных определённым методом, а через заголовок Sec-WebSocket-Protocol — что собирается передавать данные, упакованные в дополнительный подпротокол. В ответ сервер через эти же заголовки указывает, что из этого он поддерживает и готов принять.</p>
+
+            <p>Следующее поле opcode содержит тип передаваемого кадра: текстовые данные, ping/pong для поддержания соединения или кадр закрытия с четырёхзначными кодами. Кадр ping отправляется через определённый промежуток времени, чтобы удостовериться, что клиент находится в рабочем состоянии и готов продолжать принимать запросы; клиент отвечает кадром pong, подтверждая свою работоспособность. Следующий бит — бит маски: если он установлен в 1, значит, данные маскируются с помощью специального четырёхбайтового ключа, который находится в заголовке чуть дальше. Используется это для предотвращения атаки отравления кэша. Исходные данные, которые будут размещены в самом конце кадра, ксорятся с этим ключом и передаются на сервер. В таком виде длина этих данных указывается после бита маски: по умолчанию для неё отведено 7 бит, но максимальное значение, которое в них можно указать, составляет 125. Если будет указано 126 — длина данных будет считываться из следующих двух байт; если 127 — из следующих восьми байт.</p>
+
+            <p>Несмотря на то что все необходимые протоколы давно были созданы, их развитие не останавливается и по сей день. Например, в 2015 году появилась версия <strong>HTTP/2</strong>, в которой вместо текстовой передачи реализована бинарная, добавлено сжатие, приоритеты, нумерация запросов. В 2019 году появился <strong>QUIC</strong>, непосредственно связанный с протоколом транспортного уровня.</p>
+
+            <h3>📌 Итоги блока</h3>
+
+            <p>Мы прошли путь от идеи гипертекста Тимa Бернерс-Ли до WebSocket. Ключевая логика такая: HTML задаёт структуру документа; URL указывает, куда идти; HTTP описывает правила запроса и ответа; TLS обеспечивает шифрование, целостность и подлинность; cookies и сессии дают состояние поверх stateless-протокола; CORS и SameSite защищают от межсайтовых атак; WebSocket позволяет держать соединение открытым для реального времени. Понимание этого слоя — база для управления веб-проектами, оценки рисков и цифровой трансформации бизнеса.</p>
+
+            <p>Спасибо за внимание! На этом мы завершаем курс «Как устроен интернет» — от холодной войны до WebSocket.</p>
+
+        </div>
+
+        <!-- ============================================================
+             СЛОВАРЬ АББРЕВИАТУР (в правой панели)
+             ============================================================ -->
+        <section class="notes-section" aria-labelledby="glossary-title">
+            <div class="notes-section-title" id="glossary-title">
+                <span aria-hidden="true">📖</span> Словарь аббревиатур
+            </div>
+            <table class="notes-table">
+                <thead>
+                    <tr>
+                        <th style="width: 16%;">Аббр.</th>
+                        <th style="width: 34%;">Расшифровка</th>
+                        <th>Пояснение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="abbr">HTML</td>
+                        <td>HyperText Markup Language</td>
+                        <td class="explain">Язык гипертекстовой разметки; первая версия — 18 тегов (1991)</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">CSS</td>
+                        <td>Cascading Style Sheets</td>
+                        <td class="explain">Язык описания внешнего вида HTML-элементов; стандартизирован W3C</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">W3C</td>
+                        <td>World Wide Web Consortium</td>
+                        <td class="explain">Консорциум (1994), разрабатывающий стандарты веба; возглавил Тим Бернерс-Ли</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">URL</td>
+                        <td>Uniform Resource Locator</td>
+                        <td class="explain">Адрес ресурса: протокол, домен/IP, порт, путь, параметры, якорь</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">HTTP</td>
+                        <td>HyperText Transfer Protocol</td>
+                        <td class="explain">Протокол передачи гипертекста; версии 0.9, 1.0, 1.1, 2</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">HTTPS</td>
+                        <td>HTTP Secure</td>
+                        <td class="explain">HTTP поверх TLS; порт 443 вместо 80</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">TLS</td>
+                        <td>Transport Layer Security</td>
+                        <td class="explain">Шифрование, MAC для целостности, цифровые подписи и сертификаты</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">MAC</td>
+                        <td>Message Authentication Code</td>
+                        <td class="explain">Код аутентификации сообщения для проверки целостности данных</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">CORS</td>
+                        <td>Cross-Origin Resource Sharing</td>
+                        <td class="explain">Правила межсайтовых запросов: Origin, preflight, Access-Control-*</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">XSS</td>
+                        <td>Cross-Site Scripting</td>
+                        <td class="explain">Внедрение вредоносного JS на сайт; защита — HttpOnly, экранирование</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">CSRF</td>
+                        <td>Cross-Site Request Forgery</td>
+                        <td class="explain">Подделка межсайтового запроса; защита — CSRF-токен, SameSite</td>
+                    </tr>
+                    <tr>
+                        <td class="abbr">WebSocket</td>
+                        <td>WebSocket Protocol</td>
+                        <td class="explain">Постоянное соединение (2011); кадры, ping/pong, маскирование; RFC 6455</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ============================================================
+             ИСТОЧНИКИ (в правой панели)
+             ============================================================ -->
+        <section class="notes-section" aria-labelledby="sources-title">
+            <div class="notes-section-title" id="sources-title">
+                <span aria-hidden="true">📚</span> Источники и литература
+            </div>
+            <div class="notes-sources">
+                <div class="src-group">🌐 HTTP и веб-стандарты</div>
+                <ol>
+                    <li>RFC 2616 — HTTP/1.1. — IETF.</li>
+                    <li>RFC 7230–7235 — HTTP/1.1: Message Syntax and Routing. — IETF.</li>
+                    <li>RFC 9110 — HTTP Semantics. — IETF.</li>
+                    <li>RFC 7540 — HTTP/2. — IETF.</li>
+                    <li>RFC 6455 — The WebSocket Protocol. — IETF.</li>
+                </ol>
+                <div class="src-group">🔐 TLS и безопасность</div>
+                <ol start="6">
+                    <li>RFC 8446 — TLS 1.3. — IETF.</li>
+                    <li>RFC 6265 — HTTP State Management Mechanism (cookies). — IETF.</li>
+                    <li>Материалы OWASP по XSS, CSRF и CORS.</li>
+                </ol>
+                <div class="src-group">📖 История и стандартизация</div>
+                <ol start="9">
+                    <li>Тим Бернерс-Ли. Information Management: A Proposal. — CERN, 1989.</li>
+                    <li>Материалы W3C по истории HTML и CSS.</li>
+                </ol>
+                <div class="src-group">📚 Дополнительно</div>
+                <ol start="11">
+                    <li>Э. Таненбаум, Д. Уэзеролл. Компьютерные сети. — 5-е изд.</li>
+                    <li>Материалы по браузерным войнам (Mosaic, Netscape, Internet Explorer, Firefox, Chrome, Safari).</li>
+                </ol>
+            </div>
+        </section>
+    </div>
+
+    <!-- СКРИПТ -->
+    <script>
+        function changeVideo(embedUrl) {
+            document.getElementById('lecture-player').src = embedUrl;
+        }
+    </script>
+
+    <!-- ============================================================
+         НАВИГАЦИЯ МЕЖДУ ЛЕКЦИЯМИ
+         ============================================================ -->
+ <nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
+    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+
+    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+        <span class="arrow-icon">←</span>
+        <span class="arrow-label">
+            <small>Назад</small>
+            <span class="arrow-title" id="prevTitle">К содержанию</span>
+        </span>
+    </a>
+
+    <div class="nav-center">
+        <div class="nav-counter">
+            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        </div>
+        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+    </div>
+
+    <a href="#" class="nav-btn-arrow" id="nextBtn">
+        <span class="arrow-label" style="align-items:flex-end;">
+            <small>Вперёд</small>
+            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+        </span>
+        <span class="arrow-icon">→</span>
+    </a>
+
+    <div class="nav-jump">
+        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+    </div>
+</nav>
+
+<script>
+(function(){
+    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+    const CURRENT_LECTURE = 8; 
+
+    // Массив всех 18 лекций (теперь без папок)
+    const LECTURES = {
+        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+    };
+
+    const TOTAL = 18;
+    const current = CURRENT_LECTURE;
+    const prev = current > 1 ? current - 1 : null;
+    const next = current < TOTAL ? current + 1 : null;
+
+    // Обновляем счетчик и прогресс-бар
+    document.getElementById('currentNum').textContent = current;
+    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
+
+    // Настройка кнопки "Назад"
+    const prevBtn = document.getElementById('prevBtn');
+    if (prev) {
+        prevBtn.href = LECTURES[prev].path;
+        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+    } else {
+        prevBtn.href = 'index.html';
+        document.getElementById('prevTitle').textContent = 'К содержанию';
+    }
+
+    // Настройка кнопки "Вперёд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (next) {
+        nextBtn.href = LECTURES[next].path;
+        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+    } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.onclick = (e) => e.preventDefault();
+        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    }
+
+    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
+    let currentCourse = 'os';
+    if (current >= 6 && current <= 8) currentCourse = 'net';
+    else if (current >= 9 && current <= 13) currentCourse = 'office';
+    else if (current >= 14) currentCourse = 'ai';
+
+    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
+        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+    });
+
+    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+        else if (e.key === 'Home') window.location.href = 'index.html';
+    });
+})();
+</script>
+</body>
+</html>
