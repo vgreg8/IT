@@ -1328,9 +1328,10 @@
 </script>
     <!-- Управление автопрокруткой по клику/клавише -->
 <!-- Управление автопрокруткой на 25 минут с возможностью ручного скролла -->
+<!-- Управление автопрокруткой на 25 минут с поддержкой ручного перехвата -->
 <script>
 (function() {
-    const totalDurationMin = 25; // Время работы скрипта изменено на 25 минут
+    const totalDurationMin = 25; // 25 минут
     const totalDurationMs = totalDurationMin * 60 * 1000;
     
     const studentBlock = document.querySelector('.student-view');
@@ -1340,48 +1341,79 @@
 
     let isRunning = false; 
     let startTime = null;
-    let startScrollStudent = 0;
-    let startScrollSpeaker = 0;
     let animationFrameId = null;
 
-    // Вычисляем оставшийся путь для каждого блока на момент старта/возобновления
-    function getRemainingScroll() {
-        const maxStudent = studentBlock.scrollHeight - studentBlock.clientHeight;
-        const maxSpeaker = speakerBlock.scrollHeight - speakerBlock.clientHeight;
-        
-        return {
-            student: Math.max(0, maxStudent - studentBlock.scrollTop),
-            speaker: Math.max(0, maxSpeaker - speakerBlock.scrollTop)
-        };
+    // Переменные для хранения точной накопленной виртуальной позиции скролла
+    let virtualStudentTop = 0;
+    let virtualSpeakerTop = 0;
+
+    // Флаг, отслеживающий ручное вмешательство пользователя
+    let userInteracted = false;
+
+    // Вспомогательная функция для расчета максимума прокрутки
+    function getMaxScroll(element) {
+        return element.scrollHeight - element.clientHeight;
     }
 
+    // Слушатели ручного скролла: если пользователь крутит колесико, 
+    // мы синхронизируем виртуальные координаты с его новой ручной позицией
+    function handleUserScroll() {
+        if (!isRunning) return;
+        userInteracted = true;
+    }
+    studentBlock.addEventListener('wheel', handleUserScroll, { passive: true });
+    speakerBlock.addEventListener('wheel', handleUserScroll, { passive: true });
+    studentBlock.addEventListener('touchmove', handleUserScroll, { passive: true });
+    speakerBlock.addEventListener('touchmove', handleUserScroll, { passive: true });
+
     function loop(timestamp) {
-        if (!startTime) startTime = timestamp;
+        if (!startTime) {
+            startTime = timestamp;
+            // Инициализируем стартовую позицию от текущего положения скролла
+            virtualStudentTop = studentBlock.scrollTop;
+            virtualSpeakerTop = speakerBlock.scrollTop;
+        }
+
         const elapsed = timestamp - startTime;
-        
-        // Вычисляем прогресс текущего отрезка движения (от 0 до 1)
         const progress = Math.min(elapsed / totalDurationMs, 1);
 
-        const remaining = getRemainingScroll();
+        const maxStudent = getMaxScroll(studentBlock);
+        const maxSpeaker = getMaxScroll(speakerBlock);
 
-        // Если хотя бы одному блоку есть куда двигаться, и время не вышло
-        if (progress < 1 && (remaining.student > 0 || remaining.speaker > 0)) {
+        // Если пользователь вмешался руками, пересчитываем виртуальную позицию от его нового положения
+        if (userInteracted) {
+            virtualStudentTop = studentBlock.scrollTop;
+            virtualSpeakerTop = speakerBlock.scrollTop;
+            userInteracted = false; // сбрасываем флаг
+        }
+
+        if (progress < 1) {
+            // Рассчитываем, сколько пикселей ОСТАЛОСЬ пройти от ТЕКУЩЕГО положения до конца
+            const remainingTime = totalDurationMs - elapsed;
             
-            // Рассчитываем и прибавляем смещение на основе оставшегося пути
-            // Использование scrollBy() позволяет не конфликтовать с ручным скроллом
-            const currentDurationMs = totalDurationMs - elapsed;
-            if (currentDurationMs > 0) {
-                const stepStudent = remaining.student / (currentDurationMs / 16.67); 
-                const stepSpeaker = remaining.speaker / (currentDurationMs / 16.67);
+            if (remainingTime > 0) {
+                const remainingStudent = Math.max(0, maxStudent - virtualStudentTop);
+                const remainingSpeaker = Math.max(0, maxSpeaker - virtualSpeakerTop);
 
-                if (remaining.student > 0) studentBlock.scrollBy(0, stepStudent);
-                if (remaining.speaker > 0) speakerBlock.scrollBy(0, stepSpeaker);
+                // Сколько нужно прибавлять за 1 миллисекунду на этом этапе
+                // Отрезок кадра между loop обычно ~16.67мс. Считаем приращение:
+                const frameTime = timestamp - (window._lastPosTimestamp || timestamp) || 16.67;
+                window._lastPosTimestamp = timestamp;
+
+                if (remainingStudent > 0) {
+                    virtualStudentTop += (remainingStudent / remainingTime) * frameTime;
+                    studentBlock.scrollTop = Math.round(virtualStudentTop);
+                }
+                if (remainingSpeaker > 0) {
+                    virtualSpeakerTop += (remainingSpeaker / remainingTime) * frameTime;
+                    speakerBlock.scrollTop = Math.round(virtualSpeakerTop);
+                }
             }
 
             animationFrameId = requestAnimationFrame(loop);
         } else {
             isRunning = false;
-            console.log("⏱️ 25 минут прошло или достигнут конец лекции. Прокрутка завершена.");
+            console.log("⏱️ Время вышло. Прокрутка завершена.");
         }
     }
 
@@ -1390,26 +1422,37 @@
             // ПАУЗА
             cancelAnimationFrame(animationFrameId);
             isRunning = false;
-            startTime = null; // Сбрасываем точку отсчета для корректного возобновления
+            startTime = null;
+            window._lastPosTimestamp = null;
+            
+            // Возвращаем стандартное плавное поведение браузера при ручном клике на ссылки меню
+            studentBlock.style.scrollBehavior = 'smooth';
             console.log("⏸️ Автопрокрутка на паузе");
         } else {
-            // ЗАПУСК / ПРОДОЛЖЕНИЕ
+            // ЗАПУСК
             isRunning = true;
-            console.log("▶️ Автопрокрутка запущена на 25 минут. Ручной скролл доступен.");
+            startTime = null;
+            window._lastPosTimestamp = null;
+            
+            // Важно: временно отключаем CSS smooth-scroll, иначе он блокирует микро-шаги JS
+            studentBlock.style.scrollBehavior = 'auto';
+            
+            console.log("▶️ Автопрокрутка запущена на 25 минут.");
             animationFrameId = requestAnimationFrame(loop);
         }
     }
 
-    // === Управление через ПРОБЕЛ ===
+    // Обработчик клавиши ПРОБЕЛ
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        
         if (e.key === ' ' || e.code === 'Space') {
-            e.preventDefault(); 
+            e.preventDefault(); // Предотвращаем стандартный прыжок страницы вниз от пробела
             toggleScroll();
         }
     });
 
-    // === Управление КЛИКОМ КОЛЕСИКА мыши (средней кнопкой) ===
+    // Обработчик клика КОЛЕСИКОМ мыши
     document.addEventListener('mousedown', (e) => { 
         if (e.button === 1) {
             e.preventDefault();
@@ -1417,15 +1460,16 @@
         }
     });
 
-    // Интеграция с внешней остановкой
     window.stopAutoScroll = () => {
         cancelAnimationFrame(animationFrameId);
         isRunning = false;
         startTime = null;
+        studentBlock.style.scrollBehavior = 'smooth';
         console.log("🛑 Прокрутка полностью остановлена.");
     };
 })();
 </script>
+
 
 
 </body>
