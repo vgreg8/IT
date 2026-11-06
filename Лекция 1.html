@@ -393,5 +393,67 @@
     });
 })();
 </script>
+	<!-- Автопрокрутка лекции на 15 минут -->
+<script>
+(function() {
+    const totalDurationMin = 15; // Время работы скрипта в минутах
+    const totalDurationMs = totalDurationMin * 60 * 1000;
+    const intervalMs = 100; // Частота обновления (раз в 0.1 сек)
+    
+    // Находим оба блока по их классам из HTML
+    const studentBlock = document.querySelector('.student-view');
+    const speakerBlock = document.querySelector('.speaker-notes');
+
+    if (!studentBlock || !speakerBlock) return;
+
+    // Вычисляем максимальное расстояние для скролла в каждом блоке
+    const maxScrollStudent = studentBlock.scrollHeight - studentBlock.clientHeight;
+    const maxScrollSpeaker = speakerBlock.scrollHeight - speakerBlock.clientHeight;
+
+    // Считаем, на сколько пикселей нужно скроллить за один шаг
+    const totalSteps = totalDurationMs / intervalMs;
+    const stepStudent = maxScrollStudent / totalSteps;
+    const stepSpeaker = maxScrollSpeaker / totalSteps;
+
+    let currentStep = 0;
+    let isPaused = false;
+
+    // Отслеживаем наведение мыши на блоки для паузы
+    [studentBlock, speakerBlock].forEach(block => {
+        block.addEventListener('mouseenter', () => { isPaused = true; });
+        block.addEventListener('mouseleave', () => { isPaused = false; });
+    });
+
+    const scrollInterval = setInterval(() => {
+        // Если мышка наведена на блок — скролл стоит на месте
+        if (isPaused) return;
+
+        currentStep++;
+
+        // Прокручиваем левый блок
+        if (studentBlock.scrollTop < maxScrollStudent) {
+            studentBlock.scrollTop = currentStep * stepStudent;
+        }
+
+        // Прокручиваем правый блок
+        if (speakerBlock.scrollTop < maxScrollSpeaker) {
+            speakerBlock.scrollTop = currentStep * stepSpeaker;
+        }
+
+        // Если вышло время, останавливаем таймер
+        if (currentStep >= totalSteps) {
+            clearInterval(scrollInterval);
+            console.log("⏱️ 15 минут прошло. Прокрутка завершена.");
+        }
+    }, intervalMs);
+
+    // Возможность остановить прокрутку из консоли браузера: stopAutoScroll()
+    window.stopAutoScroll = () => {
+        clearInterval(scrollInterval);
+        console.log("🛑 Прокрутка остановлена.");
+    };
+})();
+</script>
+
 </body>
 </html>
