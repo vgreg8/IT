@@ -1327,89 +1327,106 @@
 })();
 </script>
     <!-- Управление автопрокруткой по клику/клавише -->
+<!-- Управление автопрокруткой на 25 минут с возможностью ручного скролла -->
 <script>
 (function() {
-    const totalDurationMin = 15; 
+    const totalDurationMin = 25; // Время работы скрипта изменено на 25 минут
     const totalDurationMs = totalDurationMin * 60 * 1000;
-    const intervalMs = 100; 
     
     const studentBlock = document.querySelector('.student-view');
     const speakerBlock = document.querySelector('.speaker-notes');
 
     if (!studentBlock || !speakerBlock) return;
 
-    const maxScrollStudent = studentBlock.scrollHeight - studentBlock.clientHeight;
-    const maxScrollSpeaker = speakerBlock.scrollHeight - speakerBlock.clientHeight;
+    let isRunning = false; 
+    let startTime = null;
+    let startScrollStudent = 0;
+    let startScrollSpeaker = 0;
+    let animationFrameId = null;
 
-    const totalSteps = totalDurationMs / intervalMs;
-    const stepStudent = maxScrollStudent / totalSteps;
-    const stepSpeaker = maxScrollSpeaker / totalSteps;
+    // Вычисляем оставшийся путь для каждого блока на момент старта/возобновления
+    function getRemainingScroll() {
+        const maxStudent = studentBlock.scrollHeight - studentBlock.clientHeight;
+        const maxSpeaker = speakerBlock.scrollHeight - speakerBlock.clientHeight;
+        
+        return {
+            student: Math.max(0, maxStudent - studentBlock.scrollTop),
+            speaker: Math.max(0, maxSpeaker - speakerBlock.scrollTop)
+        };
+    }
 
-    let currentStep = 0;
-    let scrollInterval = null;
-    let isRunning = false; // По умолчанию скролл выключен
+    function loop(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        
+        // Вычисляем прогресс текущего отрезка движения (от 0 до 1)
+        const progress = Math.min(elapsed / totalDurationMs, 1);
 
-    // Функция запуска/остановки
-    function toggleScroll() {
-        if (isRunning) {
-            // Если работал — ставим на ПАУЗУ
-            clearInterval(scrollInterval);
-            scrollInterval = null;
-            isRunning = false;
-            console.log("⏸️ Автопрокрутка на паузе");
-        } else {
-            // Если стоял — ЗАПУСКАЕМ
-            isRunning = true;
-            console.log("▶️ Автопрокрутка запущена");
+        const remaining = getRemainingScroll();
+
+        // Если хотя бы одному блоку есть куда двигаться, и время не вышло
+        if (progress < 1 && (remaining.student > 0 || remaining.speaker > 0)) {
             
-            scrollInterval = setInterval(() => {
-                currentStep++;
+            // Рассчитываем и прибавляем смещение на основе оставшегося пути
+            // Использование scrollBy() позволяет не конфликтовать с ручным скроллом
+            const currentDurationMs = totalDurationMs - elapsed;
+            if (currentDurationMs > 0) {
+                const stepStudent = remaining.student / (currentDurationMs / 16.67); 
+                const stepSpeaker = remaining.speaker / (currentDurationMs / 16.67);
 
-                if (studentBlock.scrollTop < maxScrollStudent) {
-                    studentBlock.scrollTop = currentStep * stepStudent;
-                }
-                if (speakerBlock.scrollTop < maxScrollSpeaker) {
-                    speakerBlock.scrollTop = currentStep * stepSpeaker;
-                }
+                if (remaining.student > 0) studentBlock.scrollBy(0, stepStudent);
+                if (remaining.speaker > 0) speakerBlock.scrollBy(0, stepSpeaker);
+            }
 
-                if (currentStep >= totalSteps) {
-                    clearInterval(scrollInterval);
-                    isRunning = false;
-                    console.log("⏱️ 15 минут прошло. Прокрутка завершена.");
-                }
-            }, intervalMs);
+            animationFrameId = requestAnimationFrame(loop);
+        } else {
+            isRunning = false;
+            console.log("⏱️ 25 минут прошло или достигнут конец лекции. Прокрутка завершена.");
         }
     }
 
-    // === ВАРИАНТ 1: Управление через ПРОБЕЛ (Самый удобный для лекций) ===
+    function toggleScroll() {
+        if (isRunning) {
+            // ПАУЗА
+            cancelAnimationFrame(animationFrameId);
+            isRunning = false;
+            startTime = null; // Сбрасываем точку отсчета для корректного возобновления
+            console.log("⏸️ Автопрокрутка на паузе");
+        } else {
+            // ЗАПУСК / ПРОДОЛЖЕНИЕ
+            isRunning = true;
+            console.log("▶️ Автопрокрутка запущена на 25 минут. Ручной скролл доступен.");
+            animationFrameId = requestAnimationFrame(loop);
+        }
+    }
+
+    // === Управление через ПРОБЕЛ ===
     document.addEventListener('keydown', (e) => {
-        // Если фокус в текстовом поле (вдруг появится), ничего не делаем
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        
         if (e.key === ' ' || e.code === 'Space') {
-            e.preventDefault(); // Отменяем стандартный прыжок страницы от пробела
+            e.preventDefault(); 
             toggleScroll();
         }
     });
 
-    // === ВАРИАНТ 2: Управление КЛИКОМ МЫШКИ ===
-    // Если вам нужен именно клик мыши, раскомментируйте ОДИН из вариантов ниже:
-    
-    // А) Клик СРЕДНЕЙ кнопкой мыши (колесиком) в любом месте экрана (рекомендуется):
-    document.addEventListener('mousedown', (e) => { if (e.button === 1) toggleScroll(); });
-    
-    // Б) Клик ЛЕВОЙ кнопкой мыши, но ТОЛЬКО по фиксированной панели навигации внизу:
-    // document.getElementById('lectureNav').addEventListener('click', (e) => {
-    //     if (!e.target.closest('a') && !e.target.closest('button')) toggleScroll(); 
-    // });
+    // === Управление КЛИКОМ КОЛЕСИКА мыши (средней кнопкой) ===
+    document.addEventListener('mousedown', (e) => { 
+        if (e.button === 1) {
+            e.preventDefault();
+            toggleScroll();
+        }
+    });
 
+    // Интеграция с внешней остановкой
     window.stopAutoScroll = () => {
-        clearInterval(scrollInterval);
+        cancelAnimationFrame(animationFrameId);
         isRunning = false;
+        startTime = null;
         console.log("🛑 Прокрутка полностью остановлена.");
     };
 })();
 </script>
+
 
 </body>
 </html>
