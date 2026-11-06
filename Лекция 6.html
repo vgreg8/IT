@@ -1331,109 +1331,181 @@
 <div id="scroll-status-badge" style="position:fixed; top:20px; right:20px; z-index:99999; padding:6px 12px; background:rgba(15,23,42,0.85); color:#fff; border:1px solid #4a5568; border-radius:6px; font-family:sans-serif; font-size:11px; font-weight:bold; pointer-events:none; display:none; backdrop-filter:blur(4px);">⏸ ПАУЗА</div>
 
 <script>
-(function() {
-    const totalDurationMin = 25; // Время прокрутки — 25 минут
-    const totalDurationMs = totalDurationMin * 60 * 1000;
-    const intervalMs = 40; // Частота обновления (25 кадров в секунду — идеальный баланс плавности и стабильности)
-    
-    const studentBlock = document.querySelector('.student-view');
-    const speakerBlock = document.querySelector('.speaker-notes');
-    const badge = document.getElementById('scroll-status-badge');
+(function () {
+    'use strict';
 
-    if (!studentBlock || !speakerBlock) return;
+    function init() {
+        const totalDurationMin = 25;
+        const totalDurationMs = totalDurationMin * 60 * 1000;
+        const intervalMs = 40;
 
-    let scrollInterval = null;
-    let isRunning = false;
-    let currentStep = 0;
+        const studentBlock = document.querySelector('.student-view');
+        const speakerBlock = document.querySelector('.speaker-notes');
+        const badge = document.getElementById('scroll-status-badge');
 
-    // Считаем общее количество шагов за 25 минут
-    const totalSteps = totalDurationMs / intervalMs;
-
-    function toggleScroll() {
-        // Показываем индикатор при первом взаимодействии
-        badge.style.display = 'block';
-
-        if (isRunning) {
-            // Режим: ПАУЗА
-            clearInterval(scrollInterval);
-            scrollInterval = null;
-            isRunning = false;
-            
-            badge.textContent = "⏸ ПАУЗА";
-            badge.style.borderColor = "#dc2626";
-            studentBlock.style.scrollBehavior = 'smooth';
-            console.log("⏸️ Автопрокрутка поставлена на паузу");
-        } else {
-            // Режим: ЗАПУСК / ПРОДОЛЖЕНИЕ
-            isRunning = true;
-            badge.textContent = "▶ АВТО 25 МИН";
-            badge.style.borderColor = "#16a34a";
-            
-            // Временно отключаем плавность CSS, чтобы скрипт не конфликтовал с браузером
-            studentBlock.style.scrollBehavior = 'auto';
-
-            // Пересчитываем максимум прокрутки на момент старта (учитывает ручной скролл)
-            let maxStudent = studentBlock.scrollHeight - studentBlock.clientHeight;
-            let maxSpeaker = speakerBlock.scrollHeight - speakerBlock.clientHeight;
-
-            scrollInterval = setInterval(() => {
-                currentStep++;
-
-                // Сколько шагов ОСТАЛОСЬ сделать
-                const stepsLeft = totalSteps - currentStep;
-
-                if (stepsLeft > 0) {
-                    // Рассчитываем динамический шаг от текущей (!) ручной точки до конца страницы
-                    const distStudentLeft = maxStudent - studentBlock.scrollTop;
-                    const distSpeakerLeft = maxSpeaker - speakerBlock.scrollTop;
-
-                    if (distStudentLeft > 0) {
-                        studentBlock.scrollTop += (distStudentLeft / stepsLeft);
-                    }
-                    if (distSpeakerLeft > 0) {
-                        speakerBlock.scrollTop += (distSpeakerLeft / stepsLeft);
-                    }
-                }
-
-                // Конец времени
-                if (currentStep >= totalSteps) {
-                    clearInterval(scrollInterval);
-                    isRunning = false;
-                    badge.textContent = "⏱️ ЗАВЕРШЕНО";
-                    studentBlock.style.scrollBehavior = 'smooth';
-                }
-            }, intervalMs);
-
-            console.log("▶️ Автопрокрутка успешно запущена");
+        if (!studentBlock || !speakerBlock) {
+            console.warn('Автопрокрутка: не найдены .student-view или .speaker-notes');
+            return;
         }
+
+        const studentBehavior = studentBlock.style.scrollBehavior;
+        const speakerBehavior = speakerBlock.style.scrollBehavior;
+
+        let scrollInterval = null;
+        let isRunning = false;
+        let completed = false;
+        let activeElapsed = 0;
+        let lastTick = 0;
+
+        function setBadge(text, color) {
+            if (!badge) return;
+            badge.style.display = 'block';
+            badge.textContent = text;
+            badge.style.borderColor = color;
+        }
+
+        function setAutoBehavior() {
+            studentBlock.style.scrollBehavior = 'auto';
+            speakerBlock.style.scrollBehavior = 'auto';
+        }
+
+        function restoreBehavior() {
+            studentBlock.style.scrollBehavior = studentBehavior;
+            speakerBlock.style.scrollBehavior = speakerBehavior;
+        }
+
+        function finish() {
+            if (scrollInterval) {
+                clearInterval(scrollInterval);
+                scrollInterval = null;
+            }
+
+            isRunning = false;
+            completed = true;
+
+            const maxStudent = Math.max(studentBlock.scrollHeight - studentBlock.clientHeight, 0);
+            const maxSpeaker = Math.max(speakerBlock.scrollHeight - speakerBlock.clientHeight, 0);
+
+            studentBlock.scrollTop = maxStudent;
+            speakerBlock.scrollTop = maxSpeaker;
+
+            setBadge('⏱️ ЗАВЕРШЕНО', '#4a5568');
+            restoreBehavior();
+            console.log('⏱️ Автопрокрутка завершена');
+        }
+
+        function tick() {
+            const now = performance.now();
+            const remainingBefore = Math.max(totalDurationMs - activeElapsed, 0);
+
+            if (remainingBefore <= 0) {
+                finish();
+                return;
+            }
+
+            const delta = Math.max(now - lastTick, 0);
+            lastTick = now;
+
+            const stepMs = Math.min(delta, remainingBefore);
+            const fraction = stepMs / remainingBefore;
+
+            const maxStudent = Math.max(studentBlock.scrollHeight - studentBlock.clientHeight, 0);
+            const maxSpeaker = Math.max(speakerBlock.scrollHeight - speakerBlock.clientHeight, 0);
+
+            const distStudent = Math.max(maxStudent - studentBlock.scrollTop, 0);
+            const distSpeaker = Math.max(maxSpeaker - speakerBlock.scrollTop, 0);
+
+            if (distStudent > 0) studentBlock.scrollTop += distStudent * fraction;
+            if (distSpeaker > 0) speakerBlock.scrollTop += distSpeaker * fraction;
+
+            activeElapsed += stepMs;
+
+            if (activeElapsed >= totalDurationMs) {
+                finish();
+            }
+        }
+
+        function startOrResume() {
+            if (completed) {
+                activeElapsed = 0;
+                completed = false;
+            }
+
+            if (scrollInterval) clearInterval(scrollInterval);
+
+            isRunning = true;
+            setBadge('▶ АВТО 25 МИН', '#16a34a');
+            setAutoBehavior();
+
+            lastTick = performance.now();
+            scrollInterval = setInterval(tick, intervalMs);
+        }
+
+        function pause() {
+            if (scrollInterval) {
+                clearInterval(scrollInterval);
+                scrollInterval = null;
+            }
+
+            isRunning = false;
+            setBadge('⏸ ПАУЗА', '#dc2626');
+            restoreBehavior();
+        }
+
+        function toggleScroll() {
+            if (isRunning) pause();
+            else startOrResume();
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
+
+            const t = e.target;
+            const tag = t && t.tagName;
+
+            if (
+                tag === 'INPUT' ||
+                tag === 'TEXTAREA' ||
+                tag === 'SELECT' ||
+                (t && t.isContentEditable)
+            ) {
+                return;
+            }
+
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault();
+                toggleScroll();
+            }
+        }, true);
+
+        window.addEventListener('mousedown', (e) => {
+            if (e.button === 1) {
+                e.preventDefault();
+                toggleScroll();
+            }
+        }, true);
+
+        window.stopAutoScroll = () => {
+            if (scrollInterval) {
+                clearInterval(scrollInterval);
+                scrollInterval = null;
+            }
+
+            isRunning = false;
+            completed = false;
+            activeElapsed = 0;
+
+            if (badge) badge.style.display = 'none';
+            restoreBehavior();
+            console.log('🛑 Прокрутка полностью отключена.');
+        };
     }
 
-    // Глобальный перехват клавиши ПРОБЕЛ (работает, даже если кликнули мимо текста)
-    window.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        
-        if (e.key === ' ' || e.code === 'Space') {
-            e.preventDefault(); // Запрещаем браузеру стандартно прыгать вниз от пробела
-            toggleScroll();
-        }
-    }, true); // Флаг true заставляет событие срабатывать в первую очередь
-
-    // Глобальный перехват клика КОЛЕСИКОМ мыши (средняя кнопка)
-    window.addEventListener('mousedown', (e) => {
-        if (e.button === 1) {
-            e.preventDefault();
-            toggleScroll();
-        }
-    }, true);
-
-    // Функция полной экстренной остановки из консоли или других скриптов
-    window.stopAutoScroll = () => {
-        clearInterval(scrollInterval);
-        isRunning = false;
-        if(badge) badge.style.display = 'none';
-        studentBlock.style.scrollBehavior = 'smooth';
-        console.log("🛑 Прокрутка полностью отключена.");
-    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+        init();
+    }
 })();
 </script>
 
