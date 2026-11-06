@@ -660,5 +660,90 @@
     });
 })();
 </script>
+    <!-- Управление автопрокруткой по клику/клавише -->
+<script>
+(function() {
+    const totalDurationMin = 15; 
+    const totalDurationMs = totalDurationMin * 60 * 1000;
+    const intervalMs = 100; 
+    
+    const studentBlock = document.querySelector('.student-view');
+    const speakerBlock = document.querySelector('.speaker-notes');
+
+    if (!studentBlock || !speakerBlock) return;
+
+    const maxScrollStudent = studentBlock.scrollHeight - studentBlock.clientHeight;
+    const maxScrollSpeaker = speakerBlock.scrollHeight - speakerBlock.clientHeight;
+
+    const totalSteps = totalDurationMs / intervalMs;
+    const stepStudent = maxScrollStudent / totalSteps;
+    const stepSpeaker = maxScrollSpeaker / totalSteps;
+
+    let currentStep = 0;
+    let scrollInterval = null;
+    let isRunning = false; // По умолчанию скролл выключен
+
+    // Функция запуска/остановки
+    function toggleScroll() {
+        if (isRunning) {
+            // Если работал — ставим на ПАУЗУ
+            clearInterval(scrollInterval);
+            scrollInterval = null;
+            isRunning = false;
+            console.log("⏸️ Автопрокрутка на паузе");
+        } else {
+            // Если стоял — ЗАПУСКАЕМ
+            isRunning = true;
+            console.log("▶️ Автопрокрутка запущена");
+            
+            scrollInterval = setInterval(() => {
+                currentStep++;
+
+                if (studentBlock.scrollTop < maxScrollStudent) {
+                    studentBlock.scrollTop = currentStep * stepStudent;
+                }
+                if (speakerBlock.scrollTop < maxScrollSpeaker) {
+                    speakerBlock.scrollTop = currentStep * stepSpeaker;
+                }
+
+                if (currentStep >= totalSteps) {
+                    clearInterval(scrollInterval);
+                    isRunning = false;
+                    console.log("⏱️ 15 минут прошло. Прокрутка завершена.");
+                }
+            }, intervalMs);
+        }
+    }
+
+    // === ВАРИАНТ 1: Управление через ПРОБЕЛ (Самый удобный для лекций) ===
+    document.addEventListener('keydown', (e) => {
+        // Если фокус в текстовом поле (вдруг появится), ничего не делаем
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        
+        if (e.key === ' ' || e.code === 'Space') {
+            e.preventDefault(); // Отменяем стандартный прыжок страницы от пробела
+            toggleScroll();
+        }
+    });
+
+    // === ВАРИАНТ 2: Управление КЛИКОМ МЫШКИ ===
+    // Если вам нужен именно клик мыши, раскомментируйте ОДИН из вариантов ниже:
+    
+    // А) Клик СРЕДНЕЙ кнопкой мыши (колесиком) в любом месте экрана (рекомендуется):
+    document.addEventListener('mousedown', (e) => { if (e.button === 1) toggleScroll(); });
+    
+    // Б) Клик ЛЕВОЙ кнопкой мыши, но ТОЛЬКО по фиксированной панели навигации внизу:
+    // document.getElementById('lectureNav').addEventListener('click', (e) => {
+    //     if (!e.target.closest('a') && !e.target.closest('button')) toggleScroll(); 
+    // });
+
+    window.stopAutoScroll = () => {
+        clearInterval(scrollInterval);
+        isRunning = false;
+        console.log("🛑 Прокрутка полностью остановлена.");
+    };
+})();
+</script>
+
 </body>
 </html>
