@@ -1327,16 +1327,20 @@
 })();
 </script>
     <!-- Управление автопрокруткой по клику/клавише -->
-<!-- Надежная автопрокрутка на 25 минут с индикатором и ручным перехватом -->
-<div id="scroll-status-badge" style="position:fixed; top:20px; right:20px; z-index:99999; padding:6px 12px; background:rgba(15,23,42,0.85); color:#fff; border:1px solid #4a5568; border-radius:6px; font-family:sans-serif; font-size:11px; font-weight:bold; pointer-events:none; display:none; backdrop-filter:blur(4px);">⏸ ПАУЗА</div>
+<div id="scroll-status-badge"
+     style="position:fixed; top:20px; right:20px; z-index:99999; padding:8px 14px;
+            background:rgba(15,23,42,0.9); color:#fff; border:1px solid #4a5568;
+            border-radius:6px; font-family:sans-serif; font-size:12px; font-weight:bold;
+            cursor:pointer; user-select:none; backdrop-filter:blur(4px);">
+    ▶ ПРОБЕЛ / КЛИК — старт
+</div>
 
 <script>
 (function () {
     'use strict';
 
     function init() {
-        const totalDurationMin = 25;
-        const totalDurationMs = totalDurationMin * 60 * 1000;
+        const totalDurationMs = 25 * 60 * 1000;
         const intervalMs = 40;
 
         const studentBlock = document.querySelector('.student-view');
@@ -1356,10 +1360,11 @@
         let completed = false;
         let activeElapsed = 0;
         let lastTick = 0;
+        let accStudent = 0;   // накопитель дробной части
+        let accSpeaker = 0;
 
         function setBadge(text, color) {
             if (!badge) return;
-            badge.style.display = 'block';
             badge.textContent = text;
             badge.style.borderColor = color;
         }
@@ -1368,136 +1373,120 @@
             studentBlock.style.scrollBehavior = 'auto';
             speakerBlock.style.scrollBehavior = 'auto';
         }
-
         function restoreBehavior() {
             studentBlock.style.scrollBehavior = studentBehavior;
             speakerBlock.style.scrollBehavior = speakerBehavior;
         }
 
         function finish() {
-            if (scrollInterval) {
-                clearInterval(scrollInterval);
-                scrollInterval = null;
-            }
-
+            if (scrollInterval) { clearInterval(scrollInterval); scrollInterval = null; }
             isRunning = false;
             completed = true;
+            accStudent = accSpeaker = 0;
 
-            const maxStudent = Math.max(studentBlock.scrollHeight - studentBlock.clientHeight, 0);
-            const maxSpeaker = Math.max(speakerBlock.scrollHeight - speakerBlock.clientHeight, 0);
-
-            studentBlock.scrollTop = maxStudent;
-            speakerBlock.scrollTop = maxSpeaker;
+            const maxS = Math.max(studentBlock.scrollHeight - studentBlock.clientHeight, 0);
+            const maxP = Math.max(speakerBlock.scrollHeight - speakerBlock.clientHeight, 0);
+            studentBlock.scrollTop = maxS;
+            speakerBlock.scrollTop = maxP;
 
             setBadge('⏱️ ЗАВЕРШЕНО', '#4a5568');
             restoreBehavior();
-            console.log('⏱️ Автопрокрутка завершена');
         }
 
         function tick() {
             const now = performance.now();
             const remainingBefore = Math.max(totalDurationMs - activeElapsed, 0);
-
-            if (remainingBefore <= 0) {
-                finish();
-                return;
-            }
+            if (remainingBefore <= 0) { finish(); return; }
 
             const delta = Math.max(now - lastTick, 0);
             lastTick = now;
-
             const stepMs = Math.min(delta, remainingBefore);
             const fraction = stepMs / remainingBefore;
 
-            const maxStudent = Math.max(studentBlock.scrollHeight - studentBlock.clientHeight, 0);
-            const maxSpeaker = Math.max(speakerBlock.scrollHeight - speakerBlock.clientHeight, 0);
+            const maxS = Math.max(studentBlock.scrollHeight - studentBlock.clientHeight, 0);
+            const maxP = Math.max(speakerBlock.scrollHeight - speakerBlock.clientHeight, 0);
+            const distS = Math.max(maxS - studentBlock.scrollTop, 0);
+            const distP = Math.max(maxP - speakerBlock.scrollTop, 0);
 
-            const distStudent = Math.max(maxStudent - studentBlock.scrollTop, 0);
-            const distSpeaker = Math.max(maxSpeaker - speakerBlock.scrollTop, 0);
+            // Накапливаем дробную часть — гарантируем минимум 1px раз в несколько тиков
+            accStudent += distS * fraction;
+            accSpeaker += distP * fraction;
 
-            if (distStudent > 0) studentBlock.scrollTop += distStudent * fraction;
-            if (distSpeaker > 0) speakerBlock.scrollTop += distSpeaker * fraction;
+            const intS = Math.floor(accStudent);
+            const intP = Math.floor(accSpeaker);
+
+            if (intS > 0) { studentBlock.scrollTop += intS; accStudent -= intS; }
+            if (intP > 0) { speakerBlock.scrollTop += intP; accSpeaker -= intP; }
 
             activeElapsed += stepMs;
-
-            if (activeElapsed >= totalDurationMs) {
-                finish();
-            }
+            if (activeElapsed >= totalDurationMs) finish();
         }
 
         function startOrResume() {
-            if (completed) {
-                activeElapsed = 0;
-                completed = false;
-            }
-
+            if (completed) { activeElapsed = 0; completed = false; accStudent = accSpeaker = 0; }
             if (scrollInterval) clearInterval(scrollInterval);
-
             isRunning = true;
             setBadge('▶ АВТО 25 МИН', '#16a34a');
             setAutoBehavior();
-
             lastTick = performance.now();
             scrollInterval = setInterval(tick, intervalMs);
         }
 
         function pause() {
-            if (scrollInterval) {
-                clearInterval(scrollInterval);
-                scrollInterval = null;
-            }
-
+            if (scrollInterval) { clearInterval(scrollInterval); scrollInterval = null; }
             isRunning = false;
             setBadge('⏸ ПАУЗА', '#dc2626');
             restoreBehavior();
         }
 
         function toggleScroll() {
-            if (isRunning) pause();
-            else startOrResume();
+            if (isRunning) pause(); else startOrResume();
         }
 
+        // 1) Space — как было
         window.addEventListener('keydown', (e) => {
             if (e.repeat) return;
-
             const t = e.target;
             const tag = t && t.tagName;
-
-            if (
-                tag === 'INPUT' ||
-                tag === 'TEXTAREA' ||
-                tag === 'SELECT' ||
-                (t && t.isContentEditable)
-            ) {
-                return;
-            }
-
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' ||
+                (t && t.isContentEditable)) return;
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault();
                 toggleScroll();
             }
         }, true);
 
+        // 2) Средняя кнопка мыши
         window.addEventListener('mousedown', (e) => {
-            if (e.button === 1) {
-                e.preventDefault();
-                toggleScroll();
-            }
+            if (e.button === 1) { e.preventDefault(); toggleScroll(); }
         }, true);
 
+        // 3) Клик по бейджу — работает всегда
+        if (badge) {
+            badge.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleScroll();
+            });
+        }
+
+        // 4) Клик по самим контейнерам (кроме интерактивных элементов и iframe)
+        function bindContainer(el) {
+            el.addEventListener('click', (e) => {
+                if (e.target.closest('a, button, iframe, input, textarea, select, video, audio')) return;
+                if (window.getSelection().toString().length > 0) return; // не мешать выделению
+                toggleScroll();
+            });
+        }
+        bindContainer(studentBlock);
+        bindContainer(speakerBlock);
+
+        // Экстренная остановка из консоли
         window.stopAutoScroll = () => {
-            if (scrollInterval) {
-                clearInterval(scrollInterval);
-                scrollInterval = null;
-            }
-
-            isRunning = false;
-            completed = false;
-            activeElapsed = 0;
-
+            if (scrollInterval) { clearInterval(scrollInterval); scrollInterval = null; }
+            isRunning = false; completed = false;
+            activeElapsed = 0; accStudent = accSpeaker = 0;
             if (badge) badge.style.display = 'none';
             restoreBehavior();
-            console.log('🛑 Прокрутка полностью отключена.');
         };
     }
 
