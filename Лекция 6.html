@@ -72,7 +72,6 @@
             overflow: hidden;
             background: var(--c-bg);
             color: var(--c-text);
-            padding-bottom: 80px !important;
         }
 
         :focus-visible {
@@ -98,7 +97,7 @@
         }
         .speaker-notes {
             width: 33.34%;
-            height: 100%;
+            height: 100vh;
             background: var(--c-dark);
             color: var(--c-dark-text);
             padding: 28px;
@@ -547,10 +546,21 @@
            ============================================================ */
         .video-section { display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .video-container {
-            width: 100%; max-width: 580px;
-            border-radius: var(--r-lg); overflow: hidden;
-            box-shadow: var(--sh-lg); background: #000;
+            position: relative;
+            width: 100%;
+            max-width: 580px;
             aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: var(--r-lg);
+            overflow: hidden;
+            box-shadow: var(--sh-lg);
+        }
+        .video-container iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
         }
         .links-hub { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .video-btn {
@@ -563,6 +573,7 @@
         .video-btn:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
         .rt-btn { background: #00a877; }
         .rt-btn:hover { background: #008f65; }
+        .rt-btn.active { background: #2a6df4; color: #fff; font-weight: 600; }
         .stop-btn { background: #dc143c; }
         .stop-btn:hover { background: #b01030; }
 
@@ -736,25 +747,6 @@
             .tier-row { flex-wrap: wrap; }
             .tier-row .tr-analogy { max-width: 100%; flex-basis: 100%; }
         }
-        .video-container {
-    position: relative;
-    padding-top: 56.25%; /* 16:9 */
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-}
-.video-container iframe {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-}
-.rt-btn.active {
-    background: #2a6df4;
-    color: #fff;
-    font-weight: 600;
-}
     </style>
 </head>
 <body>
@@ -765,7 +757,7 @@
     <div class="student-view">
         <div>
             <h1 class="slide-header">
-                Лекция 1. Как и почему возник интернет: исторический блок
+                Лекция 6. Как и почему возник интернет: исторический блок
             </h1>
 
             <div class="slide-body">
@@ -1070,28 +1062,34 @@
                 </section>
 
                 <!-- ВИДЕО -->
-             <div class="video-section reveal">
-    <div class="video-container">
-        <iframe id="lecture-player"
-            src="https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266/"
-            width="100%" height="100%" frameborder="0"
-            allow="clipboard-write; autoplay; fullscreen"
-            allowfullscreen
-            title="Видеолекция"></iframe>
-    </div>
-    <div class="links-hub">
-        <button data-url="https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266/"
-                class="video-btn rt-btn active" onclick="changeVideo(this)">
-            📜 Лекция 1. Как и почему возник интернет
-        </button>
-        <button data-url="https://archive.org/embed/darpa_202611"
-                class="video-btn rt-btn" onclick="changeVideo(this)">
-            📜 Лекция 2. DARPA
-        </button>
-        <button class="video-btn stop-btn" onclick="stopVideo()">⏹ СТОП</button>
-    </div>
-</div>
+                <div class="video-section reveal">
+                    <div class="video-container">
+                        <iframe id="lecture-player"
+                            src="https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266/"
+                            width="100%" height="100%" frameborder="0"
+                            allow="clipboard-write; autoplay; fullscreen"
+                            allowfullscreen
+                            title="Видеолекция"></iframe>
+                    </div>
+                    <div class="links-hub">
+                        <button type="button"
+                                data-url="https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266/"
+                                class="video-btn rt-btn active"
+                                onclick="changeVideo(this)">
+                            📜 Лекция 1. Как и почему возник интернет
+                        </button>
+                        <button type="button"
+                                data-url="https://archive.org/embed/darpa_202611"
+                                class="video-btn rt-btn"
+                                onclick="changeVideo(this)">
+                            📜 Лекция 2. DARPA
+                        </button>
+                        <button type="button" class="video-btn stop-btn" onclick="stopVideo()">⏹ СТОП</button>
+                    </div>
+                </div>
 
+            </div>
+        </div>
 
         <div class="slide-footer">
             Направление «Менеджмент» | 1 курс | Курс: Как устроен интернет | Блок 1 из 3
@@ -1103,10 +1101,15 @@
         <!-- Фиксированная верхняя часть с плеером -->
         <div style="position: sticky; top: 0; background: #1a202c; padding: 20px 20px 10px 20px; border-bottom: 1px solid #4a5568; width: 100%; z-index: 100;">
             <div class="notes-header">
-               <iframe src="https://archive.org/embed/8_20261105/06.mp3" width="500" height="30" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen=""></iframe>
+                <iframe src="https://archive.org/embed/8_20261105/06.mp3" width="500" height="30" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen=""></iframe>
             </div>
             <div style="width: 100%; aspect-ratio: 16 / 9; border-radius: var(--r-sm); overflow: hidden; background: #000; box-shadow: var(--sh-md);">
-                <iframe id="right-lecture-player" src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"  allow="clipboard-write; autoplay" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen style="border: none;"></iframe>
+                <iframe id="right-lecture-player"
+                    src="https://archive.org/embed/20261020_20261020_0955?autoplay=true"
+                    allow="clipboard-write; autoplay"
+                    width="100%" height="100%" frameborder="0"
+                    webkitallowfullscreen mozallowfullscreen allowfullscreen
+                    style="border: none;"></iframe>
             </div>
         </div>
 
@@ -1233,336 +1236,333 @@
         </section>
     </div>
 
-    <!-- СКРИПТ -->
-    <script>
-        function changeVideo(embedUrl) {
-            document.getElementById('lecture-player').src = embedUrl;
-        }
-    </script>
-
     <!-- ============================================================
          НАВИГАЦИЯ МЕЖДУ ЛЕКЦИЯМИ
          ============================================================ -->
     <nav class="lecture-nav" id="lectureNav" aria-label="Навигация между лекциями">
-    <div class="nav-progress" id="navProgress" style="width:0%"></div>
+        <div class="nav-progress" id="navProgress" style="width:0%"></div>
 
-    <a href="index.html" class="nav-btn-arrow" id="prevBtn">
-        <span class="arrow-icon">←</span>
-        <span class="arrow-label">
-            <small>Назад</small>
-            <span class="arrow-title" id="prevTitle">К содержанию</span>
-        </span>
-    </a>
+        <a href="index.html" class="nav-btn-arrow" id="prevBtn">
+            <span class="arrow-icon">←</span>
+            <span class="arrow-label">
+                <small>Назад</small>
+                <span class="arrow-title" id="prevTitle">К содержанию</span>
+            </span>
+        </a>
 
-    <div class="nav-center">
-        <div class="nav-counter">
-            Лекция <span id="currentNum">1</span> <span>из 18</span>
+        <div class="nav-center">
+            <div class="nav-counter">
+                Лекция <span id="currentNum">6</span> <span>из 18</span>
+            </div>
+            <a href="index.html" class="nav-index-link">📚 К содержанию</a>
         </div>
-        <a href="index.html" class="nav-index-link">📚 К содержанию</a>
+
+        <a href="#" class="nav-btn-arrow" id="nextBtn">
+            <span class="arrow-label" style="align-items:flex-end;">
+                <small>Вперёд</small>
+                <span class="arrow-title" id="nextTitle">Следующая лекция</span>
+            </span>
+            <span class="arrow-icon">→</span>
+        </a>
+
+        <div class="nav-jump">
+            <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
+            <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
+            <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
+            <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
+        </div>
+    </nav>
+
+    <!-- Индикатор автопрокрутки -->
+    <div id="scroll-status-badge"
+         style="position:fixed; top:20px; right:20px; z-index:99999;
+                padding:8px 14px; background:rgba(15,23,42,0.9); color:#fff;
+                border:1px solid #4a5568; border-radius:6px;
+                font-family:monospace; font-size:12px; font-weight:bold;
+                cursor:pointer; user-select:none; backdrop-filter:blur(4px);">
+        ▶ ПРОБЕЛ / КЛИК — старт
     </div>
 
-    <a href="#" class="nav-btn-arrow" id="nextBtn">
-        <span class="arrow-label" style="align-items:flex-end;">
-            <small>Вперёд</small>
-            <span class="arrow-title" id="nextTitle">Следующая лекция</span>
-        </span>
-        <span class="arrow-icon">→</span>
-    </a>
+    <!-- ============================================================
+         СКРИПТЫ
+         ============================================================ -->
 
-    <div class="nav-jump">
-        <a href="Лекция 1.html" class="nav-jump-btn" data-jump="os">⚙️ ОС</a>
-        <a href="Лекция 6.html" class="nav-jump-btn" data-jump="net">🌐 Интернет</a>
-        <a href="Лекция 9.html" class="nav-jump-btn" data-jump="office">📄 Офис</a>
-        <a href="Лекция 14.html" class="nav-jump-btn" data-jump="ai">🤖 ИИ</a>
-    </div>
-</nav>
+    <!-- 1. Управление видеоплеером -->
+    <script>
+    function changeVideo(btn) {
+        if (!btn || !btn.dataset.url) return;
+        const player = document.getElementById('lecture-player');
+        if (!player) return;
+        player.src = btn.dataset.url;
 
-<script>
-(function(){
-    // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
-    const CURRENT_LECTURE = 6; 
-
-    // Массив всех 18 лекций (теперь без папок)
-    const LECTURES = {
-        1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
-        2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
-        3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
-        4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
-        5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
-        6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
-        7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
-        8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
-        9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
-        10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
-        11: { path: 'Лекция 11.html', title: 'Офис · Word' },
-        12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
-        13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
-        14: { path: 'Лекция 14.html', title: 'ИИ · История' },
-        15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
-        16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
-        17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
-        18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
-    };
-
-    const TOTAL = 18;
-    const current = CURRENT_LECTURE;
-    const prev = current > 1 ? current - 1 : null;
-    const next = current < TOTAL ? current + 1 : null;
-
-    // Обновляем счетчик и прогресс-бар
-    document.getElementById('currentNum').textContent = current;
-    document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
-
-    // Настройка кнопки "Назад"
-    const prevBtn = document.getElementById('prevBtn');
-    if (prev) {
-        prevBtn.href = LECTURES[prev].path;
-        document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
-    } else {
-        prevBtn.href = 'index.html';
-        document.getElementById('prevTitle').textContent = 'К содержанию';
+        document.querySelectorAll('.rt-btn').forEach(function (b) {
+            b.classList.remove('active');
+        });
+        btn.classList.add('active');
     }
 
-    // Настройка кнопки "Вперёд"
-    const nextBtn = document.getElementById('nextBtn');
-    if (next) {
-        nextBtn.href = LECTURES[next].path;
-        document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
-    } else {
-        nextBtn.removeAttribute('href');
-        nextBtn.style.opacity = '0.35';
-        nextBtn.style.cursor = 'not-allowed';
-        nextBtn.onclick = (e) => e.preventDefault();
-        document.getElementById('nextTitle').textContent = 'Это последняя лекция';
+    function stopVideo() {
+        const player = document.getElementById('lecture-player');
+        if (player) player.src = 'about:blank';
+        document.querySelectorAll('.rt-btn').forEach(function (b) {
+            b.classList.remove('active');
+        });
     }
+    </script>
 
-    // Подсветка активного курса (ОС, Интернет, Офис или ИИ)
-    let currentCourse = 'os';
-    if (current >= 6 && current <= 8) currentCourse = 'net';
-    else if (current >= 9 && current <= 13) currentCourse = 'office';
-    else if (current >= 14) currentCourse = 'ai';
+    <!-- 2. Навигация между лекциями -->
+    <script>
+    (function () {
+        // 🔧 ВАЖНО: ЗАМЕНИТЕ ЭТО ЧИСЛО НА НОМЕР ТЕКУЩЕЙ ЛЕКЦИИ (от 1 до 18)
+        var CURRENT_LECTURE = 6;
 
-    document.querySelectorAll('.nav-jump-btn').forEach(btn => {
-        if (btn.dataset.jump === currentCourse) btn.classList.add('active');
-    });
+        // Массив всех 18 лекций
+        var LECTURES = {
+            1:  { path: 'Лекция 1.html',  title: 'ОС · История и эволюция' },
+            2:  { path: 'Лекция 2.html',  title: 'ОС · Классификация' },
+            3:  { path: 'Лекция 3.html',  title: 'ОС · Стратегический анализ' },
+            4:  { path: 'Лекция 4.html',  title: 'ОС · Инструментарий менеджера' },
+            5:  { path: 'Лекция 5.html',  title: 'ОС · Процессы и память' },
+            6:  { path: 'Лекция 6.html',  title: 'Интернет · История' },
+            7:  { path: 'Лекция 7.html',  title: 'Интернет · От адреса до бита' },
+            8:  { path: 'Лекция 8.html',  title: 'Интернет · Браузер и веб' },
+            9:  { path: 'Лекция 9.html',  title: 'Офис · История' },
+            10: { path: 'Лекция 10.html', title: 'Офис · Альтернативы MS Office' },
+            11: { path: 'Лекция 11.html', title: 'Офис · Word' },
+            12: { path: 'Лекция 12.html', title: 'Офис · Excel' },
+            13: { path: 'Лекция 13.html', title: 'Офис · PowerPoint и практикум' },
+            14: { path: 'Лекция 14.html', title: 'ИИ · История' },
+            15: { path: 'Лекция 15.html', title: 'ИИ · Как работает' },
+            16: { path: 'Лекция 16.html', title: 'ИИ · В бизнесе' },
+            17: { path: 'Лекция 17.html', title: 'ИИ · Экономика' },
+            18: { path: 'Лекция 18.html', title: 'ИИ · Риски и стратегия' }
+        };
 
-    // Горячие клавиши: ← и → для переключения, Home для выхода в меню
-    document.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
-        else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
-        else if (e.key === 'Home') window.location.href = 'index.html';
-    });
-})();
-</script>
-  
-            <!-- Управление автопрокруткой по клику/клавише -->
-<!-- Индикатор + прогресс -->
-<div id="scroll-status-badge"
-     style="position:fixed; top:20px; right:20px; z-index:99999;
-            padding:8px 14px; background:rgba(15,23,42,0.9); color:#fff;
-            border:1px solid #4a5568; border-radius:6px;
-            font-family:monospace; font-size:12px; font-weight:bold;
-            cursor:pointer; user-select:none; backdrop-filter:blur(4px);">
-    ▶ ПРОБЕЛ / КЛИК — старт
-</div>
+        var TOTAL = 18;
+        var current = CURRENT_LECTURE;
+        var prev = current > 1 ? current - 1 : null;
+        var next = current < TOTAL ? current + 1 : null;
 
-<script>
-(function () {
-    'use strict';
+        // Обновляем счётчик и прогресс-бар
+        document.getElementById('currentNum').textContent = current;
+        document.getElementById('navProgress').style.width = (current / TOTAL * 100) + '%';
 
-    function init() {
-        const totalDurationMs = 25 * 60 * 1000;   // ← 25 минут ровно
-        const studentBlock = document.querySelector('.student-view');
-        const speakerBlock = document.querySelector('.speaker-notes');
-        const badge        = document.getElementById('scroll-status-badge');
-
-        if (!studentBlock || !speakerBlock) {
-            console.warn('[AutoScroll] контейнеры не найдены');
-            return;
+        // Настройка кнопки "Назад"
+        var prevBtn = document.getElementById('prevBtn');
+        if (prev) {
+            prevBtn.href = LECTURES[prev].path;
+            document.getElementById('prevTitle').textContent = 'Лекция ' + prev + ' · ' + LECTURES[prev].title;
+        } else {
+            prevBtn.href = 'index.html';
+            document.getElementById('prevTitle').textContent = 'К содержанию';
         }
 
-        const studentBehavior = studentBlock.style.scrollBehavior;
-        const speakerBehavior = speakerBlock.style.scrollBehavior;
-
-        let isRunning      = false;
-        let completed      = false;
-        let pausedElapsed  = 0;   // мс, «прожитые» до паузы
-        let startedAt      = 0;   // performance.now() в момент старта
-        let rafId          = null;
-        let startS = 0, startP = 0;
-        let maxS = 0, maxP = 0;
-
-        function setBadge(text, color) {
-            if (!badge) return;
-            badge.style.display = 'block';
-            badge.textContent = text;
-            badge.style.borderColor = color;
+        // Настройка кнопки "Вперёд"
+        var nextBtn = document.getElementById('nextBtn');
+        if (next) {
+            nextBtn.href = LECTURES[next].path;
+            document.getElementById('nextTitle').textContent = 'Лекция ' + next + ' · ' + LECTURES[next].title;
+        } else {
+            nextBtn.removeAttribute('href');
+            nextBtn.style.opacity = '0.35';
+            nextBtn.style.cursor = 'not-allowed';
+            nextBtn.onclick = function (e) { e.preventDefault(); };
+            document.getElementById('nextTitle').textContent = 'Это последняя лекция';
         }
 
-        function measure() {
-            maxS = Math.max(studentBlock.scrollHeight - studentBlock.clientHeight, 0);
-            maxP = Math.max(speakerBlock.scrollHeight - speakerBlock.clientHeight, 0);
-        }
+        // Подсветка активного курса
+        var currentCourse = 'os';
+        if (current >= 6 && current <= 8) currentCourse = 'net';
+        else if (current >= 9 && current <= 13) currentCourse = 'office';
+        else if (current >= 14) currentCourse = 'ai';
 
-        function fmt(ms) {
-            const m = Math.floor(ms / 60000);
-            const s = Math.floor((ms % 60000) / 1000);
-            return m + ':' + String(s).padStart(2, '0');
-        }
+        document.querySelectorAll('.nav-jump-btn').forEach(function (btn) {
+            if (btn.dataset.jump === currentCourse) btn.classList.add('active');
+        });
 
-        function animate() {
-            if (!isRunning) return;
+        // Горячие клавиши
+        document.addEventListener('keydown', function (e) {
+            var tag = e.target.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+            if (e.key === 'ArrowLeft' && prev) window.location.href = LECTURES[prev].path;
+            else if (e.key === 'ArrowRight' && next) window.location.href = LECTURES[next].path;
+            else if (e.key === 'Home') window.location.href = 'index.html';
+        });
+    })();
+    </script>
 
-            const elapsed  = pausedElapsed + (performance.now() - startedAt);
-            const fraction = Math.min(elapsed / totalDurationMs, 1);
+    <!-- 3. Автопрокрутка -->
+    <script>
+    (function () {
+        'use strict';
 
-            // если контент догрузился — учтём
-            measure();
+        function init() {
+            var totalDurationMs = 25 * 60 * 1000;
+            var studentBlock = document.querySelector('.student-view');
+            var speakerBlock = document.querySelector('.speaker-notes');
+            var badge        = document.getElementById('scroll-status-badge');
 
-            studentBlock.scrollTop = startS + (maxS - startS) * fraction;
-            speakerBlock.scrollTop = startP + (maxP - startP) * fraction;
-
-            // живой таймер в бейдже
-            if (badge) {
-                badge.textContent = '▶ ' + fmt(elapsed) + ' / 25:00';
-                badge.style.borderColor = '#16a34a';
-            }
-
-            if (fraction >= 1) {
-                finish();
+            if (!studentBlock || !speakerBlock) {
+                console.warn('[AutoScroll] контейнеры не найдены');
                 return;
             }
 
-            rafId = requestAnimationFrame(animate);
-        }
+            var studentBehavior = studentBlock.style.scrollBehavior;
+            var speakerBehavior = speakerBlock.style.scrollBehavior;
 
-        function startOrResume() {
-            if (completed) {
-                // полностью новый запуск
-                pausedElapsed = 0;
-                completed     = false;
-                studentBlock.scrollTop = 0;
-                speakerBlock.scrollTop = 0;
+            var isRunning      = false;
+            var completed      = false;
+            var pausedElapsed  = 0;
+            var startedAt      = 0;
+            var rafId          = null;
+            var startS = 0, startP = 0;
+            var maxS = 0, maxP = 0;
+
+            function setBadge(text, color) {
+                if (!badge) return;
+                badge.style.display = 'block';
+                badge.textContent = text;
+                badge.style.borderColor = color;
             }
 
-            measure();
-            startS    = studentBlock.scrollTop;
-            startP    = speakerBlock.scrollTop;
-            startedAt = performance.now();
-            isRunning = true;
-
-            studentBlock.style.scrollBehavior = 'auto';
-            speakerBlock.style.scrollBehavior = 'auto';
-
-            cancelAnimationFrame(rafId);
-            rafId = requestAnimationFrame(animate);
-
-            console.log('[AutoScroll] START', {startS, startP, maxS, maxP, totalMin: 25});
-        }
-
-        function pause() {
-            if (isRunning) {
-                pausedElapsed += performance.now() - startedAt;
+            function measure() {
+                maxS = Math.max(studentBlock.scrollHeight - studentBlock.clientHeight, 0);
+                maxP = Math.max(speakerBlock.scrollHeight - speakerBlock.clientHeight, 0);
             }
-            isRunning = false;
-            cancelAnimationFrame(rafId);
 
-            setBadge('⏸ ПАУЗА ' + fmt(pausedElapsed), '#dc2626');
-
-            studentBlock.style.scrollBehavior = studentBehavior;
-            speakerBlock.style.scrollBehavior = speakerBehavior;
-
-            console.log('[AutoScroll] PAUSE at', Math.round(pausedElapsed / 1000), 's');
-        }
-
-        function finish() {
-            isRunning = false;
-            completed = true;
-            cancelAnimationFrame(rafId);
-
-            measure();
-            studentBlock.scrollTop = maxS;
-            speakerBlock.scrollTop = maxP;
-
-            setBadge('⏱️ ЗАВЕРШЕНО (25:00)', '#4a5568');
-
-            studentBlock.style.scrollBehavior = studentBehavior;
-            speakerBlock.style.scrollBehavior = speakerBehavior;
-
-            console.log('[AutoScroll] FINISH — ровно 25 минут');
-        }
-
-        function toggle() { isRunning ? pause() : startOrResume(); }
-
-        // Space
-        window.addEventListener('keydown', (e) => {
-            if (e.repeat) return;
-            const t = e.target;
-            const tag = t && t.tagName;
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
-            if (e.code === 'Space' || e.key === ' ') {
-                e.preventDefault();
-                toggle();
+            function fmt(ms) {
+                var m = Math.floor(ms / 60000);
+                var s = Math.floor((ms % 60000) / 1000);
+                return m + ':' + String(s).padStart(2, '0');
             }
-        }, true);
 
-        // средняя кнопка мыши
-        window.addEventListener('mousedown', (e) => {
-            if (e.button === 1) { e.preventDefault(); toggle(); }
-        }, true);
+            function animate() {
+                if (!isRunning) return;
 
-        // клик по бейджу
-        if (badge) badge.addEventListener('click', (e) => {
-            e.stopPropagation(); toggle();
-        });
+                var elapsed  = pausedElapsed + (performance.now() - startedAt);
+                var fraction = Math.min(elapsed / totalDurationMs, 1);
 
-        // клик по контейнерам (кроме ссылок/кнопок/iframe)
-        [studentBlock, speakerBlock].forEach(el => {
-            el.addEventListener('click', (e) => {
-                if (e.target.closest('a,button,iframe,input,textarea,select,video,audio')) return;
-                if (window.getSelection().toString().length > 0) return;
-                toggle();
+                measure();
+
+                studentBlock.scrollTop = startS + (maxS - startS) * fraction;
+                speakerBlock.scrollTop = startP + (maxP - startP) * fraction;
+
+                if (badge) {
+                    badge.textContent = '▶ ' + fmt(elapsed) + ' / 25:00';
+                    badge.style.borderColor = '#16a34a';
+                }
+
+                if (fraction >= 1) {
+                    finish();
+                    return;
+                }
+
+                rafId = requestAnimationFrame(animate);
+            }
+
+            function startOrResume() {
+                if (completed) {
+                    pausedElapsed = 0;
+                    completed     = false;
+                    studentBlock.scrollTop = 0;
+                    speakerBlock.scrollTop = 0;
+                }
+
+                measure();
+                startS    = studentBlock.scrollTop;
+                startP    = speakerBlock.scrollTop;
+                startedAt = performance.now();
+                isRunning = true;
+
+                studentBlock.style.scrollBehavior = 'auto';
+                speakerBlock.style.scrollBehavior = 'auto';
+
+                cancelAnimationFrame(rafId);
+                rafId = requestAnimationFrame(animate);
+            }
+
+            function pause() {
+                if (isRunning) {
+                    pausedElapsed += performance.now() - startedAt;
+                }
+                isRunning = false;
+                cancelAnimationFrame(rafId);
+
+                setBadge('⏸ ПАУЗА ' + fmt(pausedElapsed), '#dc2626');
+
+                studentBlock.style.scrollBehavior = studentBehavior;
+                speakerBlock.style.scrollBehavior = speakerBehavior;
+            }
+
+            function finish() {
+                isRunning = false;
+                completed = true;
+                cancelAnimationFrame(rafId);
+
+                measure();
+                studentBlock.scrollTop = maxS;
+                speakerBlock.scrollTop = maxP;
+
+                setBadge('⏱️ ЗАВЕРШЕНО (25:00)', '#4a5568');
+
+                studentBlock.style.scrollBehavior = studentBehavior;
+                speakerBlock.style.scrollBehavior = speakerBehavior;
+            }
+
+            function toggle() { isRunning ? pause() : startOrResume(); }
+
+            // Space
+            window.addEventListener('keydown', function (e) {
+                if (e.repeat) return;
+                var t = e.target;
+                var tag = t && t.tagName;
+                if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+                if (e.code === 'Space' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle();
+                }
+            }, true);
+
+            // средняя кнопка мыши
+            window.addEventListener('mousedown', function (e) {
+                if (e.button === 1) { e.preventDefault(); toggle(); }
+            }, true);
+
+            // клик по бейджу
+            if (badge) badge.addEventListener('click', function (e) {
+                e.stopPropagation(); toggle();
             });
-        });
 
-        // Экстренная остановка
-        window.stopAutoScroll = () => {
-            isRunning = false;
-            completed = false;
-            pausedElapsed = 0;
-            cancelAnimationFrame(rafId);
-            if (badge) badge.style.display = 'none';
-            studentBlock.style.scrollBehavior = studentBehavior;
-            speakerBlock.style.scrollBehavior = speakerBehavior;
-        };
+            // клик по контейнерам (кроме интерактивных элементов)
+            [studentBlock, speakerBlock].forEach(function (el) {
+                el.addEventListener('click', function (e) {
+                    if (e.target.closest('a,button,iframe,input,textarea,select,video,audio')) return;
+                    if (window.getSelection().toString().length > 0) return;
+                    toggle();
+                });
+            });
 
-        setBadge('▶ ПРОБЕЛ / КЛИК — старт', '#4a5568');
-    }
+            // Экстренная остановка
+            window.stopAutoScroll = function () {
+                isRunning = false;
+                completed = false;
+                pausedElapsed = 0;
+                cancelAnimationFrame(rafId);
+                if (badge) badge.style.display = 'none';
+                studentBlock.style.scrollBehavior = studentBehavior;
+                speakerBlock.style.scrollBehavior = speakerBehavior;
+            };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init, { once: true });
-    } else {
-        init();
-    }
-})();
-</script>
-  <script>
-   function changeVideo(btn) {
-    const player = document.getElementById('lecture-player');
-    player.src = btn.dataset.url;
+            setBadge('▶ ПРОБЕЛ / КЛИК — старт', '#4a5568');
+        }
 
-    document.querySelectorAll('.rt-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-}
-
-function stopVideo() {
-    const player = document.getElementById('lecture-player');
-    player.src = 'about:blank';
-    document.querySelectorAll('.rt-btn').forEach(b => b.classList.remove('active'));
-}
-  })();
-</script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init, { once: true });
+        } else {
+            init();
+        }
+    })();
+    </script>
 
 </body>
 </html>
