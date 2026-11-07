@@ -1051,19 +1051,65 @@
                 </section>
 
                 <!-- ВИДЕО -->
-                <div class="video-section reveal">
-                    <div class="video-container">
-                        <iframe id="lecture-player" src="https://rutube.ru" width="100%" height="100%" frameborder="0" allow="clipboard-write; autoplay" webkitallowfullscreen mozallowfullscreen allowfullscreen title="Видеолекция: как и почему возник интернет"></iframe>
-                    </div>
-                    <div class="links-hub">
-                        <button onclick="changeVideo('https://rutube.ru/')" class="video-btn stop-btn">⏹ СТОП</button>
-                        <button onclick="changeVideo('https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266//')" class="video-btn rt-btn">📜 Лекция 1. Как и почему возник интернет</button>
-                        <button onclick="changeVideo('https://archive.org/embed/darpa_202611//')" class="video-btn rt-btn">📜 Лекция 2. DARPA</button>
-                    </div>
-                </div>
+             <div class="video-section reveal">
+    <div class="video-container">
+        <iframe id="lecture-player"
+            src="https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266/"
+            width="100%" height="100%" frameborder="0"
+            allow="clipboard-write; autoplay; fullscreen"
+            allowfullscreen
+            title="Видеолекция"></iframe>
+    </div>
+    <div class="links-hub">
+        <button data-url="https://rutube.ru/play/embed/696c5ac859fd6a3f36c598ea20a3f266/"
+                class="video-btn rt-btn active" onclick="changeVideo(this)">
+            📜 Лекция 1. Как и почему возник интернет
+        </button>
+        <button data-url="https://archive.org/embed/darpa_202611"
+                class="video-btn rt-btn" onclick="changeVideo(this)">
+            📜 Лекция 2. DARPA
+        </button>
+        <button class="video-btn stop-btn" onclick="stopVideo()">⏹ СТОП</button>
+    </div>
+</div>
 
-            </div>
-        </div>
+<script>
+function changeVideo(btn) {
+    const player = document.getElementById('lecture-player');
+    player.src = btn.dataset.url;
+
+    document.querySelectorAll('.rt-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+function stopVideo() {
+    const player = document.getElementById('lecture-player');
+    player.src = 'about:blank';
+    document.querySelectorAll('.rt-btn').forEach(b => b.classList.remove('active'));
+}
+</script>
+
+<style>
+.video-container {
+    position: relative;
+    padding-top: 56.25%; /* 16:9 */
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.video-container iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+.rt-btn.active {
+    background: #2a6df4;
+    color: #fff;
+    font-weight: 600;
+}
+</style>
 
         <div class="slide-footer">
             Направление «Менеджмент» | 1 курс | Курс: Как устроен интернет | Блок 1 из 3
